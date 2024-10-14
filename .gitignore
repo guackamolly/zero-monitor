@@ -1,0 +1,6 @@
+.env
+.DS_Store
+go.work
+*.out
+
+web/content/
