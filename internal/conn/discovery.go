@@ -26,6 +26,7 @@ func StartBeaconBroadcast() (Connection, error) {
 	}
 
 	c := make(chan (result), 1)
+	stop := false
 	go func() {
 		pb := 0
 		for _, p := range ports {
@@ -36,7 +37,7 @@ func StartBeaconBroadcast() (Connection, error) {
 				pb = pb - maxParallelBeacons
 			}
 
-			if len(c) != 0 {
+			if stop {
 				return
 			}
 
@@ -56,6 +57,9 @@ func StartBeaconBroadcast() (Connection, error) {
 	}()
 
 	r := <-c
+	close(c)
+	stop = true
+
 	return r.conn, r.err
 }
 
@@ -136,6 +140,7 @@ func broadcastProbeBeacon(port uint16) (Connection, error) {
 	if err != nil {
 		return Connection{}, err
 	}
+	defer conn.Close()
 
 	// set 2 sec timeout until the connection is closed
 	// since these beacon messages are only sent on the local network,
