@@ -14,6 +14,7 @@ const maxParallelBeacons = 5
 // Two seconds is more than enough for a reply since beacons are sent in broadcast on the local network.
 const beaconReplyWaitDuration = 2 * time.Second
 
+var NetworkIP = net.IPv4(0, 0, 0, 0)
 var broadcastIP = net.IPv4(255, 255, 255, 255)
 
 // starts broadcasting beacon probes in the local network, on all known ports
@@ -56,6 +57,61 @@ func StartBeaconBroadcast() (Connection, error) {
 
 	r := <-c
 	return r.conn, r.err
+}
+
+// Finds a port that is available for incoming TCP connections.
+// If err is nil, then an open connection is returned, as a way
+// to reserve that same TCP port. This connection must be closed
+// before the port is used in a different context.
+func FindAvailableTcpPort(
+	ip net.IP,
+) (*net.TCPListener, error) {
+	var conn *net.TCPListener
+	var err error
+
+	// first find a port from the list of well known ports, that is available for listening
+	for _, p := range ports {
+		addr := net.TCPAddr{Port: int(p), IP: ip}
+		conn, err = net.ListenTCP("tcp", &addr)
+
+		if err == nil {
+			break
+		}
+	}
+
+	// if no port from the list of well known ports is available for listening, connect to a random one.
+	if err != nil {
+		addr := net.TCPAddr{Port: 0, IP: ip}
+		conn, err = net.ListenTCP("tcp", &addr)
+	}
+
+	return conn, err
+}
+
+// Same thing as [FindAvailableTcpPort], but for UDP connections.
+func FindAvailableUdpPort(
+	ip net.IP,
+) (*net.UDPConn, error) {
+	var conn *net.UDPConn
+	var err error
+
+	// first find a port from the list of well known ports, that is available for listening
+	for _, p := range ports {
+		addr := net.UDPAddr{Port: int(p), IP: ip}
+		conn, err = net.ListenUDP("udp", &addr)
+
+		if err == nil {
+			break
+		}
+	}
+
+	// if no port from the list of well known ports is available for listening, connect to a random one.
+	if err != nil {
+		addr := net.UDPAddr{Port: 0, IP: ip}
+		conn, err = net.ListenUDP("udp", &addr)
+	}
+
+	return conn, err
 }
 
 // sends a broadcast probe beacon and waits for a response
