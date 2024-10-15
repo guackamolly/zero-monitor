@@ -4,11 +4,17 @@ import (
 	"bytes"
 	"encoding/gob"
 	"fmt"
+
+	"github.com/guackamolly/zero-monitor/internal/data/models"
 )
 
 type msg struct {
-	topic Topic
-	data  any
+	Topic Topic
+	Data  any
+}
+
+func init() {
+	gob.Register(models.Node{})
 }
 
 func encode(m msg) ([]byte, error) {
@@ -42,9 +48,9 @@ func decode(b []byte) (msg, error) {
 }
 
 func compose(t Topic, d ...any) msg {
-	m := msg{topic: t}
+	m := msg{Topic: t}
 	if len(d) > 0 {
-		m.data = d[0]
+		m.Data = d[0]
 	}
 
 	return m
