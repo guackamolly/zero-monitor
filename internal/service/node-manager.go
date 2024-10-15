@@ -11,6 +11,12 @@ type NodeManagerService struct {
 	connected map[string]models.Node
 }
 
+func NewNodeManagerService() *NodeManagerService {
+	return &NodeManagerService{
+		connected: map[string]models.Node{},
+	}
+}
+
 // Joins master node.
 func (s *NodeManagerService) Join(node models.Node) error {
 	id := node.ID
