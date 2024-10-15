@@ -18,6 +18,7 @@ type Socket struct {
 func NewSocket(ctx context.Context) Socket {
 	return Socket{
 		Socket: zmq4.NewRep(ctx),
+		ctx:    ctx,
 	}
 }
 
