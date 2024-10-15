@@ -17,7 +17,7 @@ type Socket struct {
 // The context must contain all the dependencies required by the socket.
 func NewSubSocket(ctx context.Context) Socket {
 	return Socket{
-		Socket: zmq4.NewSub(ctx),
+		Socket: zmq4.NewRouter(ctx),
 		ctx:    ctx,
 	}
 }
@@ -26,7 +26,7 @@ func NewSubSocket(ctx context.Context) Socket {
 // The context must contain all the dependencies required by the socket.
 func NewPubSocket(ctx context.Context) Socket {
 	return Socket{
-		Socket: zmq4.NewPub(ctx),
+		Socket: zmq4.NewReq(ctx),
 		ctx:    ctx,
 	}
 }
@@ -44,12 +44,6 @@ func (s Socket) PublishAndForget(m msg) {
 	err = s.Send(zmq4.NewMsg(b))
 	if err != nil {
 		log.Printf("failed to publish message, %v\n", err)
-	}
-
-	_, err = s.Recv()
-	if err != nil {
-		log.Printf("failed to receive reply message, %v\n", err)
-		return
 	}
 }
 
