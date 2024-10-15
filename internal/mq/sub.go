@@ -1,7 +1,6 @@
 package mq
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/guackamolly/zero-monitor/internal/data/models"
@@ -24,15 +23,17 @@ func (s Socket) RegisterSubscriptions() {
 				continue
 			}
 
-			msg, err := decode(m.Bytes())
+			if l := len(m.Frames); l != 3 {
+				log.Printf("received corrupted message, expected 3 frames but got: %d\n", l)
+			}
+
+			msg, err := decode(m.Frames[2])
 			if err != nil {
 				log.Printf("failed to decode message, %v\n", err)
-				s.Reply(compose(reply, err))
-
 				continue
 			}
 
-			s.Reply(handle(msg, *sc))
+			handle(msg, *sc)
 		}
 	}()
 }
@@ -40,53 +41,52 @@ func (s Socket) RegisterSubscriptions() {
 func handle(
 	m msg,
 	serviceContainer SubscribeContainer,
-) msg {
-	if err, ok := m.data.(error); ok {
-		log.Printf("received err %v for topic %d\n", err, m.topic)
-
-		return compose(empty)
+) {
+	if err, ok := m.Data.(error); ok {
+		log.Printf("received err %v for topic %d\n", err, m.Topic)
+		return
 	}
 
-	switch m.topic {
+	switch m.Topic {
 	case join:
-		return handleJoin(m, serviceContainer.NodeManager)
+		handleJoin(m, serviceContainer.NodeManager)
+		return
 	case update:
-		return handleUpdate(m, serviceContainer.NodeManager)
+		handleUpdate(m, serviceContainer.NodeManager)
+		return
 	default:
-		return compose(unknown)
+		compose(unknown)
 	}
 }
 
 func handleJoin(
 	m msg,
 	service *service.NodeManagerService,
-) msg {
-	node, ok := m.data.(models.Node)
+) {
+	node, ok := m.Data.(models.Node)
 	if !ok {
-		return compose(reply, fmt.Errorf("couldn't cast data to Node model, got: %v", m.data))
+		log.Printf("couldn't cast data to Node model, got: %v\n", m.Data)
+		return
 	}
 
 	err := service.Join(node)
 	if err != nil {
 		log.Printf("join node call failed, %v\n", err)
 	}
-
-	return compose(reply, err)
 }
 
 func handleUpdate(
 	m msg,
 	service *service.NodeManagerService,
-) msg {
-	node, ok := m.data.(models.Node)
+) {
+	node, ok := m.Data.(models.Node)
 	if !ok {
-		return compose(reply, fmt.Errorf("couldn't cast data to Node model, got: %v", m.data))
+		log.Printf("couldn't cast data to Node model, got: %v\n", m.Data)
+		return
 	}
 
-	err := service.Join(node)
+	err := service.Update(node)
 	if err != nil {
-		log.Printf("join node call failed, %v\n", err)
+		log.Printf("updated node call failed, %v\n", err)
 	}
-
-	return compose(reply, err)
 }
