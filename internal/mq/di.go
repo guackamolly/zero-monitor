@@ -10,7 +10,7 @@ type containerKey int
 
 const (
 	keySubscribeContainer containerKey = iota
-	keyPublishContainer   containerKey = iota
+	keyPublishContainer
 )
 
 // Container for all dependencies required in a subscription context.
@@ -25,9 +25,9 @@ type PublishContainer struct {
 
 func InjectSubscribeContainer(
 	ctx context.Context,
-	container *SubscribeContainer,
+	container SubscribeContainer,
 ) context.Context {
-	return context.WithValue(ctx, keySubscribeContainer, container)
+	return context.WithValue(ctx, keySubscribeContainer, &container)
 }
 
 func ExtractSubscribeContainer(
@@ -38,9 +38,9 @@ func ExtractSubscribeContainer(
 
 func InjectPublishContainer(
 	ctx context.Context,
-	container *PublishContainer,
+	container PublishContainer,
 ) context.Context {
-	return context.WithValue(ctx, keySubscribeContainer, container)
+	return context.WithValue(ctx, keyPublishContainer, &container)
 }
 
 func ExtractPublishContainer(
