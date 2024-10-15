@@ -63,6 +63,7 @@ func handleJoin(
 	m msg,
 	service *service.NodeManagerService,
 ) {
+	log.Println("handling node join")
 	node, ok := m.Data.(models.Node)
 	if !ok {
 		log.Printf("couldn't cast data to Node model, got: %v\n", m.Data)
@@ -79,6 +80,7 @@ func handleUpdate(
 	m msg,
 	service *service.NodeManagerService,
 ) {
+	log.Println("handling node update")
 	node, ok := m.Data.(models.Node)
 	if !ok {
 		log.Printf("couldn't cast data to Node model, got: %v\n", m.Data)
