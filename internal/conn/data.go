@@ -1,5 +1,7 @@
 package conn
 
+import "github.com/guackamolly/zero-monitor/internal"
+
 type msg struct {
 	key byte
 	id  string
@@ -31,5 +33,5 @@ func decode(b []byte) msg {
 }
 
 func compose(key byte) msg {
-	return msg{id: machineId, key: key}
+	return msg{id: internal.MachineId, key: key}
 }

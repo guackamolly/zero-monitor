@@ -1,4 +1,4 @@
-package conn
+package internal
 
 import (
 	"log"
@@ -7,7 +7,7 @@ import (
 )
 
 // Holds an unique machine identifier, hashed for security
-var machineId string
+var MachineId string
 
 func init() {
 	mid, err := machineid.ProtectedID("zero-monitor")
@@ -15,5 +15,5 @@ func init() {
 		log.Fatalf("failed to extract machine id (required to identify nodes), %v\n", err)
 	}
 
-	machineId = mid
+	MachineId = mid
 }
