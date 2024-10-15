@@ -10,6 +10,7 @@ import (
 
 	"github.com/guackamolly/zero-monitor/internal/conn"
 	"github.com/guackamolly/zero-monitor/internal/mq"
+	"github.com/guackamolly/zero-monitor/internal/service"
 )
 
 func main() {
@@ -25,7 +26,7 @@ func main() {
 	// 3. Initialize sub server.
 	tconn.Close()
 
-	s := mq.NewSocket(ctx)
+	s := mq.NewSubSocket(ctx)
 	s.RegisterSubscriptions()
 	err := mq.ConnectSubscribe(s, taddr.IP, taddr.Port)
 	if err != nil {
@@ -63,5 +64,7 @@ func findAvailableTcpAndUdpPorts() (*net.TCPListener, *net.UDPConn) {
 }
 
 func createSubscribeContainer() mq.SubscribeContainer {
-	return mq.SubscribeContainer{}
+	return mq.SubscribeContainer{
+		NodeManager: service.NewNodeManagerService(),
+	}
 }
