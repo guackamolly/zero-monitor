@@ -5,10 +5,10 @@ import (
 	"net"
 )
 
-type connection struct {
-	isMaster bool
-	port     int
-	ip       net.IP
+type Connection struct {
+	IsMaster bool
+	Port     int
+	IP       net.IP
 }
 
 var networkIP = net.IPv4(0, 0, 0, 0)

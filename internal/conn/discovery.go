@@ -18,9 +18,9 @@ var broadcastIP = net.IPv4(255, 255, 255, 255)
 
 // starts broadcasting beacon probes in the local network, on all known ports
 // that a master node could be registered in.
-func StartBeaconBroadcast() (connection, error) {
+func StartBeaconBroadcast() (Connection, error) {
 	type result struct {
-		conn connection
+		conn Connection
 		err  error
 	}
 
@@ -59,17 +59,17 @@ func StartBeaconBroadcast() (connection, error) {
 }
 
 // sends a broadcast probe beacon and waits for a response
-func broadcastProbeBeacon(port uint16) (connection, error) {
+func broadcastProbeBeacon(port uint16) (Connection, error) {
 	addr := net.UDPAddr{IP: broadcastIP, Port: int(port)}
 	conn, err := net.DialUDP("udp", nil, &addr)
 	if err != nil {
-		return connection{}, err
+		return Connection{}, err
 	}
 
 	defer conn.Close()
 	_, err = conn.Write(encode(compose(probeKey)))
 	if err != nil {
-		return connection{}, err
+		return Connection{}, err
 	}
 
 	// close to local address
@@ -78,7 +78,7 @@ func broadcastProbeBeacon(port uint16) (connection, error) {
 	laddr := conn.LocalAddr()
 	conn, err = net.ListenUDP("udp", laddr.(*net.UDPAddr))
 	if err != nil {
-		return connection{}, err
+		return Connection{}, err
 	}
 
 	// set 2 sec timeout until the connection is closed
@@ -86,23 +86,23 @@ func broadcastProbeBeacon(port uint16) (connection, error) {
 	// then 2 seconds is more than enough more the master node to answer
 	err = conn.SetDeadline(time.Now().Add(2 * time.Second))
 	if err != nil {
-		return connection{}, err
+		return Connection{}, err
 	}
 
 	buf := make([]byte, 1024)
 	var raddr *net.UDPAddr
 	_, raddr, err = conn.ReadFromUDP(buf)
 	if err != nil {
-		return connection{}, err
+		return Connection{}, err
 	}
 
 	if d := decode(buf); d.key != helloKey {
-		return connection{}, fmt.Errorf("received unknown response after sending probe beacon, %v", d)
+		return Connection{}, fmt.Errorf("received unknown response after sending probe beacon, %v", d)
 	}
 
-	return connection{
-		port:     raddr.Port,
-		ip:       raddr.IP,
-		isMaster: true,
+	return Connection{
+		Port:     raddr.Port,
+		IP:       raddr.IP,
+		IsMaster: true,
 	}, nil
 }
