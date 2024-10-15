@@ -20,7 +20,7 @@ type SubscribeContainer struct {
 
 // Container for all dependencies required in a publish context.
 type PublishContainer struct {
-	NodeManager *service.NodeManagerService
+	NodeReporter *service.NodeReporterService
 }
 
 func InjectSubscribeContainer(
