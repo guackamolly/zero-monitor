@@ -7,18 +7,40 @@ import (
 )
 
 func RegisterHandlers(e *echo.Echo) {
-	e.GET(rootRoute, anyRouteHandler)
+	e.GET(rootRoute, rootHandler)
 	e.HTTPErrorHandler = httpErrorHandler()
 }
-func anyRouteHandler(ectx echo.Context) error {
+
+func rootHandler(ectx echo.Context) error {
+	if upgrader.WantsToUpgrade(*ectx.Request()) {
+		return websocketHandler(ectx)
+	}
+
 	return withSubscriberContainer(ectx, func(sc *di.SubscribeContainer) error {
-		view := ServerStatsView{}
-		n := sc.NodeManager.Connected()
-		for _, v := range n {
-			view.Nodes = append(view.Nodes, v)
-		}
+		view := NewServerStatsView(sc.NodeManager.Network())
 
 		return ectx.Render(200, "dashboard", view)
+	})
+}
+
+func websocketHandler(ectx echo.Context) error {
+	return withSubscriberContainer(ectx, func(sc *di.SubscribeContainer) error {
+		ws, err := upgrader.Upgrade(ectx.Response(), ectx.Request(), nil)
+		if err != nil {
+			return err
+		}
+		defer ws.Close()
+
+		s := sc.NodeManager.Stream()
+		for cn := range s {
+			view := NewServerStatsView(cn)
+			err = ws.WriteTemplate(ectx, "dashboard/nodes", view)
+			if err != nil {
+				logging.LogError("failed to write template in ws %v, %v", ws, err)
+				continue
+			}
+		}
+		return nil
 	})
 }
 
