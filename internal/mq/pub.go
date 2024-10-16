@@ -2,10 +2,12 @@ package mq
 
 import (
 	"log"
+
+	"github.com/guackamolly/zero-monitor/internal/di"
 )
 
 func (s Socket) RegisterPublishers() {
-	pc := ExtractPublishContainer(s.ctx)
+	pc := di.ExtractPublishContainer(s.ctx)
 	if pc == nil {
 		log.Fatalln("publish container hasn't been injected")
 	}

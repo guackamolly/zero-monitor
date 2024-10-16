@@ -9,6 +9,7 @@ import (
 	"syscall"
 
 	"github.com/guackamolly/zero-monitor/internal/conn"
+	"github.com/guackamolly/zero-monitor/internal/di"
 	"github.com/guackamolly/zero-monitor/internal/http"
 	"github.com/guackamolly/zero-monitor/internal/logging"
 	"github.com/guackamolly/zero-monitor/internal/mq"
@@ -22,7 +23,7 @@ func main() {
 	// 1. Initialize DI.
 	sc := createSubscribeContainer()
 	ctx := context.Background()
-	ctx = mq.InjectSubscribeContainer(ctx, sc)
+	ctx = di.InjectSubscribeContainer(ctx, sc)
 
 	// 2. Initialize sub server.
 	s := initializeSubServer(ctx)
@@ -116,8 +117,8 @@ func findAvailableUdpPort() *net.UDPConn {
 	return uconn
 }
 
-func createSubscribeContainer() mq.SubscribeContainer {
-	return mq.SubscribeContainer{
+func createSubscribeContainer() di.SubscribeContainer {
+	return di.SubscribeContainer{
 		NodeManager: service.NewNodeManagerService(),
 	}
 }

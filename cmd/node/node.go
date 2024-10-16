@@ -9,6 +9,7 @@ import (
 
 	"github.com/guackamolly/zero-monitor/internal/conn"
 	"github.com/guackamolly/zero-monitor/internal/data/repositories"
+	"github.com/guackamolly/zero-monitor/internal/di"
 	"github.com/guackamolly/zero-monitor/internal/mq"
 	"github.com/guackamolly/zero-monitor/internal/service"
 )
@@ -17,7 +18,7 @@ func main() {
 	// 1. Initialize DI.
 	pc := createPublishContainer()
 	ctx := context.Background()
-	ctx = mq.InjectPublishContainer(ctx, pc)
+	ctx = di.InjectPublishContainer(ctx, pc)
 
 	// 2. Find master node in local network.
 	conn, err := conn.StartBeaconBroadcast()
@@ -42,10 +43,10 @@ func main() {
 	<-c
 }
 
-func createPublishContainer() mq.PublishContainer {
+func createPublishContainer() di.PublishContainer {
 	system := repositories.GopsUtilSystemRepository{}
 
-	return mq.PublishContainer{
+	return di.PublishContainer{
 		NodeReporter: service.NewNodeReporterService(system),
 	}
 }

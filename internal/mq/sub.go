@@ -4,11 +4,12 @@ import (
 	"log"
 
 	"github.com/guackamolly/zero-monitor/internal/data/models"
+	"github.com/guackamolly/zero-monitor/internal/di"
 	"github.com/guackamolly/zero-monitor/internal/service"
 )
 
 func (s Socket) RegisterSubscriptions() {
-	sc := ExtractSubscribeContainer(s.ctx)
+	sc := di.ExtractSubscribeContainer(s.ctx)
 	if sc == nil {
 		log.Fatalln("subscribe container hasn't been injected")
 	}
@@ -40,7 +41,7 @@ func (s Socket) RegisterSubscriptions() {
 
 func handle(
 	m msg,
-	serviceContainer SubscribeContainer,
+	serviceContainer di.SubscribeContainer,
 ) {
 	if err, ok := m.Data.(error); ok {
 		log.Printf("received err %v for topic %d\n", err, m.Topic)
