@@ -5,7 +5,7 @@ go 1.23.1
 require (
 	github.com/denisbrodbeck/machineid v1.0.1
 	github.com/go-zeromq/zmq4 v0.17.0
-	github.com/labstack/echo v3.3.10+incompatible
+	github.com/joho/godotenv v1.5.1
 	github.com/labstack/echo/v4 v4.12.0
 	github.com/shirou/gopsutil v3.21.11+incompatible
 )
