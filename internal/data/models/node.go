@@ -1,9 +1,10 @@
 package models
 
 type Node struct {
-	ID    string
-	Info  Info
-	Stats Stats
+	ID     string
+	Online bool
+	Info   Info
+	Stats  Stats
 }
 
 func NewNode(
@@ -12,9 +13,10 @@ func NewNode(
 	stats Stats,
 ) Node {
 	return Node{
-		ID:    id,
-		Info:  info,
-		Stats: stats,
+		ID:     id,
+		Info:   info,
+		Stats:  stats,
+		Online: true,
 	}
 }
 
@@ -28,8 +30,18 @@ func NewNodeWithoutStats(
 
 func (m Node) WithUpdatedStats(stats Stats) Node {
 	return Node{
-		ID:    m.ID,
-		Info:  m.Info,
-		Stats: stats,
+		ID:     m.ID,
+		Info:   m.Info,
+		Stats:  stats,
+		Online: true,
+	}
+}
+
+func (m Node) SetOffline() Node {
+	return Node{
+		ID:     m.ID,
+		Info:   m.Info,
+		Stats:  m.Stats,
+		Online: false,
 	}
 }
