@@ -34,7 +34,7 @@ func main() {
 	defer uconn.Close()
 
 	// 4. Initialize http server.
-	e := initializeHttpServer()
+	e := initializeHttpServer(ctx)
 	defer e.Close()
 
 	// 4. Await termination...
@@ -74,7 +74,7 @@ func initializeBeaconServer() *net.UDPConn {
 	return uconn
 }
 
-func initializeHttpServer() *echo.Echo {
+func initializeHttpServer(ctx context.Context) *echo.Echo {
 	// Initialize echo framework.
 	e := echo.New()
 
@@ -84,10 +84,9 @@ func initializeHttpServer() *echo.Echo {
 
 	// Register server dependencies.
 	http.RegisterHandlers(e)
-	http.RegisterMiddlewares(e)
+	http.RegisterMiddlewares(e, ctx)
 	http.RegisterStaticFiles(e)
 	http.RegisterTemplates(e)
-	http.RegisterLiveView(e)
 
 	// Start server.
 	go func() {

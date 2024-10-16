@@ -10,15 +10,18 @@ import (
 	"github.com/guackamolly/zero-monitor/internal/conn"
 	"github.com/guackamolly/zero-monitor/internal/data/repositories"
 	"github.com/guackamolly/zero-monitor/internal/di"
+	"github.com/guackamolly/zero-monitor/internal/logging"
 	"github.com/guackamolly/zero-monitor/internal/mq"
 	"github.com/guackamolly/zero-monitor/internal/service"
 )
 
 func main() {
-	// 1. Initialize DI.
+	// 1. Initialize DI & logging.
 	pc := createPublishContainer()
 	ctx := context.Background()
 	ctx = di.InjectPublishContainer(ctx, pc)
+
+	logging.AddLogger(logging.NewConsoleLogger())
 
 	// 2. Find master node in local network.
 	conn, err := conn.StartBeaconBroadcast()
