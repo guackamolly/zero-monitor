@@ -39,6 +39,7 @@ func (s *NodeManagerService) Update(node models.Node) error {
 	}
 
 	s.connected[id] = node
+	s.updateStream()
 	return nil
 }
 
