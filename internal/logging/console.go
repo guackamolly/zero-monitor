@@ -21,9 +21,7 @@ func (l consoleLogger) Error(fmt string, s ...any) {
 
 func (l consoleLogger) Fatal(fmt string, s ...any) {
 	f := l.format(fmt, s...)
-	console.Println("(fatal): " + f)
-
-	panic(f)
+	console.Fatalln("(fatal): " + f)
 }
 
 func (l consoleLogger) format(fmts string, s ...any) string {
