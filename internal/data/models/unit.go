@@ -14,7 +14,7 @@ type Celsius float64
 type Memory uint64
 
 func (v Percent) String() string {
-	return fmt.Sprintf("%f %%", v)
+	return fmt.Sprintf("%0.2f%%", v)
 }
 
 func (v Celsius) String() string {
