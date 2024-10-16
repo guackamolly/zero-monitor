@@ -1,3 +1,4 @@
+{{ define "dashboard" }}
 <!DOCTYPE html>
 <html>
     <head>
@@ -46,24 +47,92 @@
                     target="_blank">by
                     Guackamolly Apps</a>
             </div>
-            <div>
-                <a href="about">About</a>
-                <a href="contact">Contact</a>
-                <a
-                    href="https://github.com/guackamolly/insta-archiver"
-                    target="_blank">Open-Source</a>
-            </div>
         </header>
 
         <main>
             <section class="main-content-1">
+                {{ if gt (len .Nodes) 0 }}
+                {{ range .Nodes }}
+                <div class="server-card">
+                    <div class="server-card-header">
+                        <div class="badge">Online</div>
+                        <span><b>{{.Info.Hostname}}</b></span>
+                        🇵🇹
+                    </div>
+                    <div class="server-card-body">
+                        <div class="server-card-stat-block">
+                            <div class="server-card-stat-field">
+                                <span
+                                    class="server-card-stat-field-label">OS</span>
+                                <span>{{.Info.OS}}</span>
+                            </div>
+                            <div class="server-card-stat-field">
+                                <span
+                                    class="server-card-stat-field-label">Hardware</span>
+                                <span>{{.Info.Distribution}}</span>
+                            </div>
+                        </div>
+                        <div class="server-card-stat-block">
+                            <div class="server-card-stat-field">
+                                <span
+                                    class="server-card-stat-field-label">RAM</span>
+                                <span>{{.Info.TotalRAM}}</span>
+                            </div>
+                            <div class="server-card-stat-field">
+                                <span
+                                    class="server-card-stat-field-label">Disk</span>
+                                <span>-</span>
+                            </div>
+                        </div>
+                        <div class="server-card-stat-block">
+                            <div class="server-card-stat-field">
+                                <span
+                                    class="server-card-stat-field-label">CPU</span>
+                                <span>{{.Info.CPUCount}} Cores</span>
+                            </div>
+                            <div class="server-card-stat-field">
+                                <span
+                                    class="server-card-stat-field-label">Uptime</span>
+                                <span>{{.Stats.Uptime}}</span>
+                            </div>
+                        </div>
+                        <div class="server-card-progress-block">
+                            <span
+                                class="server-card-stat-field-label">CPU</span>
+                            <div class="progress-bar">
+                                <div class="progress-bar-fill"
+                                    style="width: {{.Stats.CPU}};">{{.Stats.CPU}}</div>
+                            </div>
+                        </div>
+                        <div class="server-card-progress-block">
+                            <span
+                                class="server-card-stat-field-label">RAM</span>
+                            <div class="progress-bar">
+                                <div class="progress-bar-fill"
+                                    style="width: {{.Stats.RAM}};">{{.Stats.RAM}}</div>
+                            </div>
+                        </div>
+                        <div class="server-card-progress-block">
+                            <span
+                                class="server-card-stat-field-label">Disk</span>
+                            <div class="progress-bar">
+                                <div class="progress-bar-fill"
+                                    style="width: 0%;">0 %</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {{ end }}
+                {{ else }}
                 <h1>No servers registered yet!</h1>
                 <p>This page will update automatically when node servers join
                     the server node.
                 </p>
                 <img src="static/svg/loading-64.svg"
                     alt="Loading indicator. Circle with animation." />
+                {{ end }}
             </section>
         </main>
     </body>
 </html>
+{{end}}
