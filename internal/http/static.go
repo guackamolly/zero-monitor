@@ -1,8 +1,6 @@
 package http
 
 import (
-	"os"
-
 	"github.com/labstack/echo/v4"
 )
 
@@ -11,7 +9,9 @@ const (
 )
 
 var (
-	serverPublicRoot = os.Getenv(serverPublicRootEnvKey)
+	serverPublicRoot = GetEnv(serverPublicRootEnvKey, func() string {
+		return "public/"
+	})
 
 	files = map[string]string{
 		WithVirtualHost("/index.html"):    serverPublicRoot + "index.html",
