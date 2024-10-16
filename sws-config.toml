@@ -1,0 +1,6 @@
+[general]
+
+root="./public"
+port=8080
+
+cache-control-headers = false

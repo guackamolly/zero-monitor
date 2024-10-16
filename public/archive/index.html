@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Instagram Archiver - @{{.Username}}</title>
+        <base href="/">
+        <meta charset='utf-8'>
+        <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+        <meta name='viewport' content='width=device-width, initial-scale=1'>
+
+        <meta name="title" content="Instagram Archiver - @{{.Username}}">
+        <meta name="description"
+            content="{{.Description}} | Archived Stories:{{ .ArchivedStoriesCount}} |  Last (24h) Stories:{{len .LastStories}}">
+
+        <!-- Facebook Meta Tags -->
+        <meta property="og:url" content>
+        <meta property="og:type" content="website">
+        <meta property="og:title" content="Instagram Archiver - @{{.Username}}">
+        <meta property="og:description"
+            content="{{.Description}} | Archived Stories:{{ .ArchivedStoriesCount}} |  Last (24h) Stories:{{len .LastStories}}">
+        <meta property="og:image"
+            content="https://guackamollyapps.com/insta-archiver/static/icon-192.png">
+
+        <!-- Twitter Meta Tags -->
+        <meta name="twitter:card" content="summary_large_image">
+        <meta property="twitter:domain" content="guackamollyapps.com">
+        <meta property="twitter:url" content>
+        <meta name="twitter:title"
+            content="Instagram Archiver - @{{.Username}}">
+        <meta name="twitter:description"
+            content="{{.Description}} | Archived Stories:{{ .ArchivedStoriesCount}} |  Last (24h) Stories:{{len .LastStories}}">
+        <meta name="twitter:image"
+            content="https://guackamollyapps.com/insta-archiver/static/icon-192.png">
+
+        <link rel="icon" href="static/favicon.ico" sizes="any">
+        <link rel="apple-touch-icon" href="static/apple-touch-icon.png">
+        <link rel='stylesheet' type='text/css' media='screen' href='index.css'>
+    </head>
+
+    <body>
+        <header>
+            <div class="logo">
+                <a class="logo-top" href="/">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32"
+                        height="32"
+                        fill="#000000"
+                        viewBox="0 0 256 256">
+                        <a xlink:href target="_top">
+                            <path
+                                d="M128,80a48,48,0,1,0,48,48A48.05,48.05,0,0,0,128,80Zm0,80a32,32,0,1,1,32-32A32,32,0,0,1,128,160ZM176,24H80A56.06,56.06,0,0,0,24,80v96a56.06,56.06,0,0,0,56,56h96a56.06,56.06,0,0,0,56-56V80A56.06,56.06,0,0,0,176,24Zm40,152a40,40,0,0,1-40,40H80a40,40,0,0,1-40-40V80A40,40,0,0,1,80,40h96a40,40,0,0,1,40,40ZM192,76a12,12,0,1,1-12-12A12,12,0,0,1,192,76Z"></path>
+                        </a>
+                    </svg>
+                    <span>Instagram Archiver</span>
+                </a>
+
+                <a class="logo-text" href="https://guackamollyapps.com"
+                    target="_blank">by
+                    Guackamolly Apps</a>
+            </div>
+            <div>
+                <a href>Home</a>
+                <a href="about">About</a>
+                <a href="contact">Contact</a>
+                <a
+                    href="https://github.com/guackamolly/insta-archiver"
+                    target="_blank">Open-Source</a>
+            </div>
+        </header>
+
+        <main>
+            <div class="main-content-1">
+                <h1>Archive for @{{.Username}}</h1>
+                <section class="bio">
+                    <span class="bio-description">
+                        {{if .Description}}
+                        <p>{{.Description}}</p>
+                        {{end}}
+                        <p>
+                            Archived Stories: <b>{{ .ArchivedStoriesCount}}</b>
+                            |
+                            Last (24h) Stories: <b>{{len .LastStories}}</b>
+                        </p>
+                    </span>
+
+                    {{if gt (len .Avatar) 0}}
+                    <img class="avatar" src="{{.Avatar}}" />
+                    {{end}}
+                </section>
+
+                {{if .IsPrivate}}
+                {{if gt .ArchivedStoriesCount 0}}
+                <p>
+                    This user has set his profile as private. You can still
+                    watch all the archived stories.
+                </p>
+                {{else}}
+                <img alt="illustration of a lock"
+                    src="static/icons/lock.svg" />
+                <span>This user is private.</span>
+                {{end}}
+                {{end}}
+                {{if gt (len .LastStories) 0}}
+                <div class="divider"></div>
+                <section class="gallery">
+                    {{range $story := .LastStories}}
+                    <a href="{{$story.Media}}">
+                        <img src="{{$story.Thumbnail}}"
+                            alt="thumbnail of one of the latest stories published by user @{{$.Username}}" />
+                    </a>
+                    {{end}}
+                </section>
+                {{end}}
+
+                {{range $item := .ArchivedStories}}
+                <div class="divider"></div>
+                <h2>{{$item.Date}}</h2>
+                <div class="divider"></div>
+                <section class="gallery">
+                    {{range $story := $item.Stories}}
+                    <a href="{{$story.Media}}">
+                        <img loading="lazy" src="{{$story.Thumbnail}}"
+                            alt="thumbnail of an old story published by user @{{$.Username}}" />
+                        {{end}}
+                    </a>
+                </section>
+                {{end}}
+            </div>
+        </main>
+    </body>
+</html>
