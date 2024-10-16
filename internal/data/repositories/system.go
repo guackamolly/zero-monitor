@@ -32,13 +32,13 @@ func (r GopsUtilSystemRepository) Info() (models.Info, error) {
 		return models.Info{}, err
 	}
 
-	return models.Info{
-		CPUCount:     cc,
-		CPUArch:      os.KernelArch,
-		TotalRAM:     rs.Total,
-		OS:           os.OS,
-		Distribution: os.Platform,
-	}, nil
+	return models.NewInfo(
+		os.KernelArch,
+		cc,
+		rs.Total,
+		os.OS,
+		os.Platform,
+	), nil
 }
 
 func (r GopsUtilSystemRepository) Stats() (models.Stats, error) {
@@ -65,9 +65,9 @@ func (r GopsUtilSystemRepository) Stats() (models.Stats, error) {
 		temp = -1
 	}
 
-	return models.Stats{
-		CPU:     cp[0],
-		RAM:     rs.UsedPercent,
-		CPUTemp: temp,
-	}, nil
+	return models.NewStats(
+		cp[0],
+		rs.UsedPercent,
+		temp,
+	), nil
 }
