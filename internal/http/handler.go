@@ -1,6 +1,7 @@
 package http
 
 import (
+	"github.com/guackamolly/zero-monitor/internal/di"
 	"github.com/guackamolly/zero-monitor/internal/logging"
 	"github.com/labstack/echo/v4"
 )
@@ -10,7 +11,15 @@ func RegisterHandlers(e *echo.Echo) {
 	e.HTTPErrorHandler = httpErrorHandler()
 }
 func anyRouteHandler(ectx echo.Context) error {
-	return ectx.Render(200, "dashboard", nil)
+	return withSubscriberContainer(ectx, func(sc *di.SubscribeContainer) error {
+		view := ServerStatsView{}
+		n := sc.NodeManager.Connected()
+		for _, v := range n {
+			view.Nodes = append(view.Nodes, v)
+		}
+
+		return ectx.Render(200, "dashboard", view)
+	})
 }
 
 func httpErrorHandler() func(err error, c echo.Context) {
