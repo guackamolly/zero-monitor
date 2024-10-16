@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/go-zeromq/zmq4"
+	"github.com/guackamolly/zero-monitor/internal/logging"
 )
 
 // Wraps [zmq4.Socket] so context can be accessed for extracting dependencies.
@@ -36,6 +37,8 @@ func (s Socket) Context() context.Context {
 }
 
 func (s Socket) PublishAndForget(m msg) {
+	logging.LogInfo("publishing msg with topic: %d", m.Topic)
+
 	b, err := encode(m)
 	if err != nil {
 		log.Printf("failed to encode message, %v\n", err)
