@@ -26,8 +26,8 @@ var (
 		WithVirtualHost("/contact"): serverPublicRoot + "contact/",
 	}
 
-	templates = []string{
-		serverPublicRoot + "archive/index.html",
+	templates = map[string]string{
+		"dashboard": serverPublicRoot + "tpl/dashboard.gohtml",
 	}
 
 	errors = map[int]string{

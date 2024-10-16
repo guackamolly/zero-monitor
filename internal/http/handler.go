@@ -2,7 +2,7 @@ package http
 
 import (
 	"github.com/guackamolly/zero-monitor/internal/logging"
-	"github.com/labstack/echo"
+	"github.com/labstack/echo/v4"
 )
 
 func RegisterHandlers(e *echo.Echo) {
@@ -10,7 +10,7 @@ func RegisterHandlers(e *echo.Echo) {
 	e.HTTPErrorHandler = httpErrorHandler()
 }
 func anyRouteHandler(ectx echo.Context) error {
-	return ectx.File(root)
+	return ectx.Render(200, "dashboard", nil)
 }
 
 func httpErrorHandler() func(err error, c echo.Context) {

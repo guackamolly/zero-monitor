@@ -12,7 +12,7 @@ type Template struct {
 }
 
 func (t *Template) Render(w io.Writer, name string, data interface{}, c echo.Context) error {
-	err := t.templates.ExecuteTemplate(w, name, data)
+	err := t.templates.ExecuteTemplate(w, templates[name], data)
 
 	if err != nil {
 		c.Logger().Error(err)
@@ -22,8 +22,13 @@ func (t *Template) Render(w io.Writer, name string, data interface{}, c echo.Con
 }
 
 func RegisterTemplates(e *echo.Echo) error {
+	tps := make([]string, 0, len(templates))
+	for _, v := range templates {
+		tps = append(tps, v)
+	}
+
 	t := &Template{
-		templates: template.Must(template.ParseFiles(templates...)),
+		templates: template.Must(template.ParseFiles(tps...)),
 	}
 
 	e.Renderer = t
