@@ -8,51 +8,60 @@ import (
 
 // Service for managing nodes that report to master.
 type NodeManagerService struct {
-	stream    chan (map[string]models.Node)
-	connected map[string]models.Node
+	stream  chan ([]models.Node)
+	network []models.Node
 }
 
 func NewNodeManagerService() *NodeManagerService {
 	return &NodeManagerService{
-		stream:    make(chan map[string]models.Node),
-		connected: map[string]models.Node{},
+		stream:  make(chan []models.Node),
+		network: []models.Node{},
 	}
 }
 
 // Joins master node.
 func (s *NodeManagerService) Join(node models.Node) error {
-	id := node.ID
-	if _, ok := s.connected[id]; ok {
-		return fmt.Errorf("node %s has already joined, ignorning request", id)
+	if i := s.nodeIdx(node); i >= 0 {
+		return fmt.Errorf("node %s has already joined, ignorning request", node.ID)
 	}
 
-	s.connected[id] = node
+	s.network = append(s.network, node)
 	s.updateStream()
 	return nil
 }
 
 // Updates the state of a node.
 func (s *NodeManagerService) Update(node models.Node) error {
-	id := node.ID
-	if _, ok := s.connected[id]; !ok {
-		return fmt.Errorf("node %s hasn't joined yet, ignorning request", id)
+	var i int
+	if i = s.nodeIdx(node); i < 0 {
+		return fmt.Errorf("node %s hasn't joined yet, ignorning request", node.ID)
 	}
 
-	s.connected[id] = node
+	s.network[i] = node
 	s.updateStream()
 	return nil
 }
 
-func (s NodeManagerService) Connected() map[string]models.Node {
-	return s.connected
+func (s NodeManagerService) Network() []models.Node {
+	return s.network
 }
 
-func (s NodeManagerService) Stream() chan (map[string]models.Node) {
+func (s NodeManagerService) Stream() chan ([]models.Node) {
 	return s.stream
+}
+
+func (s NodeManagerService) nodeIdx(node models.Node) int {
+	for i, n := range s.network {
+		if n.ID == node.ID {
+			return i
+		}
+	}
+
+	return -1
 }
 
 func (s *NodeManagerService) updateStream() {
 	go func() {
-		s.stream <- s.connected
+		s.stream <- s.network
 	}()
 }
