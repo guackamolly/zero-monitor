@@ -9,8 +9,11 @@ import (
 	"syscall"
 
 	"github.com/guackamolly/zero-monitor/internal/conn"
+	"github.com/guackamolly/zero-monitor/internal/http"
+	"github.com/guackamolly/zero-monitor/internal/logging"
 	"github.com/guackamolly/zero-monitor/internal/mq"
 	"github.com/guackamolly/zero-monitor/internal/service"
+	"github.com/labstack/echo/v4"
 )
 
 func main() {
@@ -27,6 +30,10 @@ func main() {
 	uconn := initializeBeaconServer()
 	defer uconn.Close()
 
+	// 4. Initialize http server.
+	e := initializeHttpServer()
+	defer e.Close()
+
 	// 4. Await termination...
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
@@ -34,11 +41,11 @@ func main() {
 }
 
 func initializeSubServer(ctx context.Context) mq.Socket {
-	// 1. Find available TCP port.
+	// Find available TCP port.
 	tconn := findAvailableTcpPort()
 	taddr := tconn.Addr().(*net.TCPAddr)
 
-	// 2. Initialize sub server.
+	// Initialize sub server.
 	tconn.Close()
 
 	s := mq.NewSubSocket(ctx)
@@ -54,14 +61,37 @@ func initializeSubServer(ctx context.Context) mq.Socket {
 }
 
 func initializeBeaconServer() *net.UDPConn {
-	// 1. Find available UDP ports.
+	// Find available UDP ports.
 	uconn := findAvailableUdpPort()
 
-	// 2. Initialize beacon server.
+	// Initialize beacon server.
 	conn.StartBeaconServer(uconn)
 	log.Printf("started udp beacon server on addr: %s\n", uconn.LocalAddr())
 
 	return uconn
+}
+
+func initializeHttpServer() *echo.Echo {
+	// Initialize echo framework.
+	e := echo.New()
+
+	// Initialize logging.
+	logging.AddLogger(logging.NewConsoleLogger())
+	logging.AddLogger(logging.NewEchoLogger(e.Logger))
+
+	// Register server dependencies.
+	http.RegisterHandlers(e)
+	http.RegisterMiddlewares(e)
+	http.RegisterStaticFiles(e)
+	http.RegisterTemplates(e)
+	http.RegisterLiveView(e)
+
+	// Start server.
+	go func() {
+		logging.LogFatal("server exit %v", http.Start(e))
+	}()
+
+	return e
 }
 
 func findAvailableTcpPort() *net.TCPListener {
