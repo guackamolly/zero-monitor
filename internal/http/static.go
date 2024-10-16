@@ -27,7 +27,7 @@ var (
 	}
 
 	templates = map[string]string{
-		"dashboard": serverPublicRoot + "tpl/dashboard.gohtml",
+		"dashboard": serverPublicRoot + "tpl/dashboard/*",
 	}
 
 	errors = map[int]string{
