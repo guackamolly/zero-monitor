@@ -36,6 +36,7 @@ func (r GopsUtilSystemRepository) Info() (models.Info, error) {
 		os.KernelArch,
 		cc,
 		rs.Total,
+		os.Hostname,
 		os.OS,
 		os.Platform,
 	), nil
@@ -65,9 +66,15 @@ func (r GopsUtilSystemRepository) Stats() (models.Stats, error) {
 		temp = -1
 	}
 
+	uptime, err := host.Uptime()
+	if err != nil {
+		uptime = 0
+	}
+
 	return models.NewStats(
 		cp[0],
 		rs.UsedPercent,
 		temp,
+		uptime,
 	), nil
 }

@@ -2,16 +2,20 @@ package models
 
 import (
 	"fmt"
+	"time"
 )
 
-const kb = 1024
-const mb = kb * kb
-const gb = mb * kb
-const tb = gb * kb
+const (
+	kb = 1024
+	mb = kb * kb
+	gb = mb * kb
+	tb = gb * kb
+)
 
 type Percent float64
 type Celsius float64
 type Memory uint64
+type Duration time.Duration
 
 func (v Percent) String() string {
 	return fmt.Sprintf("%0.2f%%", v)
@@ -39,4 +43,8 @@ func (v Memory) String() string {
 	}
 
 	return fmt.Sprintf("%d TB", v/tb)
+}
+
+func (v Duration) String() string {
+	return fmt.Sprint(time.Duration(v))
 }
