@@ -14,6 +14,8 @@ import (
 	"github.com/guackamolly/zero-monitor/internal/mq"
 	"github.com/guackamolly/zero-monitor/internal/service"
 	"github.com/labstack/echo/v4"
+
+	_ "github.com/joho/godotenv/autoload"
 )
 
 func main() {
