@@ -242,6 +242,10 @@ span {
     font-size: smaller;
 }
 
+.badge.offline {
+    background-color: var(--redish);
+}
+
 .server-card {
     width: 400px;
     border-radius: 8px;

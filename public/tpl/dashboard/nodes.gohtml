@@ -3,7 +3,11 @@
 {{ range .Nodes }}
 <div class="server-card">
     <div class="server-card-header">
+        {{ if .Online }}
         <div class="badge">Online</div>
+        {{else}}
+        <div class="badge offline">Offline</div>
+        {{ end }}
         <span><b>{{.Info.Hostname}}</b></span>
         🇵🇹
     </div>
