@@ -5,6 +5,7 @@ go 1.23.1
 require (
 	github.com/denisbrodbeck/machineid v1.0.1
 	github.com/go-zeromq/zmq4 v0.17.0
+	github.com/gorilla/websocket v1.5.3
 	github.com/joho/godotenv v1.5.1
 	github.com/labstack/echo/v4 v4.12.0
 	github.com/shirou/gopsutil v3.21.11+incompatible
@@ -13,7 +14,6 @@ require (
 require (
 	github.com/go-ole/go-ole v1.2.6 // indirect
 	github.com/go-zeromq/goczmq/v4 v4.2.2 // indirect
-	github.com/gorilla/websocket v1.5.3 // indirect
 	github.com/labstack/gommon v0.4.2 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
