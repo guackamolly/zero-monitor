@@ -8,11 +8,13 @@ import (
 
 // Service for managing nodes that report to master.
 type NodeManagerService struct {
+	stream    chan (map[string]models.Node)
 	connected map[string]models.Node
 }
 
 func NewNodeManagerService() *NodeManagerService {
 	return &NodeManagerService{
+		stream:    make(chan map[string]models.Node),
 		connected: map[string]models.Node{},
 	}
 }
@@ -25,6 +27,7 @@ func (s *NodeManagerService) Join(node models.Node) error {
 	}
 
 	s.connected[id] = node
+	s.updateStream()
 	return nil
 }
 
@@ -37,4 +40,18 @@ func (s *NodeManagerService) Update(node models.Node) error {
 
 	s.connected[id] = node
 	return nil
+}
+
+func (s NodeManagerService) Connected() map[string]models.Node {
+	return s.connected
+}
+
+func (s NodeManagerService) Stream() chan (map[string]models.Node) {
+	return s.stream
+}
+
+func (s *NodeManagerService) updateStream() {
+	go func() {
+		s.stream <- s.connected
+	}()
 }
