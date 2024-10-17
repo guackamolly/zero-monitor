@@ -18,6 +18,10 @@ type Memory uint64
 type Duration time.Duration
 
 func (v Percent) String() string {
+	if v < 0 {
+		return "-"
+	}
+
 	return fmt.Sprintf("%0.2f%%", v)
 }
 
