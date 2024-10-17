@@ -33,6 +33,10 @@ func websocketHandler(ectx echo.Context) error {
 
 		s := sc.NodeManager.Stream()
 		for cn := range s {
+			if ws.IsClosed() {
+				break
+			}
+
 			view := NewServerStatsView(cn)
 			err = ws.WriteTemplate(ectx, "dashboard/nodes", view)
 			if err != nil {

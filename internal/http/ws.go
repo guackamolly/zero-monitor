@@ -16,6 +16,25 @@ type wsUpgrader struct {
 // Wraps gorilla [websocket.Conn] to offer new methods.
 type wsConn struct {
 	*websocket.Conn
+	closed bool
+}
+
+func NewWsConn(conn *websocket.Conn) *wsConn {
+	wsConn := &wsConn{
+		Conn: conn,
+	}
+
+	go func() {
+		for {
+			_, _, err := conn.NextReader()
+			if err != nil {
+				wsConn.closed = true
+				break
+			}
+		}
+	}()
+
+	return wsConn
 }
 
 var upgrader = wsUpgrader{}
@@ -26,9 +45,7 @@ func (u *wsUpgrader) Upgrade(w http.ResponseWriter, r *http.Request, responseHea
 		return nil, err
 	}
 
-	return &wsConn{
-		Conn: conn,
-	}, nil
+	return NewWsConn(conn), nil
 }
 
 // Checks if a client wants to upgrade to websocket connection via the "Upgrade" header.
@@ -54,4 +71,8 @@ func (ws wsConn) WriteTemplate(ectx echo.Context, tpl string, v any) error {
 	}
 
 	return ws.WriteMessage(websocket.TextMessage, buf.Bytes())
+}
+
+func (ws wsConn) IsClosed() bool {
+	return ws.closed
 }
