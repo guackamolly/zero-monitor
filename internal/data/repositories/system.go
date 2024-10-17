@@ -5,6 +5,7 @@ import (
 
 	"github.com/guackamolly/zero-monitor/internal/data/models"
 	"github.com/shirou/gopsutil/cpu"
+	"github.com/shirou/gopsutil/disk"
 	"github.com/shirou/gopsutil/host"
 	"github.com/shirou/gopsutil/mem"
 )
@@ -27,6 +28,11 @@ func (r GopsUtilSystemRepository) Info() (models.Info, error) {
 		return models.Info{}, err
 	}
 
+	dsk, err := disk.Usage("/")
+	if err != nil {
+		return models.Info{}, err
+	}
+
 	os, err := host.Info()
 	if err != nil {
 		return models.Info{}, err
@@ -36,6 +42,7 @@ func (r GopsUtilSystemRepository) Info() (models.Info, error) {
 		os.KernelArch,
 		cc,
 		rs.Total,
+		dsk.Total,
 		os.Hostname,
 		os.OS,
 		os.Platform,
@@ -49,6 +56,11 @@ func (r GopsUtilSystemRepository) Stats() (models.Stats, error) {
 	}
 
 	rs, err := mem.VirtualMemory()
+	if err != nil {
+		return models.Stats{}, err
+	}
+
+	disk, err := disk.Usage("/")
 	if err != nil {
 		return models.Stats{}, err
 	}
@@ -74,6 +86,7 @@ func (r GopsUtilSystemRepository) Stats() (models.Stats, error) {
 	return models.NewStats(
 		cp[0],
 		rs.UsedPercent,
+		disk.UsedPercent,
 		temp,
 		uptime,
 	), nil
