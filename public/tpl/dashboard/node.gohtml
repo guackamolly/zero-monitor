@@ -1,0 +1,75 @@
+{{ define "node" }}
+<div class="server-card">
+    <div class="server-card-header">
+        {{ if .Online }}
+        <div class="badge">Online</div>
+        {{else}}
+        <div class="badge offline">Offline</div>
+        {{ end }}
+        <span><b>{{.Info.Hostname}}</b></span>
+        🇵🇹
+    </div>
+    <div class="server-card-body">
+        <div class="server-card-stat-block">
+            <div class="server-card-stat-field">
+                <span
+                    class="server-card-stat-field-label">OS</span>
+                <span>{{.Info.OS}}</span>
+            </div>
+            <div class="server-card-stat-field">
+                <span
+                    class="server-card-stat-field-label">Hardware</span>
+                <span>{{.Info.Distribution}}</span>
+            </div>
+        </div>
+        <div class="server-card-stat-block">
+            <div class="server-card-stat-field">
+                <span
+                    class="server-card-stat-field-label">RAM</span>
+                <span>{{.Info.TotalRAM}}</span>
+            </div>
+            <div class="server-card-stat-field">
+                <span
+                    class="server-card-stat-field-label">Disk</span>
+                <span>{{.Info.TotalDisk}}</span>
+            </div>
+        </div>
+        <div class="server-card-stat-block">
+            <div class="server-card-stat-field">
+                <span
+                    class="server-card-stat-field-label">CPU</span>
+                <span>{{.Info.CPUCount}} Cores</span>
+            </div>
+            <div class="server-card-stat-field">
+                <span
+                    class="server-card-stat-field-label">Uptime</span>
+                <span>{{.Stats.Uptime}}</span>
+            </div>
+        </div>
+        <div class="server-card-progress-block">
+            <span
+                class="server-card-stat-field-label">CPU</span>
+            <div class="progress-bar">
+                <div class="progress-bar-fill"
+                    style="width: {{.Stats.CPU}};">{{.Stats.CPU}}</div>
+            </div>
+        </div>
+        <div class="server-card-progress-block">
+            <span
+                class="server-card-stat-field-label">RAM</span>
+            <div class="progress-bar">
+                <div class="progress-bar-fill"
+                    style="width: {{.Stats.RAM}};">{{.Stats.RAM}}</div>
+            </div>
+        </div>
+        <div class="server-card-progress-block">
+            <span
+                class="server-card-stat-field-label">Disk</span>
+            <div class="progress-bar">
+                <div class="progress-bar-fill"
+                    style="width: {{.Stats.Disk}};">{{.Stats.Disk}}</div>
+            </div>
+        </div>
+    </div>
+</div>
+{{ end }}
