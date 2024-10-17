@@ -53,7 +53,7 @@ span {
     flex-direction: column;
     align-items: center;
     gap: 16px;
-    width: 60%;
+    width: fit-content;
 }
 
 .main-content-2 {
@@ -152,57 +152,6 @@ span {
     max-width: 100%;
 }
 
-
-@media screen and (max-width: 1366px) {
-    main {
-        margin-left: 0;
-        margin-right: 0;
-    }
-
-    .main-content-1 {
-        width: 80%;
-    }
-
-    input {
-        width: 80%;
-    }
-}
-
-@media screen and (max-width: 860px) {
-    .bio>img {
-        display: none;
-    }
-
-    .card {
-        width: 100%;
-    }
-
-    .gallery {
-        gap: 1%;
-    }
-
-    .gallery>a {
-        width: 49%;
-    }
-}
-
-@media screen and (max-width: 560px) {
-    header {
-        flex-direction: column;
-    }
-
-
-    .gallery {
-        flex-direction: column;
-        flex-wrap: nowrap;
-        gap: 0;
-    }
-
-    .gallery>a {
-        width: 100%;
-    }
-}
-
 .logo {
     display: flex;
     flex-direction: column;
@@ -244,6 +193,14 @@ span {
 
 .badge.offline {
     background-color: var(--redish);
+}
+
+.server-nodes {
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+    justify-content: center;
+    gap: 1%;
 }
 
 .server-card {
@@ -319,4 +276,46 @@ span {
     white-space: nowrap;
     border-radius: 5px;
     text-indent: 8px;
+}
+
+@media screen and (max-width: 1440px) {
+    main {
+        margin-left: 0;
+        margin-right: 0;
+    }
+}
+
+@media screen and (max-width: 860px) {
+    .bio>img {
+        display: none;
+    }
+
+    .card {
+        width: 100%;
+    }
+
+    .gallery {
+        gap: 1%;
+    }
+
+    .gallery>a {
+        width: 49%;
+    }
+}
+
+@media screen and (max-width: 560px) {
+    header {
+        flex-direction: column;
+    }
+
+
+    .gallery {
+        flex-direction: column;
+        flex-wrap: nowrap;
+        gap: 0;
+    }
+
+    .gallery>a {
+        width: 100%;
+    }
 }
