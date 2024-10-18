@@ -28,10 +28,13 @@ func NewNodeManagerService(nodes ...models.Node) *NodeManagerService {
 
 	go func() {
 		for {
-			time.Sleep(offlineTimeout)
 			t := time.Now()
 			for _, n := range s.network {
 				if n.LastSeen.Sub(t).Abs() < offlineTimeout {
+					continue
+				}
+
+				if !n.Online {
 					continue
 				}
 
@@ -40,6 +43,8 @@ func NewNodeManagerService(nodes ...models.Node) *NodeManagerService {
 					logging.LogError("very strange error when notifying network that node is offline, %v", err)
 				}
 			}
+
+			time.Sleep(offlineTimeout)
 		}
 	}()
 
