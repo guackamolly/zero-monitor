@@ -148,7 +148,11 @@ func createSubscribeContainer(cfg config.Config) di.SubscribeContainer {
 		i++
 	}
 
+	nms := service.NewNodeManagerService(ns...)
+	nss := service.NewNodeSchedulerService(&cfg, nms.Stream)
+
 	return di.SubscribeContainer{
-		NodeManager: service.NewNodeManagerService(ns...),
+		NodeManager:   nms,
+		NodeScheduler: nss,
 	}
 }
