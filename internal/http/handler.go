@@ -1,6 +1,8 @@
 package http
 
 import (
+	"fmt"
+
 	"github.com/guackamolly/zero-monitor/internal/di"
 	"github.com/guackamolly/zero-monitor/internal/logging"
 	"github.com/labstack/echo/v4"
@@ -8,10 +10,15 @@ import (
 
 func RegisterHandlers(e *echo.Echo) {
 	e.GET(rootRoute, rootHandler)
+	e.GET(networkRoute, networkHandler)
 	e.HTTPErrorHandler = httpErrorHandler()
 }
 
 func rootHandler(ectx echo.Context) error {
+	return fmt.Errorf("not implemented yet")
+}
+
+func networkHandler(ectx echo.Context) error {
 	if upgrader.WantsToUpgrade(*ectx.Request()) {
 		return websocketHandler(ectx)
 	}
@@ -19,7 +26,7 @@ func rootHandler(ectx echo.Context) error {
 	return withSubscriberContainer(ectx, func(sc *di.SubscribeContainer) error {
 		view := NewServerStatsView(sc.NodeManager.Network())
 
-		return ectx.Render(200, "dashboard", view)
+		return ectx.Render(200, "network", view)
 	})
 }
 
@@ -38,7 +45,7 @@ func websocketHandler(ectx echo.Context) error {
 			}
 
 			view := NewServerStatsView(cn)
-			err = ws.WriteTemplate(ectx, "dashboard/nodes", view)
+			err = ws.WriteTemplate(ectx, "network/nodes", view)
 			if err != nil {
 				logging.LogError("failed to write template in ws %v, %v", ws, err)
 				continue
