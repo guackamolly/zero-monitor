@@ -18,10 +18,12 @@ type NodeManagerService struct {
 	network []models.Node
 }
 
-func NewNodeManagerService() *NodeManagerService {
+// Creates a service for managing network nodes. Allows passing
+// previously saved nodes as varadiac param.
+func NewNodeManagerService(nodes ...models.Node) *NodeManagerService {
 	s := &NodeManagerService{
 		stream:  make(chan []models.Node),
-		network: []models.Node{},
+		network: []models.Node(nodes),
 	}
 
 	go func() {

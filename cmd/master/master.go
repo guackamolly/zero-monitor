@@ -8,7 +8,9 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/guackamolly/zero-monitor/internal/config"
 	"github.com/guackamolly/zero-monitor/internal/conn"
+	"github.com/guackamolly/zero-monitor/internal/data/models"
 	"github.com/guackamolly/zero-monitor/internal/di"
 	"github.com/guackamolly/zero-monitor/internal/http"
 	"github.com/guackamolly/zero-monitor/internal/logging"
@@ -20,27 +22,49 @@ import (
 )
 
 func main() {
-	// 1. Initialize DI.
-	sc := createSubscribeContainer()
+	// 1. Load config
+	cfg := loadConfig()
+
+	// 2. Initialize DI.
+	sc := createSubscribeContainer(cfg)
 	ctx := context.Background()
 	ctx = di.InjectSubscribeContainer(ctx, sc)
 
-	// 2. Initialize sub server.
+	// 3. Initialize sub server.
 	s := initializeSubServer(ctx)
 	defer s.Close()
 
-	// 3. Initialize beacon server.
+	// 4. Initialize beacon server.
 	uconn := initializeBeaconServer()
 	defer uconn.Close()
 
-	// 4. Initialize http server.
+	// 5. Initialize http server.
 	e := initializeHttpServer(ctx)
 	defer e.Close()
 
-	// 4. Await termination...
+	// 6. Await termination...
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
 	<-c
+
+	// 7. Try to save config
+	saveConfig(cfg)
+}
+
+func loadConfig() config.Config {
+	cfg, err := config.Load()
+	if err != nil {
+		log.Printf("failed to load config, %v", err)
+	}
+
+	return cfg
+}
+
+func saveConfig(cfg config.Config) {
+	err := config.Save(cfg)
+	if err != nil {
+		log.Printf("failed to save config, %v", err)
+	}
 }
 
 func initializeSubServer(ctx context.Context) mq.Socket {
@@ -116,8 +140,15 @@ func findAvailableUdpPort() *net.UDPConn {
 	return uconn
 }
 
-func createSubscribeContainer() di.SubscribeContainer {
+func createSubscribeContainer(cfg config.Config) di.SubscribeContainer {
+	ns := make([]models.Node, len(cfg.TrustedNetwork))
+	i := 0
+	for _, n := range cfg.TrustedNetwork {
+		ns[i] = n
+		i++
+	}
+
 	return di.SubscribeContainer{
-		NodeManager: service.NewNodeManagerService(),
+		NodeManager: service.NewNodeManagerService(ns...),
 	}
 }
