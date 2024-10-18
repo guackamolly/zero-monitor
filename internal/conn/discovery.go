@@ -142,10 +142,10 @@ func broadcastProbeBeacon(port uint16) (Connection, error) {
 	}
 	defer conn.Close()
 
-	// set 2 sec timeout until the connection is closed
+	// set 10 sec timeout until the connection is closed
 	// since these beacon messages are only sent on the local network,
-	// then 2 seconds is more than enough more the master node to answer
-	err = conn.SetDeadline(time.Now().Add(2 * time.Second))
+	// then 10 seconds is more than enough more the master node to answer
+	err = conn.SetDeadline(time.Now().Add(10 * time.Second))
 	if err != nil {
 		return Connection{}, err
 	}
