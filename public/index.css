@@ -53,7 +53,7 @@ span {
     flex-direction: column;
     align-items: center;
     gap: 16px;
-    width: fit-content;
+    width: 100%;
 }
 
 .main-content-2 {
