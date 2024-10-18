@@ -48,6 +48,45 @@ span {
     margin: 0;
 }
 
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+}
+
+fieldset {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+legend {
+    font-weight: bold;
+}
+
+fieldset.actions {
+    display: flex;
+    flex-direction: row;
+    justify-content: start;
+    padding: 0;
+    margin: 0;
+    border: none;
+}
+
+button {
+    font-family: inherit;
+    text-align: center;
+    width: fit-content;
+    padding: 4px 8px 4px 8px;
+}
+
+.group {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
 .main-content-1 {
     display: flex;
     flex-direction: column;
@@ -172,6 +211,41 @@ span {
     color: var(--redish);
     text-decoration: none;
     margin-bottom: 8px;
+}
+
+/* Tooltips original source: https://www.w3schools.com/css/css_tooltip.asp */
+.tooltip {
+    position: relative;
+    display: inline-block;
+}
+
+.tooltip .tooltip-text {
+    visibility: hidden;
+    background-color: gray;
+    text-align: center;
+    border: 2px;
+    border-radius: 4px;
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    margin-left: -50%;
+    z-index: 1;
+}
+
+.tooltip:hover .tooltip-text {
+
+    visibility: visible;
+}
+
+.tooltip .tooltip-text::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: gray transparent transparent transparent;
 }
 
 .youtube-video>img {
@@ -308,6 +382,9 @@ span {
         flex-direction: column;
     }
 
+    fieldset.actions {
+        justify-content: center;
+    }
 
     .gallery {
         flex-direction: column;
