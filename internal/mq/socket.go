@@ -27,7 +27,7 @@ func NewSubSocket(ctx context.Context) Socket {
 // The context must contain all the dependencies required by the socket.
 func NewPubSocket(ctx context.Context) Socket {
 	return Socket{
-		Socket: zmq4.NewReq(ctx),
+		Socket: zmq4.NewReq(ctx, zmq4.WithAutomaticReconnect(true)),
 		ctx:    ctx,
 	}
 }
