@@ -9,15 +9,35 @@ import (
 	"github.com/guackamolly/zero-monitor/internal/data/models"
 )
 
+type configurableValue struct {
+	Value   int
+	Default int
+	Min     int
+	Max     int
+}
+
 type Config struct {
-	TrustedNetwork map[string]models.Node
+	TrustedNetwork      map[string]models.Node
+	NodeStatsPolling    configurableValue
+	NodeLastSeenTimeout configurableValue
+	AutoSavePeriod      configurableValue
+}
+
+func (c *Config) UpdateConfigurableValues(
+	nodeStatsPolling int,
+	nodeLastSeenTimeout int,
+	autoSavePeriod int,
+) {
+	c.NodeStatsPolling.Value = nodeStatsPolling
+	c.NodeLastSeenTimeout.Value = nodeLastSeenTimeout
+	c.AutoSavePeriod.Value = autoSavePeriod
 }
 
 // Loads a previously saved configuration file from user config directory.
 // It uses [os.UserConfigDir] as the base directory and saves the config file
 // under zero-monitor/config.json.
 func Load() (Config, error) {
-	cfg := Config{TrustedNetwork: map[string]models.Node{}}
+	cfg := defaultConfig()
 
 	p, err := configJsonPath()
 	if err != nil {
@@ -64,4 +84,28 @@ func configJsonPath() (string, error) {
 	}
 
 	return p, nil
+}
+
+func defaultConfig() Config {
+	return Config{
+		TrustedNetwork: map[string]models.Node{},
+		NodeStatsPolling: configurableValue{
+			Value:   5,
+			Default: 5,
+			Min:     1,
+			Max:     60 * 10,
+		},
+		NodeLastSeenTimeout: configurableValue{
+			Value:   10,
+			Default: 10,
+			Min:     5,
+			Max:     60 * 10,
+		},
+		AutoSavePeriod: configurableValue{
+			Value:   600,
+			Default: 600,
+			Min:     60,
+			Max:     600 * 6 * 24,
+		},
+	}
 }
