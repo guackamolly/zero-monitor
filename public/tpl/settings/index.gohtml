@@ -1,3 +1,4 @@
+{{ define "settings" }}
 <!DOCTYPE html>
 <html>
     <head>
@@ -48,10 +49,10 @@
                     Guackamolly Apps</a>
             </div>
 
-            <div>
+            <nav>
                 <a href="dashboard">Dashboard</a>
                 <a href="network">Network</a>
-            </div>
+            </nav>
         </header>
 
         <main>
@@ -63,59 +64,22 @@
                 reset button will reset the configuration values to their
                 original state.
             </p>
-            <div class="divider"></div>
+            {{ if .Error }}
+            <p><b>Server says:</b> {{.Error}}</p>
+            {{ end }}
+            <div class="divider" />
             <section class="main-content-1">
                 <form method="post">
                     <section class="group">
+                        {{ range $name, $fields := .Form.Groups }}
                         <fieldset>
-                            <legend>Configuration</legend>
-                            <label>
-                                <span class="tooltip">
-                                    Save Timeout (seconds)
-                                    <span class="tooltip-text">
-                                        Duration to sleep before auto-saving the
-                                        network on the server configuration
-                                        directory.
-                                    </span>
-                                </span>
-                                <input name="stats-polling" type="number"
-                                    placeholder="600" value="600" />
-                            </label>
+                            <legend>{{$name}}</legend>
+                            {{ range $fields }}
+                            {{ template "form-field" . }}
+                            {{ end }}
                         </fieldset>
-
-                        <fieldset>
-                            <legend>Network</legend>
-                            <label>
-                                <span class="tooltip">
-                                    Stats Polling (seconds)
-                                    <span class="tooltip-text">
-                                        Period nodes must wait until fetching
-                                        system
-                                        statistics.
-                                    </span>
-                                </span>
-
-                                <input name="stats-polling" min="1"
-                                    type="number"
-                                    placeholder="10" value="10" />
-                            </label>
-
-                            <label>
-                                <span class="tooltip">
-                                    Missing node (seconds)
-                                    <span class="tooltip-text">
-                                        Maximum duration that a node can go
-                                        missing
-                                        before reporting back to master node.
-                                    </span>
-                                </span>
-                                <input name="stats-polling" min="3"
-                                    type="number"
-                                    placeholder="10" value="10" />
-                            </label>
-                        </fieldset>
+                        {{ end }}
                     </section>
-
                     <fieldset class="actions">
                         <button>Save</button>
                     </fieldset>
@@ -124,3 +88,4 @@
         </main>
     </body>
 </html>
+{{ end }}

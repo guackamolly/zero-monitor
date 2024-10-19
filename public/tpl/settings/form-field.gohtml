@@ -1,0 +1,16 @@
+{{ define "form-field" }}
+<label>
+    <span class="tooltip">
+        {{.Label}}
+        <span class="tooltip-text">{{.Tooltip}}</span>
+    </span>
+    <input id="{{.ID}}" name="{{.ID}}"
+        type="{{.Type}}"
+        placeholder="{{.Default}}"
+        value="{{.Value}}"
+        {{ if .Min }}
+        min="{{.Min}}"
+        max="{{.Max}}"
+        {{ end }} />
+</label>
+{{ end }}

@@ -27,7 +27,8 @@ var (
 	}
 
 	templates = map[string]string{
-		"network": serverPublicRoot + "tpl/network/*",
+		"network":  serverPublicRoot + "tpl/network/*",
+		"settings": serverPublicRoot + "tpl/settings/*",
 	}
 
 	errors = map[int]string{
