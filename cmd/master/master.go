@@ -150,9 +150,11 @@ func createSubscribeContainer(cfg config.Config) di.SubscribeContainer {
 
 	nms := service.NewNodeManagerService(ns...)
 	nss := service.NewNodeSchedulerService(&cfg, nms.Stream)
+	mcs := service.NewMasterConfigurationService(&cfg)
 
 	return di.SubscribeContainer{
-		NodeManager:   nms,
-		NodeScheduler: nss,
+		NodeManager:         nms,
+		NodeScheduler:       nss,
+		MasterConfiguration: mcs,
 	}
 }
