@@ -2,6 +2,7 @@ package service
 
 import (
 	"github.com/guackamolly/zero-monitor/internal/config"
+	"github.com/guackamolly/zero-monitor/internal/data/models"
 	"github.com/guackamolly/zero-monitor/internal/logging"
 )
 
@@ -20,6 +21,15 @@ func NewMasterConfigurationService(
 
 func (s MasterConfigurationService) Current() config.Config {
 	return *s.cfg
+}
+
+// Updates the trusted network present in the current configuration instance.
+func (s MasterConfigurationService) UpdateTrustedNetwork(
+	nodes []models.Node,
+) {
+	for _, n := range nodes {
+		s.cfg.TrustedNetwork[n.ID] = n
+	}
 }
 
 // Updates all configurable values present in the current configuration instance.

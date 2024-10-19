@@ -48,7 +48,7 @@ func main() {
 	<-c
 
 	// 7. Try to save config
-	saveConfig(cfg)
+	saveConfig(sc.MasterConfiguration)
 }
 
 func loadConfig() config.Config {
@@ -60,8 +60,8 @@ func loadConfig() config.Config {
 	return cfg
 }
 
-func saveConfig(cfg config.Config) {
-	err := config.Save(cfg)
+func saveConfig(s *service.MasterConfigurationService) {
+	err := s.Save()
 	if err != nil {
 		log.Printf("failed to save config, %v", err)
 	}
@@ -148,9 +148,9 @@ func createSubscribeContainer(cfg config.Config) di.SubscribeContainer {
 		i++
 	}
 
-	nms := service.NewNodeManagerService(ns...)
-	nss := service.NewNodeSchedulerService(&cfg, nms.Stream)
 	mcs := service.NewMasterConfigurationService(&cfg)
+	nms := service.NewNodeManagerService(ns...)
+	nss := service.NewNodeSchedulerService(mcs.Save, mcs.UpdateTrustedNetwork, nms.Stream)
 
 	return di.SubscribeContainer{
 		NodeManager:         nms,
