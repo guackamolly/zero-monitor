@@ -33,7 +33,7 @@
         <link rel='stylesheet' type='text/css' media='screen' href='index.css'>
         <link rel='stylesheet' type='text/css' media='print' href='index.css'>
         <script>
-            const socket = new WebSocket(`ws://${window.location.host}`);
+            const socket = new WebSocket(`ws://${window.location.host}${window.location.pathname}`);
             socket.onopen = () => {
                 console.log('WebSocket connection opened');
             };
