@@ -7,6 +7,11 @@ type ServerStatsView struct {
 	Offline []models.Node
 }
 
+type SettingsView struct {
+	Form  FormView
+	Error error
+}
+
 func NewServerStatsView(
 	nodes []models.Node,
 ) ServerStatsView {
@@ -23,5 +28,15 @@ func NewServerStatsView(
 	return ServerStatsView{
 		Online:  on,
 		Offline: off,
+	}
+}
+
+func NewSettingsView(
+	form FormView,
+	error error,
+) SettingsView {
+	return SettingsView{
+		Form:  form,
+		Error: error,
 	}
 }
