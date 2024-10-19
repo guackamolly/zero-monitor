@@ -15,8 +15,9 @@ const (
 
 // Container for all dependencies required in a subscription context.
 type SubscribeContainer struct {
-	NodeManager   *service.NodeManagerService
-	NodeScheduler *service.NodeSchedulerService
+	NodeManager         *service.NodeManagerService
+	NodeScheduler       *service.NodeSchedulerService
+	MasterConfiguration *service.MasterConfigurationService
 }
 
 // Container for all dependencies required in a publish context.
