@@ -11,6 +11,9 @@ import (
 func RegisterHandlers(e *echo.Echo) {
 	e.GET(rootRoute, rootHandler)
 	e.GET(networkRoute, networkHandler)
+	e.GET(settingsRoute, getSettingsHandler)
+	e.POST(settingsRoute, updateSettingsHandler)
+
 	e.HTTPErrorHandler = httpErrorHandler()
 }
 
@@ -20,7 +23,7 @@ func rootHandler(ectx echo.Context) error {
 
 func networkHandler(ectx echo.Context) error {
 	if upgrader.WantsToUpgrade(*ectx.Request()) {
-		return websocketHandler(ectx)
+		return networkWebsocketHandler(ectx)
 	}
 
 	return withSubscriberContainer(ectx, func(sc *di.SubscribeContainer) error {
@@ -30,7 +33,7 @@ func networkHandler(ectx echo.Context) error {
 	})
 }
 
-func websocketHandler(ectx echo.Context) error {
+func networkWebsocketHandler(ectx echo.Context) error {
 	return withSubscriberContainer(ectx, func(sc *di.SubscribeContainer) error {
 		ws, err := upgrader.Upgrade(ectx.Response(), ectx.Request(), nil)
 		if err != nil {
