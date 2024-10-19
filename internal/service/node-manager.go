@@ -2,15 +2,9 @@ package service
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/guackamolly/zero-monitor/internal/data/models"
-	"github.com/guackamolly/zero-monitor/internal/logging"
 )
-
-// Established duration to check if any of the network nodes
-// are currently offline or not.
-var offlineTimeout = time.Second * 10
 
 // Service for managing nodes that report to master.
 type NodeManagerService struct {
@@ -25,28 +19,6 @@ func NewNodeManagerService(nodes ...models.Node) *NodeManagerService {
 		stream:  make(chan []models.Node),
 		network: []models.Node(nodes),
 	}
-
-	go func() {
-		for {
-			t := time.Now()
-			for _, n := range s.network {
-				if n.LastSeen.Sub(t).Abs() < offlineTimeout {
-					continue
-				}
-
-				if !n.Online {
-					continue
-				}
-
-				err := s.Update(n.SetOffline())
-				if err != nil {
-					logging.LogError("very strange error when notifying network that node is offline, %v", err)
-				}
-			}
-
-			time.Sleep(offlineTimeout)
-		}
-	}()
 
 	return s
 }

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/guackamolly/zero-monitor/internal/data/models"
 )
@@ -31,6 +32,10 @@ func (c *Config) UpdateConfigurableValues(
 	c.NodeStatsPolling.Value = nodeStatsPolling
 	c.NodeLastSeenTimeout.Value = nodeLastSeenTimeout
 	c.AutoSavePeriod.Value = autoSavePeriod
+}
+
+func (cv configurableValue) Duration() time.Duration {
+	return time.Duration(cv.Value) * time.Second
 }
 
 // Loads a previously saved configuration file from user config directory.
