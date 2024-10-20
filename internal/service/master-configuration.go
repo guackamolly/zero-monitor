@@ -8,14 +8,16 @@ import (
 
 // Service that acts as a facade for configuration requests.
 type MasterConfigurationService struct {
-	cfg *config.Config
+	cfg    *config.Config
+	stream chan (config.Config)
 }
 
 func NewMasterConfigurationService(
 	cfg *config.Config,
 ) *MasterConfigurationService {
 	return &MasterConfigurationService{
-		cfg: cfg,
+		cfg:    cfg,
+		stream: make(chan config.Config),
 	}
 }
 
@@ -23,13 +25,17 @@ func (s MasterConfigurationService) Current() config.Config {
 	return *s.cfg
 }
 
+func (s MasterConfigurationService) Stream() chan (config.Config) {
+	return s.stream
+}
+
 // Updates the trusted network present in the current configuration instance.
 func (s MasterConfigurationService) UpdateTrustedNetwork(
 	nodes []models.Node,
 ) {
-	for _, n := range nodes {
-		s.cfg.TrustedNetwork[n.ID] = n
-	}
+	s.cfg.UpdateTrustedNetwork(nodes)
+
+	s.updateStream()
 }
 
 // Updates all configurable values present in the current configuration instance.
@@ -43,6 +49,8 @@ func (s MasterConfigurationService) UpdateConfigurable(
 		nodeLastSeenTimeout,
 		autoSavePeriod,
 	)
+
+	s.updateStream()
 }
 
 func (s MasterConfigurationService) Save() error {
@@ -52,4 +60,10 @@ func (s MasterConfigurationService) Save() error {
 	}
 
 	return err
+}
+
+func (s MasterConfigurationService) updateStream() {
+	go func() {
+		s.stream <- *s.cfg
+	}()
 }

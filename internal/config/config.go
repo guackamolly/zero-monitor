@@ -24,6 +24,14 @@ type Config struct {
 	AutoSavePeriod      configurableValue
 }
 
+func (c *Config) UpdateTrustedNetwork(
+	nodes []models.Node,
+) {
+	for _, n := range nodes {
+		c.TrustedNetwork[n.ID] = n
+	}
+}
+
 func (c *Config) UpdateConfigurableValues(
 	nodeStatsPolling int,
 	nodeLastSeenTimeout int,

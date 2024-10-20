@@ -18,6 +18,7 @@ type NodeSchedulerService struct{}
 // instances should be retrieved by callbacks.
 func NewNodeSchedulerService(
 	cfg func() config.Config,
+	cfgStream func() chan (config.Config),
 	saveCfg func() error,
 	updateTrustedNetwork func([]models.Node),
 	updateNetwork func(models.Node) error,
@@ -34,7 +35,9 @@ func NewNodeSchedulerService(
 
 	// schedule goroutine that save config every 5 minutes
 	go func() {
-		time.Sleep(5 * time.Minute)
+		autoSaveDuration := cfg().AutoSavePeriod.Duration()
+		logging.LogInfo("sleeping for %s before saving config file", autoSaveDuration)
+		time.Sleep(autoSaveDuration)
 
 		logging.LogInfo("trying to save config file")
 		err := saveCfg()
@@ -46,10 +49,10 @@ func NewNodeSchedulerService(
 
 	// schedule goroutine that checks for any networ node that have gone missing
 	go func() {
-		lastSeenTimeout := cfg().NodeLastSeenTimeout.Duration()
 		for {
 			t := time.Now()
 			n := network()
+			lastSeenTimeout := cfg().NodeLastSeenTimeout.Duration()
 			for _, n := range n {
 				if n.LastSeen.Sub(t).Abs() < lastSeenTimeout {
 					continue
@@ -65,6 +68,7 @@ func NewNodeSchedulerService(
 				}
 			}
 
+			logging.LogInfo("sleeping for %s before checking for missing nodes", lastSeenTimeout)
 			time.Sleep(lastSeenTimeout)
 		}
 	}()
