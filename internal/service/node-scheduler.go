@@ -35,15 +35,17 @@ func NewNodeSchedulerService(
 
 	// schedule goroutine that save config every 5 minutes
 	go func() {
-		autoSaveDuration := cfg().AutoSavePeriod.Duration()
-		logging.LogInfo("sleeping for %s before saving config file", autoSaveDuration)
-		time.Sleep(autoSaveDuration)
+		for {
+			autoSaveDuration := cfg().AutoSavePeriod.Duration()
+			logging.LogInfo("sleeping for %s before saving config file", autoSaveDuration)
+			time.Sleep(autoSaveDuration)
 
-		logging.LogInfo("trying to save config file")
-		err := saveCfg()
+			logging.LogInfo("trying to save config file")
+			err := saveCfg()
 
-		if err != nil {
-			logging.LogError("coudln't save config file, %v", err)
+			if err != nil {
+				logging.LogError("coudln't save config file, %v", err)
+			}
 		}
 	}()
 
