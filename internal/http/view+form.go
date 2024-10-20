@@ -107,9 +107,9 @@ func (v FormView) Update(data url.Values) (FormView, error) {
 
 			tf.Value = vv
 			c[id] = tf
-			break
+			continue
 		default:
-			return FormView{}, fmt.Errorf("field '%s' is not supported on the server.", id)
+			return FormView{}, fmt.Errorf("field '%s' is not supported on the server", id)
 		}
 	}
 
