@@ -54,6 +54,7 @@ func networkWebsocketHandler(ectx echo.Context) error {
 				continue
 			}
 		}
+		sc.NodeManager.Release(s)
 		return nil
 	})
 }

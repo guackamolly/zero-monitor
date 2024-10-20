@@ -2,22 +2,25 @@ package service
 
 import (
 	"fmt"
+	"sync"
 
 	"github.com/guackamolly/zero-monitor/internal/data/models"
 )
 
 // Service for managing nodes that report to master.
 type NodeManagerService struct {
-	stream  chan ([]models.Node)
+	streams []chan ([]models.Node)
 	network []models.Node
+	lock    *sync.RWMutex
 }
 
 // Creates a service for managing network nodes. Allows passing
 // previously saved nodes as varadiac param.
 func NewNodeManagerService(nodes ...models.Node) *NodeManagerService {
 	s := &NodeManagerService{
-		stream:  make(chan []models.Node),
+		streams: []chan []models.Node{},
 		network: []models.Node(nodes),
+		lock:    &sync.RWMutex{},
 	}
 
 	return s
@@ -50,8 +53,36 @@ func (s NodeManagerService) Network() []models.Node {
 	return s.network
 }
 
-func (s NodeManagerService) Stream() chan ([]models.Node) {
-	return s.stream
+func (s *NodeManagerService) Stream() chan ([]models.Node) {
+	stream := make(chan ([]models.Node))
+
+	s.lock.Lock()
+	s.streams = append(s.streams, stream)
+	s.lock.Unlock()
+
+	return stream
+}
+
+// Notifies the manager that a stream should be released.
+func (s *NodeManagerService) Release(stream chan ([]models.Node)) {
+	s.lock.Lock()
+
+	l := len(s.streams)
+	j := 0
+	sc := make([]chan ([]models.Node), l-1)
+	for i := 0; i < l; i++ {
+		if s.streams[i] == stream {
+			continue
+		}
+
+		sc[j] = s.streams[i]
+		j++
+	}
+
+	s.streams = sc
+	s.lock.Unlock()
+
+	close(stream)
 }
 
 func (s NodeManagerService) nodeIdx(node models.Node) int {
@@ -66,6 +97,8 @@ func (s NodeManagerService) nodeIdx(node models.Node) int {
 
 func (s *NodeManagerService) updateStream() {
 	go func() {
-		s.stream <- s.network
+		for _, st := range s.streams {
+			st <- s.network
+		}
 	}()
 }
