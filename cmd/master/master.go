@@ -23,6 +23,7 @@ import (
 
 func main() {
 	// 1. Load config
+	logging.AddLogger(logging.NewConsoleLogger())
 	cfg := loadConfig()
 
 	// 2. Initialize DI.
@@ -103,7 +104,6 @@ func initializeHttpServer(ctx context.Context) *echo.Echo {
 	e := echo.New()
 
 	// Initialize logging.
-	logging.AddLogger(logging.NewConsoleLogger())
 	logging.AddLogger(logging.NewEchoLogger(e.Logger))
 
 	// Register server dependencies.
@@ -152,6 +152,7 @@ func createSubscribeContainer(cfg config.Config) di.SubscribeContainer {
 	nms := service.NewNodeManagerService(ns...)
 	nss := service.NewNodeSchedulerService(
 		mcs.Current,
+		mcs.Stream,
 		mcs.Save,
 		mcs.UpdateTrustedNetwork,
 		nms.Update,
