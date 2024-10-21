@@ -1,37 +1,60 @@
 package conn
 
-import "github.com/guackamolly/zero-monitor/internal"
+import (
+	"bytes"
+	"encoding/gob"
+	"fmt"
+
+	"github.com/guackamolly/zero-monitor/internal"
+)
 
 type msg struct {
-	key byte
-	id  string
+	Key  byte
+	Id   string
+	Data any
 }
 
-func encode(d msg) []byte {
-	b := make([]byte, 1+len(d.id))
-	b[0] = d.key
+func init() {
+	gob.Register(Connection{})
+}
 
-	for i := range d.id {
-		b[i+1] = d.id[i]
+func encode(d msg) ([]byte, error) {
+	var buf bytes.Buffer
+	var b []byte
+
+	enc := gob.NewEncoder(&buf)
+	err := enc.Encode(d)
+
+	if err == nil {
+		b = buf.Bytes()
 	}
 
-	return b
+	return b, err
 }
 
-func decode(b []byte) msg {
-	var d msg
+func decode(b []byte) (msg, error) {
+	var buf bytes.Buffer
+	var m msg
 
-	l := len(b)
-	if l == 0 {
-		return d
+	n, err := buf.Write(b)
+
+	if n != len(b) || err != nil {
+		return m, fmt.Errorf("couldn't write all bytes to buffer")
 	}
 
-	d.key = b[0]
-	d.id = string(b[1:])
+	enc := gob.NewDecoder(&buf)
+	err = enc.Decode(&m)
 
-	return d
+	return m, err
 }
 
-func compose(key byte) msg {
-	return msg{id: internal.MachineId, key: key}
+func compose(key byte, data ...any) msg {
+	switch len(data) {
+	case 0:
+		return msg{Id: internal.MachineId, Key: key}
+	case 1:
+		return msg{Id: internal.MachineId, Key: key, Data: data[0]}
+	default:
+		return msg{Id: internal.MachineId, Key: key, Data: data}
+	}
 }

@@ -127,7 +127,12 @@ func broadcastProbeBeacon(port uint16) (Connection, error) {
 	}
 
 	defer conn.Close()
-	_, err = conn.Write(encode(compose(probeKey)))
+	bs, err := encode(compose(probeKey))
+	if err != nil {
+		return Connection{}, err
+	}
+
+	_, err = conn.Write(bs)
 	if err != nil {
 		return Connection{}, err
 	}
@@ -151,19 +156,24 @@ func broadcastProbeBeacon(port uint16) (Connection, error) {
 	}
 
 	buf := make([]byte, 1024)
-	var raddr *net.UDPAddr
-	_, raddr, err = conn.ReadFromUDP(buf)
+	_, _, err = conn.ReadFromUDP(buf)
 	if err != nil {
 		return Connection{}, err
 	}
 
-	if d := decode(buf); d.key != helloKey {
+	d, err := decode(buf)
+	if err != nil {
+		return Connection{}, err
+	}
+
+	if d.Key != helloKey {
 		return Connection{}, fmt.Errorf("received unknown response after sending probe beacon, %v", d)
 	}
 
-	return Connection{
-		Port:     raddr.Port,
-		IP:       raddr.IP,
-		IsMaster: true,
-	}, nil
+	subConn, ok := d.Data.(Connection)
+	if !ok {
+		return Connection{}, fmt.Errorf("couldn't parse data to Connection struct, %v", d.Data)
+	}
+
+	return subConn, nil
 }

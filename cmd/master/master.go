@@ -36,7 +36,7 @@ func main() {
 	defer s.Close()
 
 	// 4. Initialize beacon server.
-	uconn := initializeBeaconServer()
+	uconn := initializeBeaconServer(addrToConn(s.Addr()))
 	defer uconn.Close()
 
 	// 5. Initialize http server.
@@ -88,12 +88,12 @@ func initializeSubServer(ctx context.Context) mq.Socket {
 	return s
 }
 
-func initializeBeaconServer() *net.UDPConn {
+func initializeBeaconServer(subConn conn.Connection) *net.UDPConn {
 	// Find available UDP ports.
 	uconn := findAvailableUdpPort()
 
 	// Initialize beacon server.
-	conn.StartBeaconServer(uconn)
+	conn.StartBeaconServer(uconn, subConn)
 	log.Printf("started udp beacon server on addr: %s\n", uconn.LocalAddr())
 
 	return uconn
@@ -118,6 +118,18 @@ func initializeHttpServer(ctx context.Context) *echo.Echo {
 	}()
 
 	return e
+}
+
+func addrToConn(addr net.Addr) conn.Connection {
+	switch c := addr.(type) {
+	case *net.TCPAddr:
+		return conn.Connection{Port: c.Port, IP: c.IP}
+	case *net.UDPAddr:
+		return conn.Connection{Port: c.Port, IP: c.IP}
+	}
+
+	logging.LogFatal("couldn't convert %v to conn.Connection", addr)
+	return conn.Connection{}
 }
 
 func findAvailableTcpPort() *net.TCPListener {

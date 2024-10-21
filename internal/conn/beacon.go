@@ -6,14 +6,13 @@ import (
 )
 
 type Connection struct {
-	IsMaster bool
-	Port     int
-	IP       net.IP
+	Port int
+	IP   net.IP
 }
 
 // starts the master node beacon server, which listens for
 // UDP probe beacon requests on the local network.
-func StartBeaconServer(conn *net.UDPConn) {
+func StartBeaconServer(conn *net.UDPConn, subConn Connection) {
 	go func() {
 		defer conn.Close()
 		for {
@@ -25,17 +24,28 @@ func StartBeaconServer(conn *net.UDPConn) {
 				continue
 			}
 
-			d := decode(buf)
-			if d.key != probeKey {
+			d, err := decode(buf)
+			if err != nil {
+				log.Printf("failed to decode beacon data, %v\n", err)
+				continue
+			}
+
+			if d.Key != probeKey {
 				continue
 			}
 			log.Printf("received probe beacon from %v\n", addr)
 
 			go func() {
-				b := encode(compose(helloKey))
+				b, err := encode(compose(helloKey, subConn))
+				if err != nil {
+					log.Printf("failed to encode beacon reply data, %v", err)
+					return
+				}
+
 				_, err = conn.WriteToUDP(b, addr)
 				if err != nil {
 					log.Printf("error replying to probe beacon, %v\n", err)
+					return
 				}
 			}()
 		}
