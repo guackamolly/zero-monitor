@@ -27,6 +27,7 @@ func (s Socket) RegisterSubscriptions() {
 
 			if l := len(m.Frames); l != 2 {
 				log.Printf("received corrupted message, expected 2 frames but got: %d\n", l)
+				continue
 			}
 
 			mm, err := decode(m.Frames[1])
