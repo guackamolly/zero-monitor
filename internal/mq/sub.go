@@ -71,9 +71,9 @@ func handleJoin(
 	masterConfiguration *service.MasterConfigurationService,
 ) {
 	log.Println("handling node join")
-	req, ok := m.Data.(joinNodeRequest)
+	req, ok := m.Data.(joinRequest)
 	if !ok {
-		err := fmt.Errorf("couldn't cast data to join node request, got: %v", m.Data)
+		err := fmt.Errorf("couldn't cast data to join request, got: %v", m.Data)
 		s.Reply(m.Identity, compose(xerror, err))
 		return
 	}
@@ -84,12 +84,14 @@ func handleJoin(
 	}
 
 	cfg := masterConfiguration.Current()
-	s.Reply(m.Identity, compose(reply, joinNodeResponse{StatsPoll: cfg.NodeStatsPolling.Duration()}))
+	s.Reply(m.Identity, compose(reply, joinResponse{StatsPoll: cfg.NodeStatsPolling.Duration()}))
 }
 
 func handleUpdate(
+	s Socket,
 	m msg,
-	service *service.NodeManagerService,
+	nodeManager *service.NodeManagerService,
+	masterConfiguration *service.MasterConfigurationService,
 ) {
 	log.Println("handling node update")
 	node, ok := m.Data.(models.Node)
@@ -98,7 +100,7 @@ func handleUpdate(
 		return
 	}
 
-	err := service.Update(node)
+	err := nodeManager.Update(node)
 	if err != nil {
 		log.Printf("updated node call failed, %v\n", err)
 	}

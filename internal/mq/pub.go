@@ -36,24 +36,24 @@ func (s Socket) RegisterPublishers() {
 func joinNetwork(
 	s Socket,
 	nodeReporter *service.NodeReporterService,
-) (joinNodeResponse, error) {
+) (joinResponse, error) {
 	n := nodeReporter.Initial()
-	m, err := s.Publish(compose(join, joinNodeRequest{Node: n}))
+	m, err := s.Publish(compose(join, joinRequest{Node: n}))
 	if err != nil {
-		return joinNodeResponse{}, err
+		return joinResponse{}, err
 	}
 
 	if m.Topic == xerror {
-		return joinNodeResponse{}, fmt.Errorf("%v", m.Data)
+		return joinResponse{}, fmt.Errorf("%v", m.Data)
 	}
 
 	if m.Topic != reply {
-		return joinNodeResponse{}, fmt.Errorf("couldn't understand reply message topic: %v, data: %v", m.Topic, m.Data)
+		return joinResponse{}, fmt.Errorf("couldn't understand reply message topic: %v, data: %v", m.Topic, m.Data)
 	}
 
-	resp, ok := m.Data.(joinNodeResponse)
+	resp, ok := m.Data.(joinResponse)
 	if !ok {
-		return joinNodeResponse{}, fmt.Errorf("couldn't parse data to join node response, %v", m.Data)
+		return joinResponse{}, fmt.Errorf("couldn't parse data to join node response, %v", m.Data)
 	}
 
 	return resp, nil

@@ -15,18 +15,18 @@ type msg struct {
 	Data     any
 }
 
-type joinNodeRequest struct {
+type joinRequest struct {
 	Node models.Node
 }
 
-type joinNodeResponse struct {
+type joinResponse struct {
 	StatsPoll time.Duration
 }
 
 func init() {
 	gob.Register(models.Node{})
-	gob.Register(joinNodeRequest{})
-	gob.Register(joinNodeResponse{})
+	gob.Register(joinRequest{})
+	gob.Register(joinResponse{})
 }
 
 func encode(m msg) ([]byte, error) {
