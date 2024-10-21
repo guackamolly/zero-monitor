@@ -7,41 +7,50 @@ import (
 	"github.com/guackamolly/zero-monitor/internal"
 	"github.com/guackamolly/zero-monitor/internal/data/models"
 	"github.com/guackamolly/zero-monitor/internal/data/repositories"
+	"github.com/guackamolly/zero-monitor/internal/logging"
 )
 
 // Service for reporting node information to master.
 type NodeReporterService struct {
-	stream chan (models.Node)
-	system repositories.SystemRepository
+	initial models.Node
+	stream  chan (models.Node)
+	system  repositories.SystemRepository
 }
 
 func NewNodeReporterService(
 	system repositories.SystemRepository,
 ) *NodeReporterService {
-	return &NodeReporterService{
+	s := &NodeReporterService{
 		system: system,
 		stream: make(chan models.Node),
 	}
+
+	id := internal.MachineId
+	info := s.systemInfo()
+	s.initial = models.NewNodeWithoutStats(id, info)
+
+	return s
+}
+
+func (s NodeReporterService) Initial() models.Node {
+	return s.initial
 }
 
 // Starts reporting node information through a channel. The channel is unbuffered.
-func (s NodeReporterService) Start() chan (models.Node) {
+func (s NodeReporterService) Start(pollDuration time.Duration) chan (models.Node) {
 	go func() {
-		id := internal.MachineId
-		info := s.systemInfo()
-		node := models.NewNodeWithoutStats(id, info)
-
+		node := s.initial
 		for {
 			stats, err := s.system.Stats()
 			if err != nil {
 				log.Printf("failed to fetch system statistics, %v\n", err)
-				time.Sleep(time.Second * 5)
-				continue
+			} else {
+				node = node.WithUpdatedStats(stats)
+				s.stream <- node
 			}
 
-			node = node.WithUpdatedStats(stats)
-			s.stream <- node
-			time.Sleep(time.Second * 5)
+			logging.LogInfo("sleeping for %s until polling new node stats", pollDuration)
+			time.Sleep(pollDuration)
 		}
 	}()
 

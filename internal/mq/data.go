@@ -4,17 +4,29 @@ import (
 	"bytes"
 	"encoding/gob"
 	"fmt"
+	"time"
 
 	"github.com/guackamolly/zero-monitor/internal/data/models"
 )
 
 type msg struct {
-	Topic Topic
-	Data  any
+	Identity []byte
+	Topic    Topic
+	Data     any
+}
+
+type joinNodeRequest struct {
+	Node models.Node
+}
+
+type joinNodeResponse struct {
+	StatsPoll time.Duration
 }
 
 func init() {
 	gob.Register(models.Node{})
+	gob.Register(joinNodeRequest{})
+	gob.Register(joinNodeResponse{})
 }
 
 func encode(m msg) ([]byte, error) {

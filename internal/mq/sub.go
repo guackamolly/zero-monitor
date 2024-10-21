@@ -1,6 +1,7 @@
 package mq
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/guackamolly/zero-monitor/internal/data/models"
@@ -24,22 +25,24 @@ func (s Socket) RegisterSubscriptions() {
 				continue
 			}
 
-			if l := len(m.Frames); l != 3 {
-				log.Printf("received corrupted message, expected 3 frames but got: %d\n", l)
+			if l := len(m.Frames); l != 2 {
+				log.Printf("received corrupted message, expected 2 frames but got: %d\n", l)
 			}
 
-			msg, err := decode(m.Frames[2])
+			mm, err := decode(m.Frames[1])
+			mm.Identity = m.Frames[0]
 			if err != nil {
 				log.Printf("failed to decode message, %v\n", err)
 				continue
 			}
 
-			handle(msg, *sc)
+			handle(s, mm, *sc)
 		}
 	}()
 }
 
 func handle(
+	s Socket,
 	m msg,
 	serviceContainer di.SubscribeContainer,
 ) {
@@ -50,7 +53,7 @@ func handle(
 
 	switch m.Topic {
 	case join:
-		handleJoin(m, serviceContainer.NodeManager)
+		handleJoin(s, m, serviceContainer.NodeManager, serviceContainer.MasterConfiguration)
 		return
 	case update:
 		handleUpdate(m, serviceContainer.NodeManager)
@@ -61,20 +64,26 @@ func handle(
 }
 
 func handleJoin(
+	s Socket,
 	m msg,
-	service *service.NodeManagerService,
+	nodeManager *service.NodeManagerService,
+	masterConfiguration *service.MasterConfigurationService,
 ) {
 	log.Println("handling node join")
-	node, ok := m.Data.(models.Node)
+	req, ok := m.Data.(joinNodeRequest)
 	if !ok {
-		log.Printf("couldn't cast data to Node model, got: %v\n", m.Data)
+		err := fmt.Errorf("couldn't cast data to join node request, got: %v", m.Data)
+		s.Reply(m.Identity, compose(xerror, err))
 		return
 	}
 
-	err := service.Join(node)
+	err := nodeManager.Join(req.Node)
 	if err != nil {
 		log.Printf("join node call failed, %v\n", err)
 	}
+
+	cfg := masterConfiguration.Current()
+	s.Reply(m.Identity, compose(reply, joinNodeResponse{StatsPoll: cfg.NodeStatsPolling.Duration()}))
 }
 
 func handleUpdate(

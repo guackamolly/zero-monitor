@@ -8,5 +8,6 @@ const (
 	update
 	reply
 	empty
+	xerror
 	unknown
 )
