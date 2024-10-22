@@ -27,8 +27,9 @@ var (
 	}
 
 	templates = map[string]string{
-		"network":  serverPublicRoot + "tpl/network/*",
-		"settings": serverPublicRoot + "tpl/settings/*",
+		"network":     serverPublicRoot + "tpl/network/*.gohtml",
+		"network/:id": serverPublicRoot + "tpl/network/:id/*.gohtml",
+		"settings":    serverPublicRoot + "tpl/settings/*.gohtml",
 	}
 
 	errors = map[int]string{

@@ -11,6 +11,7 @@ import (
 func RegisterHandlers(e *echo.Echo) {
 	e.GET(rootRoute, rootHandler)
 	e.GET(networkRoute, networkHandler)
+	e.GET(networkIdRoute, networkIdHandler)
 	e.GET(settingsRoute, getSettingsHandler)
 	e.POST(settingsRoute, updateSettingsHandler)
 
@@ -30,6 +31,20 @@ func networkHandler(ectx echo.Context) error {
 		view := NewServerStatsView(sc.NodeManager.Network())
 
 		return ectx.Render(200, "network", view)
+	})
+}
+
+func networkIdHandler(ectx echo.Context) error {
+	return withSubscriberContainer(ectx, func(sc *di.SubscribeContainer) error {
+		id := ectx.Param("id")
+		n, ok := sc.NodeManager.Node(id)
+		if !ok {
+			// todo: handle
+		}
+
+		println(ok)
+
+		return ectx.Render(200, "network/:id", NewNetworkNodeInformationView(n))
 	})
 }
 

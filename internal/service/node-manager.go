@@ -49,6 +49,16 @@ func (s *NodeManagerService) Update(node models.Node) error {
 	return nil
 }
 
+func (s NodeManagerService) Node(id string) (models.Node, bool) {
+	for _, n := range s.network {
+		if n.ID == id {
+			return n, true
+		}
+	}
+
+	return models.Node{}, false
+}
+
 func (s NodeManagerService) Network() []models.Node {
 	return s.network
 }

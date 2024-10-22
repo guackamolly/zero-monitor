@@ -1,9 +1,11 @@
 package repositories
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/guackamolly/zero-monitor/internal/data/models"
+	"github.com/guackamolly/zero-monitor/internal/logging"
 	"github.com/shirou/gopsutil/cpu"
 	"github.com/shirou/gopsutil/disk"
 	"github.com/shirou/gopsutil/host"
@@ -38,14 +40,27 @@ func (r GopsUtilSystemRepository) Info() (models.Info, error) {
 		return models.Info{}, err
 	}
 
+	var cpuinfo cpu.InfoStat
+	cpus, err := cpu.Info()
+	if err != nil {
+		logging.LogWarning("couldn't fetch cpu info, %v", err)
+	}
+
+	if len(cpus) > 0 {
+		cpuinfo = cpus[0]
+	}
+
 	return models.NewInfo(
 		os.KernelArch,
+		cpuinfo.ModelName,
+		cpuinfo.CacheSize,
 		cc,
 		rs.Total,
 		dsk.Total,
 		os.Hostname,
 		os.OS,
-		os.Platform,
+		fmt.Sprintf("%s %s", os.Platform, os.PlatformVersion),
+		os.KernelVersion,
 	), nil
 }
 
