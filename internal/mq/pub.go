@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/guackamolly/zero-monitor/internal/data/models"
 	"github.com/guackamolly/zero-monitor/internal/di"
 	"github.com/guackamolly/zero-monitor/internal/logging"
 	"github.com/guackamolly/zero-monitor/internal/service"
@@ -15,46 +16,84 @@ func (s Socket) RegisterPublishers() {
 		log.Fatalln("publish container hasn't been injected")
 	}
 
+	// Join network.
 	go func() {
-		// 1. Join network.
 		nr := pc.NodeReporter
-
-		resp, err := joinNetwork(s, nr)
+		err := joinNetwork(s, nr.Initial())
 		if err != nil {
 			// TODO: handle join network error gracefully.
 			logging.LogFatal("couldn't join network, %v", err)
 		}
+	}()
 
-		// 2. Start stats polling.
-		ns := nr.Start(resp.StatsPoll)
-		for n := range ns {
-			s.PublishAndForget(compose(update, n))
+	// Handle sub reply messages.
+	go func() {
+		for {
+			m, err := s.Receive()
+			if err != nil {
+				logging.LogError("failed to receive message from sub socket, %v", err)
+				continue
+			}
+
+			switch m.Topic {
+			case join:
+				handleJoinNetworkResponse(s, m, pc.NodeReporter)
+				continue
+			default:
+				logging.LogError("failed to recognize sub reply message, %v", m)
+			}
 		}
 	}()
 }
 
 func joinNetwork(
 	s Socket,
-	nodeReporter *service.NodeReporterService,
-) (joinResponse, error) {
-	n := nodeReporter.Initial()
-	m, err := s.Publish(compose(join, joinRequest{Node: n}))
-	if err != nil {
-		return joinResponse{}, err
-	}
+	node models.Node,
+) error {
+	m := compose(join, joinRequest{Node: node})
 
-	if m.Topic == xerror {
-		return joinResponse{}, fmt.Errorf("%v", m.Data)
-	}
+	return s.Publish(m)
+}
 
-	if m.Topic != reply {
-		return joinResponse{}, fmt.Errorf("couldn't understand reply message topic: %v, data: %v", m.Topic, m.Data)
-	}
+func updateStats(
+	s Socket,
+	node models.Node,
+) error {
+	m := compose(update, updateStatsRequest{Node: node})
 
+	return s.Publish(m)
+}
+
+func handleJoinNetworkResponse(
+	s Socket,
+	m msg,
+	nr *service.NodeReporterService,
+) error {
 	resp, ok := m.Data.(joinResponse)
 	if !ok {
-		return joinResponse{}, fmt.Errorf("couldn't parse data to join node response, %v", m.Data)
+		return handleUnknownMessage(m)
 	}
 
-	return resp, nil
+	go func() {
+		ns := nr.Start(resp.StatsPoll)
+		for n := range ns {
+			err := updateStats(s, n)
+			if err != nil {
+				logging.LogError("failed to publish update stats message, %v", err)
+			}
+		}
+	}()
+
+	return nil
+}
+
+func handleUnknownMessage(
+	m msg,
+) error {
+	err, ok := m.Data.(error)
+	if ok {
+		return err
+	}
+
+	return fmt.Errorf("couldn't understand message, %v", m)
 }

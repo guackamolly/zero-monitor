@@ -4,40 +4,27 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/guackamolly/zero-monitor/internal/data/models"
 	"github.com/guackamolly/zero-monitor/internal/di"
+	"github.com/guackamolly/zero-monitor/internal/logging"
 	"github.com/guackamolly/zero-monitor/internal/service"
 )
 
 func (s Socket) RegisterSubscriptions() {
 	sc := di.ExtractSubscribeContainer(s.ctx)
 	if sc == nil {
-		log.Fatalln("subscribe container hasn't been injected")
+		logging.LogFatal("subscribe container hasn't been injected")
 	}
 
 	go func() {
 		for {
-			log.Println("waiting for messages...")
-
-			m, err := s.Recv()
+			logging.LogInfo("waiting for messages...")
+			m, err := s.Receive()
 			if err != nil {
-				log.Printf("failed to receive message, %v\n", err)
+				logging.LogError("failed to receive message from pub socket, %v", err)
 				continue
 			}
 
-			if l := len(m.Frames); l != 2 {
-				log.Printf("received corrupted message, expected 2 frames but got: %d\n", l)
-				continue
-			}
-
-			mm, err := decode(m.Frames[1])
-			mm.Identity = m.Frames[0]
-			if err != nil {
-				log.Printf("failed to decode message, %v\n", err)
-				continue
-			}
-
-			handle(s, mm, *sc)
+			handle(s, m, *sc)
 		}
 	}()
 }
@@ -59,8 +46,6 @@ func handle(
 	case update:
 		handleUpdate(m, serviceContainer.NodeManager)
 		return
-	default:
-		compose(unknown)
 	}
 }
 
@@ -70,11 +55,11 @@ func handleJoin(
 	nodeManager *service.NodeManagerService,
 	masterConfiguration *service.MasterConfigurationService,
 ) {
-	log.Println("handling node join")
+	logging.LogInfo("handling node join")
 	req, ok := m.Data.(joinRequest)
 	if !ok {
 		err := fmt.Errorf("couldn't cast data to join request, got: %v", m.Data)
-		s.Reply(m.Identity, compose(xerror, err))
+		s.Reply(m.Identity, compose(join, err))
 		return
 	}
 
@@ -84,24 +69,22 @@ func handleJoin(
 	}
 
 	cfg := masterConfiguration.Current()
-	s.Reply(m.Identity, compose(reply, joinResponse{StatsPoll: cfg.NodeStatsPolling.Duration()}))
+	s.Reply(m.Identity, compose(join, joinResponse{StatsPoll: cfg.NodeStatsPolling.Duration()}))
 }
 
 func handleUpdate(
-	s Socket,
 	m msg,
 	nodeManager *service.NodeManagerService,
-	masterConfiguration *service.MasterConfigurationService,
 ) {
 	log.Println("handling node update")
-	node, ok := m.Data.(models.Node)
+	req, ok := m.Data.(updateStatsRequest)
 	if !ok {
-		log.Printf("couldn't cast data to Node model, got: %v\n", m.Data)
+		logging.LogError("couldn't cast data to update stats request, got: %v", m.Data)
 		return
 	}
 
-	err := nodeManager.Update(node)
+	err := nodeManager.Update(req.Node)
 	if err != nil {
-		log.Printf("updated node call failed, %v\n", err)
+		logging.LogError("updated node call failed, %v", err)
 	}
 }

@@ -2,6 +2,7 @@ package mq
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/go-zeromq/zmq4"
@@ -11,15 +12,17 @@ import (
 // Wraps [zmq4.Socket] so context can be accessed for extracting dependencies.
 type Socket struct {
 	zmq4.Socket
-	ctx context.Context
+	ctx          context.Context
+	framesLength int
 }
 
 // Creates a new sub [zmq4-Socket] wrapper with a custom context.
 // The context must contain all the dependencies required by the socket.
 func NewSubSocket(ctx context.Context) Socket {
 	return Socket{
-		Socket: zmq4.NewRouter(ctx),
-		ctx:    ctx,
+		Socket:       zmq4.NewRouter(ctx),
+		ctx:          ctx,
+		framesLength: 2,
 	}
 }
 
@@ -27,8 +30,9 @@ func NewSubSocket(ctx context.Context) Socket {
 // The context must contain all the dependencies required by the socket.
 func NewPubSocket(ctx context.Context) Socket {
 	return Socket{
-		Socket: zmq4.NewDealer(ctx, zmq4.WithAutomaticReconnect(true)),
-		ctx:    ctx,
+		Socket:       zmq4.NewDealer(ctx, zmq4.WithAutomaticReconnect(true)),
+		ctx:          ctx,
+		framesLength: 1,
 	}
 }
 
@@ -38,40 +42,46 @@ func (s Socket) Context() context.Context {
 
 // Publishes a message from a pub socket to the sub socket and waits for a reply.
 // Receiver must be a pub socket.
-func (s Socket) Publish(m msg) (msg, error) {
+func (s Socket) Publish(m msg) error {
 	logging.LogInfo("publishing msg with topic: %d", m.Topic)
 
 	b, err := encode(m)
 	if err != nil {
-		return msg{}, err
+		return err
 	}
 
 	err = s.Send(zmq4.NewMsg(b))
 	if err != nil {
-		return msg{}, err
+		return err
 	}
 
-	mm, err := s.Recv()
-	if err != nil {
-		return msg{}, err
-	}
-
-	return decode(mm.Bytes())
+	return nil
 }
 
-// Same as [Publish] but discards the reply message.
-func (s Socket) PublishAndForget(m msg) {
-	logging.LogInfo("publishing msg with topic: %d", m.Topic)
+func (s Socket) Receive() (msg, error) {
+	logging.LogInfo("waiting for messages...")
 
-	b, err := encode(m)
+	zm, err := s.Recv()
 	if err != nil {
-		log.Printf("failed to encode message, %v\n", err)
+		return msg{}, err
 	}
 
-	err = s.Send(zmq4.NewMsg(b))
-	if err != nil {
-		log.Printf("failed to publish message, %v\n", err)
+	if l := len(zm.Frames); l != s.framesLength {
+		err = fmt.Errorf("received corrupted message, expected %d frames but got: %d", s.framesLength, l)
+		return msg{}, err
 	}
+
+	if s.framesLength == 1 {
+		return decode(zm.Frames[0])
+	}
+
+	m, err := decode(zm.Frames[1])
+	if err != nil {
+		return msg{}, err
+	}
+	m.Identity = zm.Frames[0]
+
+	return m, nil
 }
 
 // Replies to a pub socket from the sub socket.
