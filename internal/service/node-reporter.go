@@ -1,7 +1,6 @@
 package service
 
 import (
-	"log"
 	"time"
 
 	"github.com/guackamolly/zero-monitor/internal"
@@ -12,9 +11,9 @@ import (
 
 // Service for reporting node information to master.
 type NodeReporterService struct {
-	initial models.Node
-	stream  chan (models.Node)
-	system  repositories.SystemRepository
+	initial           models.Node
+	statsPollDuration time.Duration
+	system            repositories.SystemRepository
 }
 
 func NewNodeReporterService(
@@ -22,7 +21,6 @@ func NewNodeReporterService(
 ) *NodeReporterService {
 	s := &NodeReporterService{
 		system: system,
-		stream: make(chan models.Node),
 	}
 
 	id := internal.MachineId
@@ -37,16 +35,20 @@ func (s NodeReporterService) Initial() models.Node {
 }
 
 // Starts reporting node information through a channel. The channel is unbuffered.
-func (s NodeReporterService) Start(pollDuration time.Duration) chan (models.Node) {
+func (s *NodeReporterService) Start(pollDuration time.Duration) chan (models.Node) {
+	stream := make(chan (models.Node))
+	s.statsPollDuration = pollDuration
+
 	go func() {
 		node := s.initial
 		for {
+			pollDuration := s.statsPollDuration
 			stats, err := s.system.Stats()
 			if err != nil {
-				log.Printf("failed to fetch system statistics, %v\n", err)
+				logging.LogError("failed to fetch system statistics, %v", err)
 			} else {
 				node = node.WithUpdatedStats(stats)
-				s.stream <- node
+				stream <- node
 			}
 
 			logging.LogInfo("sleeping for %s until polling new node stats", pollDuration)
@@ -54,7 +56,13 @@ func (s NodeReporterService) Start(pollDuration time.Duration) chan (models.Node
 		}
 	}()
 
-	return s.stream
+	return stream
+}
+
+func (s *NodeReporterService) Update(
+	d time.Duration,
+) {
+	s.statsPollDuration = d
 }
 
 // tries to fetch system info, and if it fails, sleeps for 2 seconds until trying again.
@@ -66,7 +74,7 @@ func (s NodeReporterService) systemInfo() models.Info {
 			return sinfo
 		}
 
-		log.Printf("failed to fetch system information, %v\n", err)
+		logging.LogError("failed to fetch system information, %v", err)
 		time.Sleep(time.Second * 2)
 	}
 }

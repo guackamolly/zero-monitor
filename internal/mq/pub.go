@@ -39,6 +39,9 @@ func (s Socket) RegisterPublishers() {
 			case join:
 				handleJoinNetworkResponse(s, m, pc.NodeReporter)
 				continue
+			case updateStatsPollDuration:
+				handleUpdateStatsPollDurationRequest(m, pc.NodeReporter)
+				continue
 			default:
 				logging.LogError("failed to recognize sub reply message, %v", m)
 			}
@@ -84,6 +87,19 @@ func handleJoinNetworkResponse(
 		}
 	}()
 
+	return nil
+}
+
+func handleUpdateStatsPollDurationRequest(
+	m msg,
+	nr *service.NodeReporterService,
+) error {
+	req, ok := m.Data.(updateStatsPollDurationRequest)
+	if !ok {
+		return handleUnknownMessage(m)
+	}
+
+	nr.Update(req.Duration)
 	return nil
 }
 

@@ -34,8 +34,6 @@ func (s MasterConfigurationService) UpdateTrustedNetwork(
 	nodes []models.Node,
 ) {
 	s.cfg.UpdateTrustedNetwork(nodes)
-
-	s.updateStream()
 }
 
 // Updates all configurable values present in the current configuration instance.

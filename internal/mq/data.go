@@ -27,11 +27,16 @@ type updateStatsRequest struct {
 	Node models.Node
 }
 
+type updateStatsPollDurationRequest struct {
+	Duration time.Duration
+}
+
 func init() {
 	gob.Register(models.Node{})
 	gob.Register(joinRequest{})
 	gob.Register(joinResponse{})
 	gob.Register(updateStatsRequest{})
+	gob.Register(updateStatsPollDurationRequest{})
 }
 
 func encode(m msg) ([]byte, error) {

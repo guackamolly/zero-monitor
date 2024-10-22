@@ -3,11 +3,17 @@ package mq
 import (
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/guackamolly/zero-monitor/internal/di"
 	"github.com/guackamolly/zero-monitor/internal/logging"
 	"github.com/guackamolly/zero-monitor/internal/service"
 )
+
+// Associates pub clients zeromq identity with their machine IDs.
+// Key: MachineID
+// Value: Socket Identity
+var registeredPubSockets = map[string][]byte{}
 
 func (s Socket) RegisterSubscriptions() {
 	sc := di.ExtractSubscribeContainer(s.ctx)
@@ -25,6 +31,25 @@ func (s Socket) RegisterSubscriptions() {
 			}
 
 			handle(s, m, *sc)
+		}
+	}()
+
+	go func() {
+		mcs := sc.MasterConfiguration
+		sp := mcs.Current().NodeStatsPolling
+		ch := sc.MasterConfiguration.Stream()
+
+		for cfg := range ch {
+			if sp == cfg.NodeStatsPolling {
+				continue
+			}
+			sp = cfg.NodeStatsPolling
+
+			logging.LogInfo("broadcasting stats polling duration update")
+			err := broadcastStatsPollingDurationUpdate(s, sp.Duration())
+			if err != nil {
+				logging.LogError("failed to broadcast stats polling duration update, %v", err)
+			}
 		}
 	}()
 }
@@ -63,6 +88,7 @@ func handleJoin(
 		return
 	}
 
+	registeredPubSockets[req.Node.ID] = m.Identity
 	err := nodeManager.Join(req.Node)
 	if err != nil {
 		log.Printf("join node call failed, %v\n", err)
@@ -87,4 +113,20 @@ func handleUpdate(
 	if err != nil {
 		logging.LogError("updated node call failed, %v", err)
 	}
+}
+
+func broadcastStatsPollingDurationUpdate(
+	s Socket,
+	d time.Duration,
+) error {
+	if len(registeredPubSockets) == 0 {
+		logging.LogInfo("skipping stats polling duration update broadcast, no registered pub sockets")
+		return nil
+	}
+
+	for _, identity := range registeredPubSockets {
+		s.Reply(identity, compose(updateStatsPollDuration, updateStatsPollDurationRequest{Duration: d}))
+	}
+
+	return nil
 }
