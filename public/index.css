@@ -20,6 +20,30 @@ header {
     margin-right: 24px;
 }
 
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 95vh;
+}
+
+main {
+    flex-grow: 1;
+}
+
+footer {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: center;
+    margin-left: 24px;
+    margin-right: 24px;
+}
+
+nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
 main {
     display: flex;
     flex-direction: column;
@@ -380,6 +404,10 @@ button {
 @media screen and (max-width: 560px) {
     header {
         flex-direction: column;
+    }
+
+    footer {
+        justify-content: center;
     }
 
     fieldset.actions {
