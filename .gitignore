@@ -3,4 +3,5 @@
 go.work
 *.out
 
-web/content/
+cmd/test
+*.pprof
