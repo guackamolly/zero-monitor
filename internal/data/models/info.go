@@ -11,6 +11,8 @@ type Info struct {
 	OS           string
 	Distribution string
 	Kernel       string
+	LocalIP      IP
+	PublicIP     IP
 }
 
 func NewInfo(
@@ -24,6 +26,8 @@ func NewInfo(
 	os string,
 	distribution string,
 	kernel string,
+	localIP []byte,
+	publicIP []byte,
 ) Info {
 	return Info{
 		CPUArch:      cpuarch,
@@ -36,5 +40,7 @@ func NewInfo(
 		OS:           os,
 		Distribution: distribution,
 		Kernel:       kernel,
+		LocalIP:      IP(localIP),
+		PublicIP:     IP(publicIP),
 	}
 }

@@ -60,7 +60,7 @@
             <section class="main-content-1">
                 <h1>+ Information</h1>
                 <p>This page shows all relevant information of node
-                    <b>{{.Info.Hostname}}</b>.
+                    <b> {{.Info.Hostname}}</b>.
                     {{ if .Online }}
                     This node has been up for {{.Stats.Uptime}}.
                     {{ else }}
@@ -73,22 +73,34 @@
                 </h2>
                 <ul>
                     <li>
-                        <b>Operation System:</b>{{.Info.OS}}
+                        <b>Operation System:</b> {{.Info.OS}}
                     </li>
                     <li>
-                        <b>Distribution:</b>{{.Info.Distribution}}
+                        <b>Distribution:</b> {{.Info.Distribution}}
                     </li>
                     <li>
-                        <b>Kernel:</b>{{.Info.Kernel}}
+                        <b>Kernel:</b> {{.Info.Kernel}}
                     </li>
                     <li>
-                        <b>CPU:</b>{{.CPU}}
+                        <b>CPU:</b> {{.CPU}}
                     </li>
                     <li>
-                        <b>RAM:</b>{{.Info.TotalRAM}}
+                        <b>RAM:</b> {{.Info.TotalRAM}}
                     </li>
                     <li>
-                        <b>Disk:</b>{{.Info.TotalDisk}}
+                        <b>Disk:</b> {{.Info.TotalDisk}}
+                    </li>
+                </ul>
+
+                <h2>
+                    Network Information
+                </h2>
+                <ul>
+                    <li>
+                        <b>Local IP:</b> {{.Info.LocalIP}}
+                    </li>
+                    <li>
+                        <b>Public IP:</b> {{.Info.PublicIP}}
                     </li>
                 </ul>
             </section>

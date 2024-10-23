@@ -2,6 +2,7 @@ package models
 
 import (
 	"fmt"
+	"net"
 	"time"
 )
 
@@ -16,6 +17,7 @@ type Percent float64
 type Celsius float64
 type Memory uint64
 type Duration time.Duration
+type IP []byte
 
 func (v Percent) String() string {
 	if v < 0 {
@@ -51,4 +53,12 @@ func (v Memory) String() string {
 
 func (v Duration) String() string {
 	return fmt.Sprint(time.Duration(v))
+}
+
+func (v IP) String() string {
+	if len(v) < 4 {
+		return "-"
+	}
+
+	return net.IP(v).String()
 }
