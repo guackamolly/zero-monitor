@@ -30,6 +30,14 @@ main {
     flex-grow: 1;
 }
 
+table {
+    width: 100%;
+}
+
+td {
+    text-align: center;
+}
+
 footer {
     display: flex;
     flex-direction: row-reverse;
