@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"net"
 	"os"
@@ -13,7 +12,7 @@ import (
 	"github.com/guackamolly/zero-monitor/internal/config"
 	"github.com/guackamolly/zero-monitor/internal/conn"
 	"github.com/guackamolly/zero-monitor/internal/data/models"
-	"github.com/guackamolly/zero-monitor/internal/di"
+	"github.com/guackamolly/zero-monitor/internal/event"
 	"github.com/guackamolly/zero-monitor/internal/http"
 	"github.com/guackamolly/zero-monitor/internal/logging"
 	"github.com/guackamolly/zero-monitor/internal/mq"
@@ -29,10 +28,10 @@ func main() {
 	cfg := loadConfig()
 
 	// 2. Initialize DI.
-	sc, suc := createContainers(cfg)
+	sc := createServiceContainer(cfg)
+	suc := createSubContainer(sc)
 	ctx := context.Background()
-	ctx = di.InjectServiceContainer(ctx, sc)
-	ctx = di.InjectSubscribeContainer(ctx, suc)
+	ctx = mq.InjectSubscribeContainer(ctx, suc)
 
 	// 3. Initialize sub server.
 	s := initializeSubServer(ctx)
@@ -43,6 +42,8 @@ func main() {
 	defer uconn.Close()
 
 	// 5. Initialize http server.
+	sc = updateServiceContainer(sc, &s)
+	ctx = http.InjectServiceContainer(ctx, sc)
 	e := initializeHttpServer(ctx)
 	defer e.Close()
 
@@ -155,7 +156,9 @@ func findAvailableUdpPort() *net.UDPConn {
 	return uconn
 }
 
-func createContainers(cfg config.Config) (di.ServiceContainer, di.SubscribeContainer) {
+func createServiceContainer(
+	cfg config.Config,
+) http.ServiceContainer {
 	ns := make([]models.Node, len(cfg.TrustedNetwork))
 	i := 0
 	for _, n := range cfg.TrustedNetwork {
@@ -165,9 +168,6 @@ func createContainers(cfg config.Config) (di.ServiceContainer, di.SubscribeConta
 
 	mcs := service.NewMasterConfigurationService(&cfg)
 	nms := service.NewNodeManagerService(ns...)
-	ncs := service.NewNodeCommanderService(func(id string, command service.Command) (any, error) {
-		return nil, fmt.Errorf("not implemented")
-	})
 	nss := service.NewNodeSchedulerService(
 		mcs.Current,
 		mcs.Stream,
@@ -178,31 +178,44 @@ func createContainers(cfg config.Config) (di.ServiceContainer, di.SubscribeConta
 		nms.Stream,
 	)
 
-	return di.ServiceContainer{
-			NodeManager:         nms,
-			NodeScheduler:       nss,
-			NodeCommander:       ncs,
-			MasterConfiguration: mcs,
-		}, di.SubscribeContainer{
-			JoinNodesNetwork:            nms.Join,
-			UpdateNodesNetwork:          nms.Update,
-			GetNodeStatsPollingDuration: cfg.NodeStatsPolling.Duration,
-			GetNodeStatsPollingDurationUpdates: func() chan (time.Duration) {
-				ch := make(chan (time.Duration))
-				sp := cfg.NodeStatsPolling.Duration()
-				cfgs := mcs.Stream()
-				go func() {
-					for cfg = range cfgs {
-						usp := cfg.NodeStatsPolling.Duration()
-						if usp == sp {
-							continue
-						}
-						sp = usp
-						ch <- sp
-					}
-				}()
+	return http.ServiceContainer{
+		NodeManager:         nms,
+		NodeScheduler:       nss,
+		MasterConfiguration: mcs,
+	}
+}
 
-				return ch
-			},
-		}
+func createSubContainer(sc http.ServiceContainer) mq.SubscribeContainer {
+	cfg := sc.MasterConfiguration.Current()
+	return mq.SubscribeContainer{
+		JoinNodesNetwork:            sc.NodeManager.Join,
+		UpdateNodesNetwork:          sc.NodeManager.Update,
+		GetNodeStatsPollingDuration: cfg.NodeStatsPolling.Duration,
+		GetNodeStatsPollingDurationUpdates: func() chan (time.Duration) {
+			ch := make(chan (time.Duration))
+			sp := cfg.NodeStatsPolling.Duration()
+			cfgs := sc.MasterConfiguration.Stream()
+			go func() {
+				for cfg = range cfgs {
+					usp := cfg.NodeStatsPolling.Duration()
+					if usp == sp {
+						continue
+					}
+					sp = usp
+					ch <- sp
+				}
+			}()
+
+			return ch
+		},
+	}
+}
+
+func updateServiceContainer(
+	sc http.ServiceContainer,
+	s *mq.Socket,
+) http.ServiceContainer {
+	zps := event.NewZeroMQEventPubSub(s)
+	sc.NodeCommander = service.NewNodeCommanderService(zps, zps)
+	return sc
 }

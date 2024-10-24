@@ -1,41 +1,68 @@
 package event
 
 import (
+	"fmt"
+
 	"github.com/guackamolly/zero-monitor/internal/logging"
 	"github.com/guackamolly/zero-monitor/internal/mq"
 )
 
-type ZeroMQEventPublisher struct {
-	mq.Socket
+type ZeroMQEventPubSub struct {
+	*mq.Socket
 }
 
-func (s ZeroMQEventPublisher) Publish(e Event) error {
-	return s.PublishMsg(eventToMsg(e))
+func NewZeroMQEventPubSub(
+	socket *mq.Socket,
+) ZeroMQEventPubSub {
+	return ZeroMQEventPubSub{
+		Socket: socket,
+	}
 }
 
-func (s ZeroMQEventPublisher) Subscribe(t mq.Topic) chan (EventOutput) {
+func (p ZeroMQEventPubSub) Publish(e Event) error {
+	msg, err := p.eventToMsg(e)
+	if err != nil {
+		return err
+	}
+
+	return p.PublishMsg(msg)
+}
+
+func (p ZeroMQEventPubSub) Subscribe(e Event) chan (EventOutput) {
+	msg, err := p.eventToMsg(e)
+	if err != nil {
+		return nil
+	}
+	t := msg.Topic
+
 	ch := make(chan (EventOutput))
 	go func() {
-		s.OnMsgReceived(t, func(m mq.Msg) {
+		p.OnMsgReceived(t, func(m mq.Msg) {
 			if m.Topic != t {
 				return
 			}
 
-			ch <- msgToEventOutput(m)
+			ch <- p.msgToEventOutput(m)
 		})
 	}()
 	return ch
 }
 
-func eventToMsg(e Event) mq.Msg {
-	if te, ok := e.(DataEvent); ok {
-		return mq.Compose(e.Topic(), te.Data).WithMetadata(e)
-	}
+func (p ZeroMQEventPubSub) eventToMsg(e Event) (mq.Msg, error) {
+	switch te := e.(type) {
+	case QueryNodeConnectionsEvent:
+		sid, ok := p.Clients[te.NodeID]
+		if !ok {
+			return mq.Msg{}, fmt.Errorf("no pub client associated with id, %v", te.NodeID)
+		}
 
-	return mq.Compose(e.Topic()).WithMetadata(e)
+		return mq.Compose(mq.NodeConnections).WithIdentity(sid), nil
+	default:
+		return mq.Msg{}, fmt.Errorf("couldn't match event with a topic, %v", e)
+	}
 }
 
-func msgToEventOutput(m mq.Msg) EventOutput {
+func (p ZeroMQEventPubSub) msgToEventOutput(m mq.Msg) EventOutput {
 	if e, ok := m.Metadata.(Event); ok {
 		return NewBaseEventOutput(e, m.Data)
 	}

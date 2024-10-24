@@ -9,7 +9,6 @@ import (
 
 	"github.com/guackamolly/zero-monitor/internal/conn"
 	"github.com/guackamolly/zero-monitor/internal/data/repositories"
-	"github.com/guackamolly/zero-monitor/internal/di"
 	"github.com/guackamolly/zero-monitor/internal/logging"
 	"github.com/guackamolly/zero-monitor/internal/mq"
 	"github.com/guackamolly/zero-monitor/internal/service"
@@ -19,7 +18,7 @@ func main() {
 	// 1. Initialize DI & logging.
 	pc := createPublishContainer()
 	ctx := context.Background()
-	ctx = di.InjectPublishContainer(ctx, pc)
+	ctx = mq.InjectPublishContainer(ctx, pc)
 
 	logging.AddLogger(logging.NewConsoleLogger())
 
@@ -46,11 +45,11 @@ func main() {
 	<-c
 }
 
-func createPublishContainer() di.PublishContainer {
+func createPublishContainer() mq.PublishContainer {
 	system := repositories.GopsUtilSystemRepository{}
 	nrs := service.NewNodeReporterService(system)
 
-	return di.PublishContainer{
+	return mq.PublishContainer{
 		GetCurrentNode:            nrs.Node,
 		GetCurrentNodeConnections: nrs.Temp,
 		StartNodeStatsPolling:     nrs.Start,

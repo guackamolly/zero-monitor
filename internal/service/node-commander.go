@@ -4,36 +4,46 @@ import (
 	"fmt"
 
 	"github.com/guackamolly/zero-monitor/internal/data/models"
-)
-
-type Command byte
-
-const (
-	connections Command = iota + 1
+	"github.com/guackamolly/zero-monitor/internal/event"
 )
 
 // Service for executing commands in nodes.
 type NodeCommanderService struct {
-	execute func(id string, command Command) (any, error)
+	publisher  event.EventPublisher
+	subscriber event.EventSubscriber
 }
 
 func NewNodeCommanderService(
-	execute func(id string, command Command) (any, error),
+	publisher event.EventPublisher,
+	subscriber event.EventSubscriber,
 ) *NodeCommanderService {
 	s := &NodeCommanderService{
-		execute: execute,
+		publisher:  publisher,
+		subscriber: subscriber,
 	}
 
 	return s
 }
 
 func (s NodeCommanderService) Connections(id string) ([]models.Connection, error) {
-	r, err := s.execute(id, connections)
+	ev := event.NewQueryNodeConnectionsEvent(id)
+	err := s.publisher.Publish(ev)
 	if err != nil {
 		return nil, err
 	}
 
-	conns, ok := r.([]models.Connection)
+	ch := s.subscriber.Subscribe(ev)
+	if ch == nil {
+		return nil, fmt.Errorf("coudln't subscribe to event, %v", ev)
+	}
+
+	r := <-ch
+	err = r.Error()
+	if err != nil {
+		return nil, err
+	}
+
+	conns, ok := r.Data().([]models.Connection)
 	if !ok {
 		return nil, fmt.Errorf("failed to parse %v to connection slice", r)
 	}

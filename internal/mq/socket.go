@@ -15,6 +15,9 @@ type Socket struct {
 	ctx          context.Context
 	framesLength int
 	listeners    map[Topic][]func(Msg)
+	// Clients of the socket, identified by their machine ID and their socket identity
+	// This field only makes sense for sub sockets.
+	Clients map[string][]byte
 }
 
 // Creates a new sub [zmq4-Socket] wrapper with a custom context.
@@ -25,6 +28,7 @@ func NewSubSocket(ctx context.Context) Socket {
 		ctx:          ctx,
 		framesLength: 2,
 		listeners:    map[Topic][]func(Msg){},
+		Clients:      map[string][]byte{},
 	}
 }
 
@@ -35,7 +39,6 @@ func NewPubSocket(ctx context.Context) Socket {
 		Socket:       zmq4.NewDealer(ctx, zmq4.WithAutomaticReconnect(true)),
 		ctx:          ctx,
 		framesLength: 1,
-		listeners:    map[Topic][]func(Msg){},
 	}
 }
 

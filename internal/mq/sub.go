@@ -9,11 +9,6 @@ import (
 	"github.com/guackamolly/zero-monitor/internal/logging"
 )
 
-// Associates pub clients zeromq identity with their machine IDs.
-// Key: MachineID
-// Value: Socket Identity
-var registeredPubSockets = map[string][]byte{}
-
 func (s Socket) RegisterSubscriptions() {
 	sc := ExtractSubscribeContainer(s.ctx)
 	if sc == nil {
@@ -78,7 +73,7 @@ func handleJoinNetworkRequest(
 		return
 	}
 
-	registeredPubSockets[req.Node.ID] = m.Identity
+	s.Clients[req.Node.ID] = m.Identity
 	err := join(req.Node)
 	if err != nil {
 		logging.LogError("join node call failed, %v", err)
@@ -108,12 +103,12 @@ func broadcastStatsPollingDurationUpdate(
 	s Socket,
 	d time.Duration,
 ) error {
-	if len(registeredPubSockets) == 0 {
+	if len(s.Clients) == 0 {
 		logging.LogInfo("skipping stats polling duration update broadcast, no registered pub sockets")
 		return nil
 	}
 
-	for _, identity := range registeredPubSockets {
+	for _, identity := range s.Clients {
 		s.ReplyMsg(identity, Compose(UpdateNodeStatsPollDuration, UpdateNodeStatsPollDurationRequest{Duration: d}))
 	}
 
