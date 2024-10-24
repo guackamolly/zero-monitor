@@ -42,7 +42,7 @@ func (s Socket) RegisterPublishers() {
 				handleUpdateStatsPollDurationRequest(m, pc.UpdateNodeStatsPolling)
 				continue
 			case NodeConnections:
-				handleNodeConnectionsRequest(s, m, pc.GetCurrentNodeConnections)
+				handleNodeConnectionsRequest(s, pc.GetCurrentNodeConnections)
 				continue
 			default:
 				logging.LogError("failed to recognize sub reply message, %v", m)
@@ -89,7 +89,6 @@ func handleUpdateStatsPollDurationRequest(
 
 func handleNodeConnectionsRequest(
 	s Socket,
-	m Msg,
 	connections domain.GetCurrentNodeConnections,
 ) error {
 	conns, err := connections()

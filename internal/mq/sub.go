@@ -74,7 +74,7 @@ func handleJoinNetworkRequest(
 	logging.LogInfo("handling join network request")
 	req, ok := m.Data().(JoinNetworkRequest)
 	if !ok {
-		err := fmt.Errorf("couldn't cast data to join network request, got: %v", m.Data)
+		err := fmt.Errorf("couldn't cast data to join network request, got: %v", m.Data())
 		s.ReplyMsg(m.Identity(), compose(JoinNetwork, err))
 		return
 	}
