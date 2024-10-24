@@ -34,7 +34,7 @@ func (s Socket) RegisterPublishers() {
 				continue
 			}
 
-			switch m.Topic() {
+			switch m.Topic {
 			case JoinNetwork:
 				handleJoinNetworkResponse(s, m, pc.StartNodeStatsPolling)
 				continue
@@ -56,7 +56,7 @@ func handleJoinNetworkResponse(
 	m Msg,
 	start domain.StartNodeStatsPolling,
 ) error {
-	resp, ok := m.Data().(JoinNetworkResponse)
+	resp, ok := m.Data.(JoinNetworkResponse)
 	if !ok {
 		return handleUnknownMessage(m)
 	}
@@ -64,7 +64,7 @@ func handleJoinNetworkResponse(
 	go func() {
 		ns := start(resp.StatsPoll)
 		for n := range ns {
-			err := s.PublishMsg(compose(UpdateNodeStats, n))
+			err := s.PublishMsg(compose(UpdateNodeStats, UpdateNodeStatsRequest{Node: n}))
 			if err != nil {
 				logging.LogError("failed to publish update stats message, %v", err)
 			}
@@ -78,7 +78,7 @@ func handleUpdateStatsPollDurationRequest(
 	m Msg,
 	update domain.UpdateNodeStatsPolling,
 ) error {
-	req, ok := m.Data().(UpdateNodeStatsPollDurationRequest)
+	req, ok := m.Data.(UpdateNodeStatsPollDurationRequest)
 	if !ok {
 		return handleUnknownMessage(m)
 	}
@@ -102,7 +102,7 @@ func handleNodeConnectionsRequest(
 func handleUnknownMessage(
 	m Msg,
 ) error {
-	err, ok := m.Data().(error)
+	err, ok := m.Data.(error)
 	if ok {
 		return err
 	}

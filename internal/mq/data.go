@@ -6,28 +6,26 @@ import (
 	"fmt"
 )
 
-type Msg interface {
-	Identity() []byte
-	Topic() Topic
-	Data() any
+type Msg struct {
+	Identity []byte
+	Topic    Topic
+	Data     any
+	Metadata any
 }
 
-type BaseMsg struct {
-	BIdentity []byte
-	BTopic    Topic
-	BData     any
+func (m Msg) WithIdentity(identity []byte) Msg {
+	m.Identity = identity
+	return m
 }
 
-func (m BaseMsg) Identity() []byte {
-	return m.BIdentity
+func (m Msg) WithMetadata(metadata any) Msg {
+	m.Metadata = metadata
+	return m
 }
 
-func (m BaseMsg) Topic() Topic {
-	return m.BTopic
-}
-
-func (m BaseMsg) Data() any {
-	return m.BData
+func (m Msg) WithData(data any) Msg {
+	m.Data = data
+	return m
 }
 
 func encode(m Msg) ([]byte, error) {
@@ -51,7 +49,7 @@ func decode(b []byte) (Msg, error) {
 	n, err := buf.Write(b)
 
 	if n != len(b) || err != nil {
-		return m, fmt.Errorf("couldn't write all bytes to buffer")
+		return Msg{}, fmt.Errorf("couldn't write all bytes to buffer")
 	}
 
 	enc := gob.NewDecoder(&buf)
@@ -61,9 +59,9 @@ func decode(b []byte) (Msg, error) {
 }
 
 func compose(t Topic, d ...any) Msg {
-	m := BaseMsg{BTopic: t}
+	m := Msg{Topic: t}
 	if len(d) > 0 {
-		m.BData = d[0]
+		m.Data = d[0]
 	}
 
 	return m

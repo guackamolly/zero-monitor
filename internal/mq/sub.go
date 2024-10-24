@@ -52,7 +52,7 @@ func handle(
 	m Msg,
 	sc *di.SubscribeContainer,
 ) {
-	switch m.Topic() {
+	switch m.Topic {
 	case JoinNetwork:
 		handleJoinNetworkRequest(s, m, sc.JoinNodesNetwork, sc.GetNodeStatsPollingDuration)
 		return
@@ -60,7 +60,7 @@ func handle(
 		handleUpdateNodeStatsRequest(m, sc.UpdateNodesNetwork)
 		return
 	default:
-		logging.LogWarning("failed to understand message with topic %d", m.Topic())
+		logging.LogWarning("failed to understand message with topic %d", m.Topic)
 		return
 	}
 }
@@ -72,20 +72,20 @@ func handleJoinNetworkRequest(
 	nodeStatsPollingDuration domain.GetNodeStatsPollingDuration,
 ) {
 	logging.LogInfo("handling join network request")
-	req, ok := m.Data().(JoinNetworkRequest)
+	req, ok := m.Data.(JoinNetworkRequest)
 	if !ok {
-		err := fmt.Errorf("couldn't cast data to join network request, got: %v", m.Data())
-		s.ReplyMsg(m.Identity(), compose(JoinNetwork, err))
+		err := fmt.Errorf("couldn't cast data to join network request, got: %v", m.Data)
+		s.ReplyMsg(m.Identity, compose(JoinNetwork, err))
 		return
 	}
 
-	registeredPubSockets[req.Node.ID] = m.Identity()
+	registeredPubSockets[req.Node.ID] = m.Identity
 	err := join(req.Node)
 	if err != nil {
 		logging.LogError("join node call failed, %v", err)
 	}
 
-	s.ReplyMsg(m.Identity(), compose(JoinNetwork, JoinNetworkResponse{StatsPoll: nodeStatsPollingDuration()}))
+	s.ReplyMsg(m.Identity, compose(JoinNetwork, JoinNetworkResponse{StatsPoll: nodeStatsPollingDuration()}))
 }
 
 func handleUpdateNodeStatsRequest(
@@ -93,7 +93,7 @@ func handleUpdateNodeStatsRequest(
 	update domain.UpdateNodesNetwork,
 ) {
 	log.Println("handling node update")
-	req, ok := m.Data().(UpdateNodeStatsRequest)
+	req, ok := m.Data.(UpdateNodeStatsRequest)
 	if !ok {
 		logging.LogError("couldn't cast data to update stats request, got: %v", m.Data)
 		return

@@ -75,12 +75,12 @@ func (s Socket) ReceiveMsg() (Msg, error) {
 
 	zm, err := s.Recv()
 	if err != nil {
-		return nil, err
+		return Msg{}, err
 	}
 
 	if l := len(zm.Frames); l != s.framesLength {
 		err = fmt.Errorf("received corrupted message, expected %d frames but got: %d", s.framesLength, l)
-		return nil, err
+		return Msg{}, err
 	}
 
 	if s.framesLength == 1 {
@@ -89,15 +89,10 @@ func (s Socket) ReceiveMsg() (Msg, error) {
 
 	m, err := decode(zm.Frames[1])
 	if err != nil {
-		return nil, err
+		return Msg{}, err
 	}
 
-	if tm, ok := m.(BaseMsg); !ok {
-		return nil, fmt.Errorf("couldn't assign identity to message")
-	} else {
-		tm.BIdentity = m.Identity()
-		return tm, nil
-	}
+	return m.WithIdentity(zm.Frames[0]), nil
 }
 
 // Replies to a pub socket from the sub socket.
