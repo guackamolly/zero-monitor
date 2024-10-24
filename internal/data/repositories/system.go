@@ -14,11 +14,13 @@ import (
 	"github.com/shirou/gopsutil/disk"
 	"github.com/shirou/gopsutil/host"
 	"github.com/shirou/gopsutil/mem"
+	nett "github.com/shirou/gopsutil/net"
 )
 
 type SystemRepository interface {
 	Info() (models.Info, error)
 	Stats() (models.Stats, error)
+	Conns() ([]models.Connection, error)
 }
 
 type GopsUtilSystemRepository struct{}
@@ -123,6 +125,26 @@ func (r GopsUtilSystemRepository) Stats() (models.Stats, error) {
 		temp,
 		uptime,
 	), nil
+}
+
+func (r GopsUtilSystemRepository) Conns() ([]models.Connection, error) {
+	conns, err := nett.Connections("inet")
+	if err != nil {
+		return []models.Connection{}, err
+	}
+
+	l := len(conns)
+	v := make([]models.Connection, l)
+	for i, conn := range conns {
+		v[i] = models.NewConnection(
+			conn.Type,
+			conn.Status,
+			conn.Laddr,
+			conn.Raddr,
+		)
+	}
+
+	return v, nil
 }
 
 func localIP() (net.IP, error) {
