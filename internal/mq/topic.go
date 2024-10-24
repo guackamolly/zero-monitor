@@ -7,4 +7,5 @@ const (
 	join Topic = iota + 1
 	update
 	updateStatsPollDuration
+	Connections
 )

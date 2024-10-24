@@ -9,6 +9,17 @@ import (
 	"github.com/guackamolly/zero-monitor/internal/data/models"
 )
 
+type SubCommand struct {
+	NodeID string
+	Topic  Topic
+	Data   any
+}
+
+type SubCommandResult struct {
+	Topic Topic
+	Data  any
+}
+
 type msg struct {
 	Identity []byte
 	Topic    Topic
@@ -31,12 +42,18 @@ type updateStatsPollDurationRequest struct {
 	Duration time.Duration
 }
 
+type nodeConnectionsResponse struct {
+	Connections []models.Connection
+}
+
 func init() {
 	gob.Register(models.Node{})
 	gob.Register(joinRequest{})
 	gob.Register(joinResponse{})
 	gob.Register(updateStatsRequest{})
 	gob.Register(updateStatsPollDurationRequest{})
+	gob.Register(nodeConnectionsResponse{})
+	gob.Register([]models.Connection{})
 }
 
 func encode(m msg) ([]byte, error) {

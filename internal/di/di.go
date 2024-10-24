@@ -17,6 +17,7 @@ const (
 type SubscribeContainer struct {
 	NodeManager         *service.NodeManagerService
 	NodeScheduler       *service.NodeSchedulerService
+	NodeCommander       *service.NodeCommanderService
 	MasterConfiguration *service.MasterConfigurationService
 }
 

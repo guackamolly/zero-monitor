@@ -15,7 +15,11 @@ import (
 // Value: Socket Identity
 var registeredPubSockets = map[string][]byte{}
 
-func (s Socket) RegisterSubscriptions() {
+func (s Socket) RegisterSubscriptions(
+	ext chan (SubCommand),
+) chan SubCommandResult {
+	rc := make(chan (SubCommandResult))
+
 	sc := di.ExtractSubscribeContainer(s.ctx)
 	if sc == nil {
 		logging.LogFatal("subscribe container hasn't been injected")
@@ -30,7 +34,7 @@ func (s Socket) RegisterSubscriptions() {
 				continue
 			}
 
-			handle(s, m, *sc)
+			handle(s, m, *sc, rc)
 		}
 	}()
 
@@ -52,13 +56,25 @@ func (s Socket) RegisterSubscriptions() {
 			}
 		}
 	}()
+
+	go func() {
+		for c := range ext {
+			fmt.Printf("c: %v\n", c)
+			s.Reply(registeredPubSockets[c.NodeID], compose(c.Topic, c.Data))
+		}
+	}()
+
+	return rc
 }
 
 func handle(
 	s Socket,
 	m msg,
 	serviceContainer di.SubscribeContainer,
+	rc chan (SubCommandResult),
 ) {
+	fmt.Printf(">>> m.Topic: %v\n", m.Topic)
+
 	if err, ok := m.Data.(error); ok {
 		log.Printf("received err %v for topic %d\n", err, m.Topic)
 		return
@@ -70,6 +86,14 @@ func handle(
 		return
 	case update:
 		handleUpdate(m, serviceContainer.NodeManager)
+		return
+	default:
+		go func() {
+			rc <- SubCommandResult{
+				Topic: m.Topic,
+				Data:  m.Data,
+			}
+		}()
 		return
 	}
 }

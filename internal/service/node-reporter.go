@@ -65,6 +65,10 @@ func (s *NodeReporterService) Update(
 	s.statsPollDuration = d
 }
 
+func (s NodeReporterService) Temp() ([]models.Connection, error) {
+	return s.system.Conns()
+}
+
 // tries to fetch system info, and if it fails, sleeps for 2 seconds until trying again.
 // blocking call.
 func (s NodeReporterService) systemInfo() models.Info {

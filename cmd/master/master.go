@@ -21,6 +21,9 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 )
 
+var temp1 = make(chan (mq.SubCommand))
+var temp2 chan (mq.SubCommandResult)
+
 func main() {
 	// 1. Load config
 	logging.AddLogger(logging.NewConsoleLogger())
@@ -32,7 +35,7 @@ func main() {
 	ctx = di.InjectSubscribeContainer(ctx, sc)
 
 	// 3. Initialize sub server.
-	s := initializeSubServer(ctx)
+	s := initializeSubServer(ctx, temp1)
 	defer s.Close()
 
 	// 4. Initialize beacon server.
@@ -68,7 +71,7 @@ func saveConfig(s *service.MasterConfigurationService) {
 	}
 }
 
-func initializeSubServer(ctx context.Context) mq.Socket {
+func initializeSubServer(ctx context.Context, ext chan (mq.SubCommand)) mq.Socket {
 	// Find available TCP port.
 	tconn := findAvailableTcpPort()
 	taddr := tconn.Addr().(*net.TCPAddr)
@@ -77,7 +80,7 @@ func initializeSubServer(ctx context.Context) mq.Socket {
 	tconn.Close()
 
 	s := mq.NewSubSocket(ctx)
-	s.RegisterSubscriptions()
+	temp2 = s.RegisterSubscriptions(ext)
 	err := mq.ConnectSubscribe(s, taddr.IP, taddr.Port)
 	if err != nil {
 		s.Close()
@@ -162,6 +165,27 @@ func createSubscribeContainer(cfg config.Config) di.SubscribeContainer {
 
 	mcs := service.NewMasterConfigurationService(&cfg)
 	nms := service.NewNodeManagerService(ns...)
+	ncs := service.NewNodeCommanderService(func(id string, command service.Command) (any, error) {
+		go func() {
+			println("bro")
+			temp1 <- mq.SubCommand{
+				NodeID: id,
+				Topic:  mq.Connections,
+			}
+			println("bro 2")
+
+		}()
+
+		println("bro 3")
+		r := <-temp2
+
+		println("bro 4")
+		if err, ok := r.Data.(error); ok {
+			return nil, err
+		}
+
+		return r.Data, nil
+	})
 	nss := service.NewNodeSchedulerService(
 		mcs.Current,
 		mcs.Stream,
@@ -175,6 +199,7 @@ func createSubscribeContainer(cfg config.Config) di.SubscribeContainer {
 	return di.SubscribeContainer{
 		NodeManager:         nms,
 		NodeScheduler:       nss,
+		NodeCommander:       ncs,
 		MasterConfiguration: mcs,
 	}
 }
