@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/guackamolly/zero-monitor/internal/di"
+	"github.com/guackamolly/zero-monitor/internal/domain"
 	"github.com/guackamolly/zero-monitor/internal/logging"
-	"github.com/guackamolly/zero-monitor/internal/service"
 )
 
 // Associates pub clients zeromq identity with their machine IDs.
@@ -15,11 +15,7 @@ import (
 // Value: Socket Identity
 var registeredPubSockets = map[string][]byte{}
 
-func (s Socket) RegisterSubscriptions(
-	ext chan (SubCommand),
-) chan SubCommandResult {
-	rc := make(chan (SubCommandResult))
-
+func (s Socket) RegisterSubscriptions() {
 	sc := di.ExtractSubscribeContainer(s.ctx)
 	if sc == nil {
 		logging.LogFatal("subscribe container hasn't been injected")
@@ -28,112 +24,82 @@ func (s Socket) RegisterSubscriptions(
 	go func() {
 		for {
 			logging.LogInfo("waiting for messages...")
-			m, err := s.Receive()
+			m, err := s.ReceiveMsg()
 			if err != nil {
 				logging.LogError("failed to receive message from pub socket, %v", err)
 				continue
 			}
 
-			handle(s, m, *sc, rc)
+			handle(s, m, sc)
 		}
 	}()
 
 	go func() {
-		mcs := sc.MasterConfiguration
-		sp := mcs.Current().NodeStatsPolling
-		ch := sc.MasterConfiguration.Stream()
+		spu := sc.GetNodeStatsPollingDurationUpdates()
 
-		for cfg := range ch {
-			if sp == cfg.NodeStatsPolling {
-				continue
-			}
-			sp = cfg.NodeStatsPolling
-
+		for sp := range spu {
 			logging.LogInfo("broadcasting stats polling duration update")
-			err := broadcastStatsPollingDurationUpdate(s, sp.Duration())
+			err := broadcastStatsPollingDurationUpdate(s, sp)
 			if err != nil {
 				logging.LogError("failed to broadcast stats polling duration update, %v", err)
 			}
 		}
 	}()
-
-	go func() {
-		for c := range ext {
-			fmt.Printf("c: %v\n", c)
-			s.Reply(registeredPubSockets[c.NodeID], compose(c.Topic, c.Data))
-		}
-	}()
-
-	return rc
 }
 
 func handle(
 	s Socket,
-	m msg,
-	serviceContainer di.SubscribeContainer,
-	rc chan (SubCommandResult),
+	m Msg,
+	sc *di.SubscribeContainer,
 ) {
-	fmt.Printf(">>> m.Topic: %v\n", m.Topic)
-
-	if err, ok := m.Data.(error); ok {
-		log.Printf("received err %v for topic %d\n", err, m.Topic)
+	switch m.Topic() {
+	case JoinNetwork:
+		handleJoinNetworkRequest(s, m, sc.JoinNodesNetwork, sc.GetNodeStatsPollingDuration)
 		return
-	}
-
-	switch m.Topic {
-	case join:
-		handleJoin(s, m, serviceContainer.NodeManager, serviceContainer.MasterConfiguration)
-		return
-	case update:
-		handleUpdate(m, serviceContainer.NodeManager)
+	case UpdateNodeStats:
+		handleUpdateNodeStatsRequest(m, sc.UpdateNodesNetwork)
 		return
 	default:
-		go func() {
-			rc <- SubCommandResult{
-				Topic: m.Topic,
-				Data:  m.Data,
-			}
-		}()
+		logging.LogWarning("failed to understand message with topic %d", m.Topic())
 		return
 	}
 }
 
-func handleJoin(
+func handleJoinNetworkRequest(
 	s Socket,
-	m msg,
-	nodeManager *service.NodeManagerService,
-	masterConfiguration *service.MasterConfigurationService,
+	m Msg,
+	join domain.JoinNodesNetwork,
+	nodeStatsPollingDuration domain.GetNodeStatsPollingDuration,
 ) {
-	logging.LogInfo("handling node join")
-	req, ok := m.Data.(joinRequest)
+	logging.LogInfo("handling join network request")
+	req, ok := m.Data().(JoinNetworkRequest)
 	if !ok {
-		err := fmt.Errorf("couldn't cast data to join request, got: %v", m.Data)
-		s.Reply(m.Identity, compose(join, err))
+		err := fmt.Errorf("couldn't cast data to join network request, got: %v", m.Data)
+		s.ReplyMsg(m.Identity(), compose(JoinNetwork, err))
 		return
 	}
 
-	registeredPubSockets[req.Node.ID] = m.Identity
-	err := nodeManager.Join(req.Node)
+	registeredPubSockets[req.Node.ID] = m.Identity()
+	err := join(req.Node)
 	if err != nil {
-		log.Printf("join node call failed, %v\n", err)
+		logging.LogError("join node call failed, %v", err)
 	}
 
-	cfg := masterConfiguration.Current()
-	s.Reply(m.Identity, compose(join, joinResponse{StatsPoll: cfg.NodeStatsPolling.Duration()}))
+	s.ReplyMsg(m.Identity(), compose(JoinNetwork, JoinNetworkResponse{StatsPoll: nodeStatsPollingDuration()}))
 }
 
-func handleUpdate(
-	m msg,
-	nodeManager *service.NodeManagerService,
+func handleUpdateNodeStatsRequest(
+	m Msg,
+	update domain.UpdateNodesNetwork,
 ) {
 	log.Println("handling node update")
-	req, ok := m.Data.(updateStatsRequest)
+	req, ok := m.Data().(UpdateNodeStatsRequest)
 	if !ok {
 		logging.LogError("couldn't cast data to update stats request, got: %v", m.Data)
 		return
 	}
 
-	err := nodeManager.Update(req.Node)
+	err := update(req.Node)
 	if err != nil {
 		logging.LogError("updated node call failed, %v", err)
 	}
@@ -149,7 +115,7 @@ func broadcastStatsPollingDurationUpdate(
 	}
 
 	for _, identity := range registeredPubSockets {
-		s.Reply(identity, compose(updateStatsPollDuration, updateStatsPollDurationRequest{Duration: d}))
+		s.ReplyMsg(identity, compose(UpdateNodeStatsPollDuration, UpdateNodeStatsPollDurationRequest{Duration: d}))
 	}
 
 	return nil

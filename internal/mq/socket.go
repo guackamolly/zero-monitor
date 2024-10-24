@@ -14,6 +14,7 @@ type Socket struct {
 	zmq4.Socket
 	ctx          context.Context
 	framesLength int
+	listeners    map[Topic][]func(Msg)
 }
 
 // Creates a new sub [zmq4-Socket] wrapper with a custom context.
@@ -23,6 +24,7 @@ func NewSubSocket(ctx context.Context) Socket {
 		Socket:       zmq4.NewRouter(ctx),
 		ctx:          ctx,
 		framesLength: 2,
+		listeners:    map[Topic][]func(Msg){},
 	}
 }
 
@@ -33,6 +35,7 @@ func NewPubSocket(ctx context.Context) Socket {
 		Socket:       zmq4.NewDealer(ctx, zmq4.WithAutomaticReconnect(true)),
 		ctx:          ctx,
 		framesLength: 1,
+		listeners:    map[Topic][]func(Msg){},
 	}
 }
 
@@ -40,10 +43,19 @@ func (s Socket) Context() context.Context {
 	return s.ctx
 }
 
+func (s Socket) OnMsgReceived(t Topic, h func(m Msg)) {
+	hs, ok := s.listeners[t]
+	if !ok {
+		hs = []func(Msg){}
+	}
+
+	s.listeners[t] = append(hs, h)
+}
+
 // Publishes a message from a pub socket to the sub socket and waits for a reply.
 // Receiver must be a pub socket.
-func (s Socket) Publish(m msg) error {
-	logging.LogInfo("publishing msg with topic: %d", m.Topic)
+func (s Socket) PublishMsg(m Msg) error {
+	logging.LogInfo("publishing Msg with topic: %d", m.Topic)
 
 	b, err := encode(m)
 	if err != nil {
@@ -58,17 +70,17 @@ func (s Socket) Publish(m msg) error {
 	return nil
 }
 
-func (s Socket) Receive() (msg, error) {
+func (s Socket) ReceiveMsg() (Msg, error) {
 	logging.LogInfo("waiting for messages...")
 
 	zm, err := s.Recv()
 	if err != nil {
-		return msg{}, err
+		return nil, err
 	}
 
 	if l := len(zm.Frames); l != s.framesLength {
 		err = fmt.Errorf("received corrupted message, expected %d frames but got: %d", s.framesLength, l)
-		return msg{}, err
+		return nil, err
 	}
 
 	if s.framesLength == 1 {
@@ -77,16 +89,20 @@ func (s Socket) Receive() (msg, error) {
 
 	m, err := decode(zm.Frames[1])
 	if err != nil {
-		return msg{}, err
+		return nil, err
 	}
-	m.Identity = zm.Frames[0]
 
-	return m, nil
+	if tm, ok := m.(BaseMsg); !ok {
+		return nil, fmt.Errorf("couldn't assign identity to message")
+	} else {
+		tm.BIdentity = m.Identity()
+		return tm, nil
+	}
 }
 
 // Replies to a pub socket from the sub socket.
 // Receiver must be a sub socket.
-func (s Socket) Reply(id []byte, m msg) {
+func (s Socket) ReplyMsg(id []byte, m Msg) {
 	b, err := encode(m)
 	if err != nil {
 		log.Printf("failed to encode reply message, %v\n", err)

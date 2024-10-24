@@ -4,10 +4,9 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/guackamolly/zero-monitor/internal/data/models"
 	"github.com/guackamolly/zero-monitor/internal/di"
+	"github.com/guackamolly/zero-monitor/internal/domain"
 	"github.com/guackamolly/zero-monitor/internal/logging"
-	"github.com/guackamolly/zero-monitor/internal/service"
 )
 
 func (s Socket) RegisterPublishers() {
@@ -18,8 +17,8 @@ func (s Socket) RegisterPublishers() {
 
 	// Join network.
 	go func() {
-		nr := pc.NodeReporter
-		err := joinNetwork(s, nr.Initial())
+		n := pc.GetCurrentNode()
+		err := s.PublishMsg(compose(JoinNetwork, JoinNetworkRequest{Node: n}))
 		if err != nil {
 			// TODO: handle join network error gracefully.
 			logging.LogFatal("couldn't join network, %v", err)
@@ -29,23 +28,21 @@ func (s Socket) RegisterPublishers() {
 	// Handle sub reply messages.
 	go func() {
 		for {
-			m, err := s.Receive()
+			m, err := s.ReceiveMsg()
 			if err != nil {
 				logging.LogError("failed to receive message from sub socket, %v", err)
 				continue
 			}
 
-			fmt.Printf("m.Topic: %v\n", m.Topic)
-
-			switch m.Topic {
-			case join:
-				handleJoinNetworkResponse(s, m, pc.NodeReporter)
+			switch m.Topic() {
+			case JoinNetwork:
+				handleJoinNetworkResponse(s, m, pc.StartNodeStatsPolling)
 				continue
-			case updateStatsPollDuration:
-				handleUpdateStatsPollDurationRequest(m, pc.NodeReporter)
+			case UpdateNodeStatsPollDuration:
+				handleUpdateStatsPollDurationRequest(m, pc.UpdateNodeStatsPolling)
 				continue
-			case Connections:
-				fmt.Printf("handleNodeConnectionsRequest(s, m, pc.NodeReporter): %v\n", handleNodeConnectionsRequest(s, m, pc.NodeReporter))
+			case NodeConnections:
+				handleNodeConnectionsRequest(s, m, pc.GetCurrentNodeConnections)
 				continue
 			default:
 				logging.LogError("failed to recognize sub reply message, %v", m)
@@ -54,38 +51,20 @@ func (s Socket) RegisterPublishers() {
 	}()
 }
 
-func joinNetwork(
-	s Socket,
-	node models.Node,
-) error {
-	m := compose(join, joinRequest{Node: node})
-
-	return s.Publish(m)
-}
-
-func updateStats(
-	s Socket,
-	node models.Node,
-) error {
-	m := compose(update, updateStatsRequest{Node: node})
-
-	return s.Publish(m)
-}
-
 func handleJoinNetworkResponse(
 	s Socket,
-	m msg,
-	nr *service.NodeReporterService,
+	m Msg,
+	start domain.StartNodeStatsPolling,
 ) error {
-	resp, ok := m.Data.(joinResponse)
+	resp, ok := m.Data().(JoinNetworkResponse)
 	if !ok {
 		return handleUnknownMessage(m)
 	}
 
 	go func() {
-		ns := nr.Start(resp.StatsPoll)
+		ns := start(resp.StatsPoll)
 		for n := range ns {
-			err := updateStats(s, n)
+			err := s.PublishMsg(compose(UpdateNodeStats, n))
 			if err != nil {
 				logging.LogError("failed to publish update stats message, %v", err)
 			}
@@ -96,35 +75,35 @@ func handleJoinNetworkResponse(
 }
 
 func handleUpdateStatsPollDurationRequest(
-	m msg,
-	nr *service.NodeReporterService,
+	m Msg,
+	update domain.UpdateNodeStatsPolling,
 ) error {
-	req, ok := m.Data.(updateStatsPollDurationRequest)
+	req, ok := m.Data().(UpdateNodeStatsPollDurationRequest)
 	if !ok {
 		return handleUnknownMessage(m)
 	}
 
-	nr.Update(req.Duration)
+	update(req.Duration)
 	return nil
 }
 
 func handleNodeConnectionsRequest(
 	s Socket,
-	m msg,
-	nr *service.NodeReporterService,
+	m Msg,
+	connections domain.GetCurrentNodeConnections,
 ) error {
-	conns, err := nr.Temp()
+	conns, err := connections()
 	if err != nil {
-		return s.Publish(compose(Connections, err))
+		return s.PublishMsg(compose(NodeConnections, err))
 	}
 
-	return s.Publish(compose(Connections, conns))
+	return s.PublishMsg(compose(NodeConnections, conns))
 }
 
 func handleUnknownMessage(
-	m msg,
+	m Msg,
 ) error {
-	err, ok := m.Data.(error)
+	err, ok := m.Data().(error)
 	if ok {
 		return err
 	}

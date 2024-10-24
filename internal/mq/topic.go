@@ -4,8 +4,8 @@ package mq
 type Topic byte
 
 const (
-	join Topic = iota + 1
-	update
-	updateStatsPollDuration
-	Connections
+	JoinNetwork Topic = iota + 1
+	UpdateNodeStats
+	UpdateNodeStatsPollDuration
+	NodeConnections
 )

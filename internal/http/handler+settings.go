@@ -23,7 +23,7 @@ func getSettingsHandler(ectx echo.Context) error {
 		return ectx.Render(200, "settings", settingsView)
 	}
 
-	return withSubscriberContainer(ectx, func(sc *di.SubscribeContainer) error {
+	return withServiceContainer(ectx, func(sc *di.ServiceContainer) error {
 		cfg := sc.MasterConfiguration
 		v := defaultSettingsView(cfg.Current())
 		settingsView = &v
@@ -61,7 +61,7 @@ func updateSettingsHandler(ectx echo.Context) error {
 		return echo.ErrInternalServerError
 	}
 
-	return withSubscriberContainer(ectx, func(sc *di.SubscribeContainer) error {
+	return withServiceContainer(ectx, func(sc *di.ServiceContainer) error {
 		cfg := sc.MasterConfiguration
 
 		cfg.UpdateConfigurable(sp, ls, as)

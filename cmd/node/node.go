@@ -48,8 +48,12 @@ func main() {
 
 func createPublishContainer() di.PublishContainer {
 	system := repositories.GopsUtilSystemRepository{}
+	nrs := service.NewNodeReporterService(system)
 
 	return di.PublishContainer{
-		NodeReporter: service.NewNodeReporterService(system),
+		GetCurrentNode:            nrs.Node,
+		GetCurrentNodeConnections: nrs.Temp,
+		StartNodeStatsPolling:     nrs.Start,
+		UpdateNodeStatsPolling:    nrs.Update,
 	}
 }

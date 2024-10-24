@@ -11,7 +11,7 @@ func networkHandler(ectx echo.Context) error {
 		return networkWebsocketHandler(ectx)
 	}
 
-	return withSubscriberContainer(ectx, func(sc *di.SubscribeContainer) error {
+	return withServiceContainer(ectx, func(sc *di.ServiceContainer) error {
 		view := NewServerStatsView(sc.NodeManager.Network())
 
 		return ectx.Render(200, "network", view)
@@ -19,7 +19,7 @@ func networkHandler(ectx echo.Context) error {
 }
 
 func networkIdHandler(ectx echo.Context) error {
-	return withSubscriberContainer(ectx, func(sc *di.SubscribeContainer) error {
+	return withServiceContainer(ectx, func(sc *di.ServiceContainer) error {
 		id := ectx.Param("id")
 		n, ok := sc.NodeManager.Node(id)
 		if !ok {
@@ -33,7 +33,7 @@ func networkIdHandler(ectx echo.Context) error {
 }
 
 func networkIdConnectionsHandler(ectx echo.Context) error {
-	return withSubscriberContainer(ectx, func(sc *di.SubscribeContainer) error {
+	return withServiceContainer(ectx, func(sc *di.ServiceContainer) error {
 		id := ectx.Param("id")
 		n, ok := sc.NodeManager.Node(id)
 		if !ok {
@@ -52,7 +52,7 @@ func networkIdConnectionsHandler(ectx echo.Context) error {
 }
 
 func networkWebsocketHandler(ectx echo.Context) error {
-	return withSubscriberContainer(ectx, func(sc *di.SubscribeContainer) error {
+	return withServiceContainer(ectx, func(sc *di.ServiceContainer) error {
 		ws, err := upgrader.Upgrade(ectx.Response(), ectx.Request(), nil)
 		if err != nil {
 			return err

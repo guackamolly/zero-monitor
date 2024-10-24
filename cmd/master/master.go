@@ -2,11 +2,13 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/guackamolly/zero-monitor/internal/config"
 	"github.com/guackamolly/zero-monitor/internal/conn"
@@ -21,21 +23,19 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 )
 
-var temp1 = make(chan (mq.SubCommand))
-var temp2 chan (mq.SubCommandResult)
-
 func main() {
 	// 1. Load config
 	logging.AddLogger(logging.NewConsoleLogger())
 	cfg := loadConfig()
 
 	// 2. Initialize DI.
-	sc := createSubscribeContainer(cfg)
+	sc, suc := createContainers(cfg)
 	ctx := context.Background()
-	ctx = di.InjectSubscribeContainer(ctx, sc)
+	ctx = di.InjectServiceContainer(ctx, sc)
+	ctx = di.InjectSubscribeContainer(ctx, suc)
 
 	// 3. Initialize sub server.
-	s := initializeSubServer(ctx, temp1)
+	s := initializeSubServer(ctx)
 	defer s.Close()
 
 	// 4. Initialize beacon server.
@@ -71,7 +71,7 @@ func saveConfig(s *service.MasterConfigurationService) {
 	}
 }
 
-func initializeSubServer(ctx context.Context, ext chan (mq.SubCommand)) mq.Socket {
+func initializeSubServer(ctx context.Context) mq.Socket {
 	// Find available TCP port.
 	tconn := findAvailableTcpPort()
 	taddr := tconn.Addr().(*net.TCPAddr)
@@ -80,7 +80,7 @@ func initializeSubServer(ctx context.Context, ext chan (mq.SubCommand)) mq.Socke
 	tconn.Close()
 
 	s := mq.NewSubSocket(ctx)
-	temp2 = s.RegisterSubscriptions(ext)
+	s.RegisterSubscriptions()
 	err := mq.ConnectSubscribe(s, taddr.IP, taddr.Port)
 	if err != nil {
 		s.Close()
@@ -155,7 +155,7 @@ func findAvailableUdpPort() *net.UDPConn {
 	return uconn
 }
 
-func createSubscribeContainer(cfg config.Config) di.SubscribeContainer {
+func createContainers(cfg config.Config) (di.ServiceContainer, di.SubscribeContainer) {
 	ns := make([]models.Node, len(cfg.TrustedNetwork))
 	i := 0
 	for _, n := range cfg.TrustedNetwork {
@@ -166,25 +166,7 @@ func createSubscribeContainer(cfg config.Config) di.SubscribeContainer {
 	mcs := service.NewMasterConfigurationService(&cfg)
 	nms := service.NewNodeManagerService(ns...)
 	ncs := service.NewNodeCommanderService(func(id string, command service.Command) (any, error) {
-		go func() {
-			println("bro")
-			temp1 <- mq.SubCommand{
-				NodeID: id,
-				Topic:  mq.Connections,
-			}
-			println("bro 2")
-
-		}()
-
-		println("bro 3")
-		r := <-temp2
-
-		println("bro 4")
-		if err, ok := r.Data.(error); ok {
-			return nil, err
-		}
-
-		return r.Data, nil
+		return nil, fmt.Errorf("not implemented")
 	})
 	nss := service.NewNodeSchedulerService(
 		mcs.Current,
@@ -196,10 +178,31 @@ func createSubscribeContainer(cfg config.Config) di.SubscribeContainer {
 		nms.Stream,
 	)
 
-	return di.SubscribeContainer{
-		NodeManager:         nms,
-		NodeScheduler:       nss,
-		NodeCommander:       ncs,
-		MasterConfiguration: mcs,
-	}
+	return di.ServiceContainer{
+			NodeManager:         nms,
+			NodeScheduler:       nss,
+			NodeCommander:       ncs,
+			MasterConfiguration: mcs,
+		}, di.SubscribeContainer{
+			JoinNodesNetwork:            nms.Join,
+			UpdateNodesNetwork:          nms.Update,
+			GetNodeStatsPollingDuration: cfg.NodeStatsPolling.Duration,
+			GetNodeStatsPollingDurationUpdates: func() chan (time.Duration) {
+				ch := make(chan (time.Duration))
+				sp := cfg.NodeStatsPolling.Duration()
+				cfgs := mcs.Stream()
+				go func() {
+					for cfg = range cfgs {
+						usp := cfg.NodeStatsPolling.Duration()
+						if usp == sp {
+							continue
+						}
+						sp = usp
+						ch <- sp
+					}
+				}()
+
+				return ch
+			},
+		}
 }

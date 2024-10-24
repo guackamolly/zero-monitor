@@ -36,11 +36,11 @@ func contextMiddleware(ctx context.Context) echo.MiddlewareFunc {
 	}
 }
 
-func withSubscriberContainer(ectx echo.Context, with func(*di.SubscribeContainer) error) error {
+func withServiceContainer(ectx echo.Context, with func(*di.ServiceContainer) error) error {
 	ctx, ok := ectx.Get(ctxKey).(context.Context)
 
 	if ok {
-		return with(di.ExtractSubscribeContainer(ctx))
+		return with(di.ExtractServiceContainer(ctx))
 	}
 
 	return echo.ErrFailedDependency
