@@ -4,14 +4,7 @@ import (
 	"bytes"
 	"encoding/gob"
 	"fmt"
-
-	"github.com/guackamolly/zero-monitor/internal/data/models"
 )
-
-func init() {
-	gob.Register(models.Node{})
-	gob.Register([]models.Connection{})
-}
 
 type Msg interface {
 	Identity() []byte

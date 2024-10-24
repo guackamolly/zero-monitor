@@ -1,6 +1,7 @@
 package mq
 
 import (
+	"encoding/gob"
 	"time"
 
 	"github.com/guackamolly/zero-monitor/internal/data/models"
@@ -24,4 +25,15 @@ type UpdateNodeStatsPollDurationRequest struct {
 
 type NodeConnectionsResponse struct {
 	Connections []models.Connection
+}
+
+func init() {
+	gob.Register(JoinNetworkRequest{})
+	gob.Register(JoinNetworkResponse{})
+	gob.Register(UpdateNodeStatsRequest{})
+	gob.Register(UpdateNodeStatsPollDurationRequest{})
+	gob.Register(NodeConnectionsResponse{})
+
+	gob.Register(models.Node{})
+
 }
