@@ -7,10 +7,6 @@ type ServerStatsView struct {
 	Offline []models.Node
 }
 
-type NetworkNodeInformationView struct {
-	models.Node
-}
-
 type SettingsView struct {
 	Form  FormView
 	Error error
@@ -42,13 +38,5 @@ func NewSettingsView(
 	return SettingsView{
 		Form:  form,
 		Error: error,
-	}
-}
-
-func NewNetworkNodeInformationView(
-	node models.Node,
-) NetworkNodeInformationView {
-	return NetworkNodeInformationView{
-		Node: node,
 	}
 }
