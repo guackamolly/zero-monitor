@@ -1,0 +1,22 @@
+{{ define "connections" }}
+<table>
+    <thead>
+        <tr>
+            <th scope="col">Kind</th>
+            <th scope="col">State</th>
+            <th scope="col">(Local) Address</th>
+            <th scope="col">(Remote) Address</th>
+        </tr>
+    </thead>
+    <tbody>
+        {{ range . }}
+        <tr>
+            <th scope="row">{{.Kind}}</th>
+            <td>{{.State}}</td>
+            <td>{{.LocalAddress}}</td>
+            <td>{{.RemoteAddress}}</td>
+        </tr>
+        {{ end }}
+    </tbody>
+</table>
+{{ end }}
