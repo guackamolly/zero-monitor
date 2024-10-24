@@ -3,7 +3,6 @@ package http
 import (
 	"context"
 
-	"github.com/guackamolly/zero-monitor/internal/di"
 	"github.com/guackamolly/zero-monitor/internal/logging"
 	"github.com/labstack/echo/v4"
 )
@@ -36,11 +35,11 @@ func contextMiddleware(ctx context.Context) echo.MiddlewareFunc {
 	}
 }
 
-func withServiceContainer(ectx echo.Context, with func(*di.ServiceContainer) error) error {
+func withServiceContainer(ectx echo.Context, with func(*ServiceContainer) error) error {
 	ctx, ok := ectx.Get(ctxKey).(context.Context)
 
 	if ok {
-		return with(di.ExtractServiceContainer(ctx))
+		return with(ExtractServiceContainer(ctx))
 	}
 
 	return echo.ErrFailedDependency

@@ -1,7 +1,6 @@
 package http
 
 import (
-	"github.com/guackamolly/zero-monitor/internal/di"
 	"github.com/guackamolly/zero-monitor/internal/logging"
 	"github.com/labstack/echo/v4"
 )
@@ -11,7 +10,7 @@ func networkHandler(ectx echo.Context) error {
 		return networkWebsocketHandler(ectx)
 	}
 
-	return withServiceContainer(ectx, func(sc *di.ServiceContainer) error {
+	return withServiceContainer(ectx, func(sc *ServiceContainer) error {
 		view := NewServerStatsView(sc.NodeManager.Network())
 
 		return ectx.Render(200, "network", view)
@@ -19,7 +18,7 @@ func networkHandler(ectx echo.Context) error {
 }
 
 func networkIdHandler(ectx echo.Context) error {
-	return withServiceContainer(ectx, func(sc *di.ServiceContainer) error {
+	return withServiceContainer(ectx, func(sc *ServiceContainer) error {
 		id := ectx.Param("id")
 		n, ok := sc.NodeManager.Node(id)
 		if !ok {
@@ -33,7 +32,7 @@ func networkIdHandler(ectx echo.Context) error {
 }
 
 func networkIdConnectionsHandler(ectx echo.Context) error {
-	return withServiceContainer(ectx, func(sc *di.ServiceContainer) error {
+	return withServiceContainer(ectx, func(sc *ServiceContainer) error {
 		id := ectx.Param("id")
 		n, ok := sc.NodeManager.Node(id)
 		if !ok {
@@ -52,7 +51,7 @@ func networkIdConnectionsHandler(ectx echo.Context) error {
 }
 
 func networkWebsocketHandler(ectx echo.Context) error {
-	return withServiceContainer(ectx, func(sc *di.ServiceContainer) error {
+	return withServiceContainer(ectx, func(sc *ServiceContainer) error {
 		ws, err := upgrader.Upgrade(ectx.Response(), ectx.Request(), nil)
 		if err != nil {
 			return err

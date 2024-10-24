@@ -4,13 +4,12 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/guackamolly/zero-monitor/internal/di"
 	"github.com/guackamolly/zero-monitor/internal/domain"
 	"github.com/guackamolly/zero-monitor/internal/logging"
 )
 
 func (s Socket) RegisterPublishers() {
-	pc := di.ExtractPublishContainer(s.ctx)
+	pc := ExtractPublishContainer(s.ctx)
 	if pc == nil {
 		log.Fatalln("publish container hasn't been injected")
 	}
@@ -18,7 +17,7 @@ func (s Socket) RegisterPublishers() {
 	// Join network.
 	go func() {
 		n := pc.GetCurrentNode()
-		err := s.PublishMsg(compose(JoinNetwork, JoinNetworkRequest{Node: n}))
+		err := s.PublishMsg(Compose(JoinNetwork, JoinNetworkRequest{Node: n}))
 		if err != nil {
 			// TODO: handle join network error gracefully.
 			logging.LogFatal("couldn't join network, %v", err)
@@ -64,7 +63,7 @@ func handleJoinNetworkResponse(
 	go func() {
 		ns := start(resp.StatsPoll)
 		for n := range ns {
-			err := s.PublishMsg(compose(UpdateNodeStats, UpdateNodeStatsRequest{Node: n}))
+			err := s.PublishMsg(Compose(UpdateNodeStats, UpdateNodeStatsRequest{Node: n}))
 			if err != nil {
 				logging.LogError("failed to publish update stats message, %v", err)
 			}
@@ -93,10 +92,10 @@ func handleNodeConnectionsRequest(
 ) error {
 	conns, err := connections()
 	if err != nil {
-		return s.PublishMsg(compose(NodeConnections, err))
+		return s.PublishMsg(Compose(NodeConnections, err))
 	}
 
-	return s.PublishMsg(compose(NodeConnections, conns))
+	return s.PublishMsg(Compose(NodeConnections, conns))
 }
 
 func handleUnknownMessage(

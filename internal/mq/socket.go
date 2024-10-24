@@ -108,3 +108,17 @@ func (s Socket) ReplyMsg(id []byte, m Msg) {
 		log.Printf("failed to reply message, %v\n", err)
 	}
 }
+
+func (s Socket) onMsgReceived(
+	msg Msg,
+) {
+	hs, ok := s.listeners[msg.Topic]
+	if !ok {
+		return
+	}
+
+	logging.LogInfo("calling %d handlers", len(hs))
+	for _, h := range hs {
+		h(msg)
+	}
+}

@@ -5,7 +5,6 @@ import (
 	"log"
 	"time"
 
-	"github.com/guackamolly/zero-monitor/internal/di"
 	"github.com/guackamolly/zero-monitor/internal/domain"
 	"github.com/guackamolly/zero-monitor/internal/logging"
 )
@@ -16,7 +15,7 @@ import (
 var registeredPubSockets = map[string][]byte{}
 
 func (s Socket) RegisterSubscriptions() {
-	sc := di.ExtractSubscribeContainer(s.ctx)
+	sc := ExtractSubscribeContainer(s.ctx)
 	if sc == nil {
 		logging.LogFatal("subscribe container hasn't been injected")
 	}
@@ -50,7 +49,7 @@ func (s Socket) RegisterSubscriptions() {
 func handle(
 	s Socket,
 	m Msg,
-	sc *di.SubscribeContainer,
+	sc *SubscribeContainer,
 ) {
 	switch m.Topic {
 	case JoinNetwork:
@@ -75,7 +74,7 @@ func handleJoinNetworkRequest(
 	req, ok := m.Data.(JoinNetworkRequest)
 	if !ok {
 		err := fmt.Errorf("couldn't cast data to join network request, got: %v", m.Data)
-		s.ReplyMsg(m.Identity, compose(JoinNetwork, err))
+		s.ReplyMsg(m.Identity, Compose(JoinNetwork, err))
 		return
 	}
 
@@ -85,7 +84,7 @@ func handleJoinNetworkRequest(
 		logging.LogError("join node call failed, %v", err)
 	}
 
-	s.ReplyMsg(m.Identity, compose(JoinNetwork, JoinNetworkResponse{StatsPoll: nodeStatsPollingDuration()}))
+	s.ReplyMsg(m.Identity, Compose(JoinNetwork, JoinNetworkResponse{StatsPoll: nodeStatsPollingDuration()}))
 }
 
 func handleUpdateNodeStatsRequest(
@@ -115,7 +114,7 @@ func broadcastStatsPollingDurationUpdate(
 	}
 
 	for _, identity := range registeredPubSockets {
-		s.ReplyMsg(identity, compose(UpdateNodeStatsPollDuration, UpdateNodeStatsPollDurationRequest{Duration: d}))
+		s.ReplyMsg(identity, Compose(UpdateNodeStatsPollDuration, UpdateNodeStatsPollDurationRequest{Duration: d}))
 	}
 
 	return nil

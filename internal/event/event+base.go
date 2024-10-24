@@ -1,10 +1,12 @@
-package mq
+package event
+
+import "github.com/guackamolly/zero-monitor/internal/mq"
 
 // Projects an abstract class that implements the [Event] Interface.
 type BaseEvent struct {
 	Event
 	id    string
-	topic Topic
+	topic mq.Topic
 }
 
 type BaseEventOutput struct {
@@ -23,7 +25,7 @@ func (e BaseEvent) ID() string {
 	return e.id
 }
 
-func (e BaseEvent) Topic() Topic {
+func (e BaseEvent) Topic() mq.Topic {
 	return e.topic
 }
 
@@ -49,7 +51,7 @@ func (o BaseEventOutput) Error() error {
 
 func NewBaseEvent(
 	id string,
-	topic Topic,
+	topic mq.Topic,
 ) Event {
 	return BaseEvent{
 		id:    id,
@@ -69,7 +71,7 @@ func NewBaseEventOutput(
 
 func NewDataEvent(
 	id string,
-	topic Topic,
+	topic mq.Topic,
 	data any,
 ) DataEvent {
 	return DataEvent{

@@ -2,7 +2,6 @@ package http
 
 import (
 	"github.com/guackamolly/zero-monitor/internal/config"
-	"github.com/guackamolly/zero-monitor/internal/di"
 	"github.com/guackamolly/zero-monitor/internal/logging"
 	"github.com/labstack/echo/v4"
 )
@@ -23,7 +22,7 @@ func getSettingsHandler(ectx echo.Context) error {
 		return ectx.Render(200, "settings", settingsView)
 	}
 
-	return withServiceContainer(ectx, func(sc *di.ServiceContainer) error {
+	return withServiceContainer(ectx, func(sc *ServiceContainer) error {
 		cfg := sc.MasterConfiguration
 		v := defaultSettingsView(cfg.Current())
 		settingsView = &v
@@ -61,7 +60,7 @@ func updateSettingsHandler(ectx echo.Context) error {
 		return echo.ErrInternalServerError
 	}
 
-	return withServiceContainer(ectx, func(sc *di.ServiceContainer) error {
+	return withServiceContainer(ectx, func(sc *ServiceContainer) error {
 		cfg := sc.MasterConfiguration
 
 		cfg.UpdateConfigurable(sp, ls, as)

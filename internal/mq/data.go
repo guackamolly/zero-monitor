@@ -58,7 +58,7 @@ func decode(b []byte) (Msg, error) {
 	return m, err
 }
 
-func compose(t Topic, d ...any) Msg {
+func Compose(t Topic, d ...any) Msg {
 	m := Msg{Topic: t}
 	if len(d) > 0 {
 		m.Data = d[0]
