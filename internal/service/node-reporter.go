@@ -70,7 +70,7 @@ func (s NodeReporterService) Temp() ([]models.Connection, error) {
 
 // tries to fetch system info, and if it fails, sleeps for 2 seconds until trying again.
 // blocking call.
-func (s NodeReporterService) systemInfo() models.Info {
+func (s NodeReporterService) systemInfo() models.MachineInfo {
 	for {
 		sinfo, err := s.system.Info()
 		if err == nil {

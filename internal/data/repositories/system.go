@@ -10,6 +10,7 @@ import (
 
 	"github.com/guackamolly/zero-monitor/internal/data/models"
 	"github.com/guackamolly/zero-monitor/internal/logging"
+	"github.com/jaypipes/ghw"
 	"github.com/shirou/gopsutil/cpu"
 	"github.com/shirou/gopsutil/disk"
 	"github.com/shirou/gopsutil/host"
@@ -18,32 +19,27 @@ import (
 )
 
 type SystemRepository interface {
-	Info() (models.Info, error)
+	Info() (models.MachineInfo, error)
 	Stats() (models.Stats, error)
 	Conns() ([]models.Connection, error)
 }
 
 type GopsUtilSystemRepository struct{}
 
-func (r GopsUtilSystemRepository) Info() (models.Info, error) {
-	cc, err := cpu.Counts(false)
+func (r GopsUtilSystemRepository) Info() (models.MachineInfo, error) {
+	cpucount, err := cpu.Counts(false)
 	if err != nil {
-		return models.Info{}, err
+		return models.MachineInfo{}, err
 	}
 
 	rs, err := mem.VirtualMemory()
 	if err != nil {
-		return models.Info{}, err
-	}
-
-	dsk, err := disk.Usage("/")
-	if err != nil {
-		return models.Info{}, err
+		return models.MachineInfo{}, err
 	}
 
 	os, err := host.Info()
 	if err != nil {
-		return models.Info{}, err
+		return models.MachineInfo{}, err
 	}
 
 	var cpuinfo cpu.InfoStat
@@ -68,19 +64,56 @@ func (r GopsUtilSystemRepository) Info() (models.Info, error) {
 		pip = []byte{}
 	}
 
-	return models.NewInfo(
-		os.KernelArch,
-		cpuinfo.ModelName,
-		cpuinfo.CacheSize,
-		cc,
-		rs.Total,
-		dsk.Total,
-		os.Hostname,
-		os.OS,
-		fmt.Sprintf("%s %s", os.Platform, os.PlatformVersion),
-		os.KernelVersion,
-		lip,
-		pip,
+	dsks := []models.DiskInfo{}
+	block, err := ghw.Block()
+	if err != nil {
+		logging.LogWarning("couldn't fetch disks info, %v", err)
+		block = &ghw.BlockInfo{}
+	}
+	for _, d := range block.Disks {
+		info := models.NewDiskInfo(d.SizeBytes, d.Model, d.DriveType.String(), d.StorageController.String())
+		dsks = append(dsks, info)
+	}
+
+	gpus := []models.GPUInfo{}
+	gpu, err := ghw.GPU()
+	if err != nil {
+		logging.LogWarning("couldn't fetch gpus info, %v", err)
+		gpu = &ghw.GPUInfo{}
+	}
+	for _, d := range gpu.GraphicsCards {
+		info := models.NewGPUInfo(d.DeviceInfo.Product.Name, d.DeviceInfo.Vendor.Name)
+		gpus = append(gpus, info)
+	}
+
+	product, err := ghw.Product()
+	if err != nil {
+		logging.LogWarning("couldn't fetch product info, %v", err)
+		product = &ghw.ProductInfo{}
+	}
+
+	return models.NewMachineInfo(
+		models.NewCPUInfo(
+			os.KernelArch,
+			cpuinfo.ModelName,
+			cpuinfo.CacheSize,
+			cpucount,
+		),
+		models.NewRAMInfo(
+			rs.Total,
+		),
+		models.NewNetworkInfo(
+			lip, pip,
+		),
+		models.NewOSInfo(
+			os.Hostname,
+			os.OS,
+			fmt.Sprintf("%s %s", os.Platform, os.PlatformVersion),
+			os.KernelVersion,
+		),
+		models.NewProductInfo(product.Family, product.Vendor),
+		dsks,
+		gpus,
 	), nil
 }
 

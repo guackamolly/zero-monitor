@@ -6,13 +6,13 @@ type Node struct {
 	ID       string
 	Online   bool
 	LastSeen time.Time
-	Info     Info
+	Info     MachineInfo
 	Stats    Stats
 }
 
 func NewNode(
 	id string,
-	info Info,
+	info MachineInfo,
 	stats Stats,
 ) Node {
 	return Node{
@@ -26,7 +26,7 @@ func NewNode(
 
 func NewNodeWithoutStats(
 	id string,
-	info Info,
+	info MachineInfo,
 ) Node {
 	stats := UnknownStats()
 	return NewNode(id, info, stats)
