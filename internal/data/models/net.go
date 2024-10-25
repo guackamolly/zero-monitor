@@ -65,6 +65,5 @@ func (v ConnectionKind) String() string {
 }
 
 func (v Address) String() string {
-	println(v.IP.String())
 	return fmt.Sprintf("%s:%d", v.IP, v.Port)
 }

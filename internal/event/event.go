@@ -1,5 +1,7 @@
 package event
 
+type CloseSubscription func()
+
 // An event is a message that is published under a channel, which
 // one or more clients can subscribe to.
 type Event interface {
@@ -19,5 +21,5 @@ type EventPublisher interface {
 
 // An interface for marking clients that can subscribe the output of events from a channel.
 type EventSubscriber interface {
-	Subscribe(Event) chan (EventOutput)
+	Subscribe(Event) (chan (EventOutput), CloseSubscription)
 }

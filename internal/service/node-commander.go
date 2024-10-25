@@ -32,10 +32,12 @@ func (s NodeCommanderService) Connections(id string) ([]models.Connection, error
 		return nil, err
 	}
 
-	ch := s.subscriber.Subscribe(ev)
+	ch, close := s.subscriber.Subscribe(ev)
+
 	if ch == nil {
 		return nil, fmt.Errorf("coudln't subscribe to event, %v", ev)
 	}
+	defer close()
 
 	r := <-ch
 	err = r.Error()

@@ -9,12 +9,19 @@ import (
 	"github.com/guackamolly/zero-monitor/internal/logging"
 )
 
+// Wraps a callback that is executed when a message is received, in order to notify a listener.
+type messageListener struct {
+	handler func(Msg)
+}
+
 // Wraps [zmq4.Socket] so context can be accessed for extracting dependencies.
 type Socket struct {
 	zmq4.Socket
 	ctx          context.Context
 	framesLength int
-	listeners    map[Topic][]func(Msg)
+	// Listeners of specific topics, beside the actual socket message handler.
+	// This field only makes sense for sub sockets.
+	listeners map[Topic][]*messageListener
 	// Clients of the socket, identified by their machine ID and their socket identity
 	// This field only makes sense for sub sockets.
 	Clients map[string][]byte
@@ -27,7 +34,7 @@ func NewSubSocket(ctx context.Context) Socket {
 		Socket:       zmq4.NewRouter(ctx),
 		ctx:          ctx,
 		framesLength: 2,
-		listeners:    map[Topic][]func(Msg){},
+		listeners:    map[Topic][]*messageListener{},
 		Clients:      map[string][]byte{},
 	}
 }
@@ -46,13 +53,29 @@ func (s Socket) Context() context.Context {
 	return s.ctx
 }
 
-func (s Socket) OnMsgReceived(t Topic, h func(m Msg)) {
-	hs, ok := s.listeners[t]
+// Registers a listener on this socket for a particular topic.
+// Returns a callback that the listener should use to cancel the subscription to new messages of the topic.
+func (s Socket) OnMsgReceived(t Topic, h func(m Msg)) func() {
+	ls, ok := s.listeners[t]
 	if !ok {
-		hs = []func(Msg){}
+		ls = []*messageListener{}
 	}
 
-	s.listeners[t] = append(hs, h)
+	l := &messageListener{handler: h}
+	s.listeners[t] = append(ls, l)
+
+	return func() {
+		ls = []*messageListener{}
+		for _, lh := range s.listeners[t] {
+			if l == lh {
+				continue
+			}
+
+			ls = append(ls, lh)
+		}
+
+		s.listeners[t] = ls
+	}
 }
 
 // Publishes a message from a pub socket to the sub socket and waits for a reply.
@@ -116,13 +139,13 @@ func (s Socket) ReplyMsg(id []byte, m Msg) {
 func (s Socket) onMsgReceived(
 	msg Msg,
 ) {
-	hs, ok := s.listeners[msg.Topic]
+	ls, ok := s.listeners[msg.Topic]
 	if !ok {
 		return
 	}
 
-	logging.LogInfo("calling %d handlers", len(hs))
-	for _, h := range hs {
-		h(msg)
+	logging.LogInfo("calling %d handlers", len(ls))
+	for _, l := range ls {
+		l.handler(msg)
 	}
 }

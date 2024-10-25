@@ -28,15 +28,15 @@ func (p ZeroMQEventPubSub) Publish(e Event) error {
 	return nil
 }
 
-func (p ZeroMQEventPubSub) Subscribe(e Event) chan (EventOutput) {
+func (p ZeroMQEventPubSub) Subscribe(e Event) (chan (EventOutput), CloseSubscription) {
 	msg, err := p.eventToMsg(e)
 	if err != nil {
-		return nil
+		return nil, nil
 	}
 	t := msg.Topic
 
 	ch := make(chan (EventOutput))
-	p.OnMsgReceived(t, func(m mq.Msg) {
+	close := p.OnMsgReceived(t, func(m mq.Msg) {
 		if m.Topic != t {
 			return
 		}
@@ -46,7 +46,8 @@ func (p ZeroMQEventPubSub) Subscribe(e Event) chan (EventOutput) {
 			ch <- o
 		}()
 	})
-	return ch
+
+	return ch, close
 }
 
 func (p ZeroMQEventPubSub) eventToMsg(e Event) (mq.Msg, error) {
