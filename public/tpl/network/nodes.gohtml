@@ -1,8 +1,13 @@
 {{ define "nodes" }}
 {{ if or (gt (len .Online) 0) (gt (len .Offline) 0) }}
 <h1>
-    Online nodes: {{len .Online}} | Offline nodes: {{len .Offline}}
+    Network Overview
 </h1>
+<p>
+    Currently there are <b>{{len .Online}}</b> online nodes.
+    <br>
+    Nodes are reporting stats every <b>{{.NodeStatsPollBurst}}</b>.
+</p>
 <div class="divider"></div>
 <div class="server-nodes">
     {{ range .Online }}

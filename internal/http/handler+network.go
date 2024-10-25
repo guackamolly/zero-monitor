@@ -5,13 +5,18 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+var viewerCount = 0
+
 func networkHandler(ectx echo.Context) error {
 	if upgrader.WantsToUpgrade(*ectx.Request()) {
 		return networkWebsocketHandler(ectx)
 	}
 
 	return withServiceContainer(ectx, func(sc *ServiceContainer) error {
-		view := NewServerStatsView(sc.NodeManager.Network())
+		view := NewNetworkView(
+			sc.NodeManager.Network(),
+			sc.MasterConfiguration.Current().NodeStatsPolling.Duration(),
+		)
 
 		return ectx.Render(200, "network", view)
 	})
@@ -58,13 +63,16 @@ func networkWebsocketHandler(ectx echo.Context) error {
 		}
 		defer ws.Close()
 
+		viewerCount++
 		s := sc.NodeManager.Stream()
+		mcs := sc.MasterConfiguration
 		for cn := range s {
 			if ws.IsClosed() {
 				break
 			}
 
-			view := NewServerStatsView(cn)
+			nsp := mcs.Current().NodeStatsPolling
+			view := NewNetworkView(cn, nsp.Duration())
 			err = ws.WriteTemplate(ectx, "network/nodes", view)
 			if err != nil {
 				logging.LogError("failed to write template in ws %v, %v", ws, err)
