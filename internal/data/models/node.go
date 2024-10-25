@@ -38,9 +38,10 @@ func (m Node) WithUpdatedStats(stats Stats) Node {
 
 func (m Node) SetOffline() Node {
 	return Node{
-		ID:     m.ID,
-		Info:   m.Info,
-		Stats:  m.Stats,
-		Online: false,
+		ID:       m.ID,
+		Info:     m.Info,
+		Stats:    m.Stats,
+		LastSeen: m.LastSeen,
+		Online:   false,
 	}
 }

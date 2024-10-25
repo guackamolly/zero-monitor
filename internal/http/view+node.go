@@ -2,6 +2,7 @@ package http
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/guackamolly/zero-monitor/internal/data/models"
 )
@@ -122,4 +123,8 @@ func (v NodeView) Product() string {
 	}
 
 	return fmt.Sprintf("%s - %s", product.Vendor, product.Model)
+}
+
+func (v NodeView) LastSeenOn() string {
+	return v.LastSeen.Format(time.DateTime)
 }
