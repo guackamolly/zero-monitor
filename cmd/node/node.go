@@ -46,7 +46,7 @@ func main() {
 }
 
 func createPublishContainer() mq.PublishContainer {
-	system := repositories.GopsUtilSystemRepository{}
+	system := repositories.NewGopsUtilSystemRepository()
 	nrs := service.NewNodeReporterService(system)
 
 	return mq.PublishContainer{

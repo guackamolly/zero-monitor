@@ -128,3 +128,19 @@ func (v NodeView) Product() string {
 func (v NodeView) LastSeenOn() string {
 	return v.LastSeen.Format(time.DateTime)
 }
+
+func (v NodeView) Rx() string {
+	return v.Stats.Rx.String()
+}
+
+func (v NodeView) Tx() string {
+	return v.Stats.Tx.String()
+}
+
+func (v NodeView) TotalRx() string {
+	return v.Stats.TotalRx.String()
+}
+
+func (v NodeView) TotalTx() string {
+	return v.Stats.TotalTx.String()
+}

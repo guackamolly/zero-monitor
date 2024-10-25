@@ -16,6 +16,7 @@ type Percent float64
 type Celsius float64
 type Memory uint64
 type Duration time.Duration
+type IORate uint64
 
 func (v Percent) String() string {
 	if v < 0 {
@@ -51,4 +52,8 @@ func (v Memory) String() string {
 
 func (v Duration) String() string {
 	return fmt.Sprint(time.Duration(v))
+}
+
+func (v IORate) String() string {
+	return fmt.Sprintf("%s/s", Memory(v))
 }
