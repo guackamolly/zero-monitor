@@ -5,8 +5,6 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-var viewerCount = 0
-
 func networkHandler(ectx echo.Context) error {
 	if upgrader.WantsToUpgrade(*ectx.Request()) {
 		return networkWebsocketHandler(ectx)
@@ -63,7 +61,6 @@ func networkWebsocketHandler(ectx echo.Context) error {
 		}
 		defer ws.Close()
 
-		viewerCount++
 		s := sc.NodeManager.Stream()
 		mcs := sc.MasterConfiguration
 		for cn := range s {
