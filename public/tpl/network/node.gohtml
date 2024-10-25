@@ -6,7 +6,7 @@
         {{else}}
         <div class="badge offline">Offline</div>
         {{ end }}
-        <span><b>{{.Info.Hostname}}</b></span>
+        <span><b>{{.Hostname}}</b></span>
         <a href="network/{{.ID}}">Click</a>
         🇵🇹
     </div>
@@ -15,36 +15,36 @@
             <div class="server-card-stat-field">
                 <span
                     class="server-card-stat-field-label">OS</span>
-                <span>{{.Info.OS}}</span>
+                <span>{{.OS}}</span>
             </div>
             <div class="server-card-stat-field">
                 <span
-                    class="server-card-stat-field-label">Hardware</span>
-                <span>{{.Info.Distribution}}</span>
+                    class="server-card-stat-field-label">Distribution</span>
+                <span>{{.Distribution}}</span>
             </div>
         </div>
         <div class="server-card-stat-block">
             <div class="server-card-stat-field">
                 <span
                     class="server-card-stat-field-label">RAM</span>
-                <span>{{.Info.TotalRAM}}</span>
+                <span>{{.TotalRAM}}</span>
             </div>
             <div class="server-card-stat-field">
                 <span
                     class="server-card-stat-field-label">Disk</span>
-                <span>{{.Info.TotalDisk}}</span>
+                <span>{{.TotalDisk}}</span>
             </div>
         </div>
         <div class="server-card-stat-block">
             <div class="server-card-stat-field">
                 <span
                     class="server-card-stat-field-label">CPU</span>
-                <span>{{.Info.CPUCount}} Cores</span>
+                <span>{{.CPUCount}} Cores</span>
             </div>
             <div class="server-card-stat-field">
                 <span
                     class="server-card-stat-field-label">Uptime</span>
-                <span>{{.Stats.Uptime}}</span>
+                <span>{{.Uptime}}</span>
             </div>
         </div>
         <div class="server-card-progress-block">
@@ -52,7 +52,7 @@
                 class="server-card-stat-field-label">CPU</span>
             <div class="progress-bar">
                 <div class="progress-bar-fill"
-                    style="width: {{.Stats.CPU}};">{{.Stats.CPU}}</div>
+                    style="width: {{.CPUUsage}};">{{.CPUUsage}}</div>
             </div>
         </div>
         <div class="server-card-progress-block">
@@ -60,7 +60,7 @@
                 class="server-card-stat-field-label">RAM</span>
             <div class="progress-bar">
                 <div class="progress-bar-fill"
-                    style="width: {{.Stats.RAM}};">{{.Stats.RAM}}</div>
+                    style="width: {{.RAMUsage}};">{{.RAMUsage}}</div>
             </div>
         </div>
         <div class="server-card-progress-block">
@@ -68,7 +68,7 @@
                 class="server-card-stat-field-label">Disk</span>
             <div class="progress-bar">
                 <div class="progress-bar-fill"
-                    style="width: {{.Stats.Disk}};">{{.Stats.Disk}}</div>
+                    style="width: {{.DiskUsage}};">{{.DiskUsage}}</div>
             </div>
         </div>
     </div>

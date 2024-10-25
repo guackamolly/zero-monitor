@@ -2,21 +2,21 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Zero Monitor - {{.Info.Hostname}} - Connections</title>
+        <title>Zero Monitor - {{.Hostname}} - Connections</title>
         <base href="/">
         <meta charset='utf-8'>
         <meta http-equiv='X-UA-Compatible' content='IE=edge'>
         <meta name='viewport' content='width=device-width, initial-scale=1'>
 
         <meta name="title"
-            content="Zero Monitor - {{.Info.Hostname}} - Connections">
+            content="Zero Monitor - {{.Hostname}} - Connections">
         <meta name="description" content>
 
         <!-- Facebook Meta Tags -->
         <meta property="og:url" content>
         <meta property="og:type" content="website">
         <meta property="og:title"
-            content="Zero Monitor - {{.Info.Hostname}} - Connections">
+            content="Zero Monitor - {{.Hostname}} - Connections">
         <meta property="og:description" content>
         <meta property="og:image"
             content="https://guackamollyapps.com/insta-archiver/static/icon-192.png">
@@ -26,7 +26,7 @@
         <meta property="twitter:domain" content="guackamollyapps.com">
         <meta property="twitter:url" content>
         <meta name="twitter:title"
-            content="Zero Monitor - {{.Info.Hostname}} - Connections">
+            content="Zero Monitor - {{.Hostname}} - Connections">
         <meta name="twitter:description" content>
         <meta name="twitter:image"
             content="https://guackamollyapps.com/insta-archiver/static/icon-192.png">
@@ -63,7 +63,7 @@
                 <h1>Open Connections</h1>
                 {{ if .Online }}
                 <p>This page shows all open network (TCP, UDP) connections
-                    for node <b>{{.Info.Hostname}}</b>.
+                    for node <b>{{.Hostname}}</b>.
                 </p>
                 <div class="divider"></div>
                 {{ template "connections" .Connections }}

@@ -10,6 +10,18 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+// Global utility template functions.
+var funcMap = template.FuncMap{
+	"sequence": func(count int) []int {
+		s := make([]int, count)
+		for i := 0; i < int(count); i++ {
+			s[i] = i
+		}
+
+		return s
+	},
+}
+
 type Template struct {
 	templates map[string]*template.Template
 }
@@ -38,7 +50,7 @@ func (t *Template) Render(w io.Writer, name string, data interface{}, c echo.Con
 func RegisterTemplates(e *echo.Echo) error {
 	tps := map[string]*template.Template{}
 	for k, v := range templates {
-		t, err := template.New(k).ParseGlob(v)
+		t, err := template.New(k).Funcs(funcMap).ParseGlob(v)
 		if err != nil {
 			logging.LogFatal("failed to parse template file, %v", err)
 		}

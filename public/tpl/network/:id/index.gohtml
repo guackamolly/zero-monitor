@@ -2,19 +2,19 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Zero Monitor - {{.Info.Hostname}}</title>
+        <title>Zero Monitor - {{.Hostname}}</title>
         <base href="/">
         <meta charset='utf-8'>
         <meta http-equiv='X-UA-Compatible' content='IE=edge'>
         <meta name='viewport' content='width=device-width, initial-scale=1'>
 
-        <meta name="title" content="Zero Monitor - {{.Info.Hostname}}">
+        <meta name="title" content="Zero Monitor - {{.Hostname}}">
         <meta name="description" content>
 
         <!-- Facebook Meta Tags -->
         <meta property="og:url" content>
         <meta property="og:type" content="website">
-        <meta property="og:title" content="Zero Monitor - {{.Info.Hostname}}">
+        <meta property="og:title" content="Zero Monitor - {{.Hostname}}">
         <meta property="og:description" content>
         <meta property="og:image"
             content="https://guackamollyapps.com/insta-archiver/static/icon-192.png">
@@ -23,7 +23,7 @@
         <meta name="twitter:card" content="summary_large_image">
         <meta property="twitter:domain" content="guackamollyapps.com">
         <meta property="twitter:url" content>
-        <meta name="twitter:title" content="Zero Monitor - {{.Info.Hostname}}">
+        <meta name="twitter:title" content="Zero Monitor - {{.Hostname}}">
         <meta name="twitter:description" content>
         <meta name="twitter:image"
             content="https://guackamollyapps.com/insta-archiver/static/icon-192.png">
@@ -60,9 +60,9 @@
             <section class="main-content-1">
                 <h1>+ Information</h1>
                 <p>This page shows all relevant information of node
-                    <b> {{.Info.Hostname}}</b>.
+                    <b> {{.Hostname}}</b>.
                     {{ if .Online }}
-                    This node has been up for {{.Stats.Uptime}}.
+                    This node has been up for {{.Uptime}}.
                     {{ else }}
                     This node is currently offline and was last seen on
                     {{.LastSeen}}.
@@ -73,23 +73,37 @@
                 </h2>
                 <ul>
                     <li>
-                        <b>Operation System:</b> {{.Info.OS}}
+                        <b>Hardware:</b> {{.Product}}
                     </li>
                     <li>
-                        <b>Distribution:</b> {{.Info.Distribution}}
+                        <b>Operation System:</b> {{.OS}}
                     </li>
                     <li>
-                        <b>Kernel:</b> {{.Info.Kernel}}
+                        <b>Distribution:</b> {{.Distribution}}
+                    </li>
+                    <li>
+                        <b>Kernel:</b> {{.Kernel}}
                     </li>
                     <li>
                         <b>CPU:</b> {{.CPU}}
                     </li>
                     <li>
-                        <b>RAM:</b> {{.Info.TotalRAM}}
+                        <b>RAM:</b> {{.RAM}}
                     </li>
+                    {{ if .HasDisk }}
+                    {{ range $idx := sequence .DiskCount }}
                     <li>
-                        <b>Disk:</b> {{.Info.TotalDisk}}
+                        <b>Disk:</b> {{$.Disk $idx}}
                     </li>
+                    {{ end }}
+                    {{ end }}
+                    {{ if .HasGPU }}
+                    {{ range $idx := sequence .GPUCount }}
+                    <li>
+                        <b>GPU:</b> {{$.GPU $idx}}
+                    </li>
+                    {{ end }}
+                    {{ end }}
                 </ul>
 
                 <h2>
@@ -97,10 +111,10 @@
                 </h2>
                 <ul>
                     <li>
-                        <b>Local IP:</b> {{.Info.LocalIP}}
+                        <b>Local IP:</b> {{.LocalIP}}
                     </li>
                     <li>
-                        <b>Public IP:</b> {{.Info.PublicIP}}
+                        <b>Public IP:</b> {{.PublicIP}}
                     </li>
                 </ul>
             </section>
