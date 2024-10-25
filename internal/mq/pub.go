@@ -33,6 +33,7 @@ func (s Socket) RegisterPublishers() {
 				continue
 			}
 
+			logging.LogInfo("(pub) handling topic: %d", m.Topic)
 			switch m.Topic {
 			case JoinNetwork:
 				handleJoinNetworkResponse(s, m, pc.StartNodeStatsPolling)
@@ -41,7 +42,7 @@ func (s Socket) RegisterPublishers() {
 				handleUpdateStatsPollDurationRequest(m, pc.UpdateNodeStatsPolling)
 				continue
 			case NodeConnections:
-				handleNodeConnectionsRequest(s, pc.GetCurrentNodeConnections)
+				handleNodeConnectionsRequest(s, m, pc.GetCurrentNodeConnections)
 				continue
 			default:
 				logging.LogError("failed to recognize sub reply message, %v", m)
@@ -88,14 +89,15 @@ func handleUpdateStatsPollDurationRequest(
 
 func handleNodeConnectionsRequest(
 	s Socket,
+	m Msg,
 	connections domain.GetCurrentNodeConnections,
 ) error {
 	conns, err := connections()
 	if err != nil {
-		return s.PublishMsg(Compose(NodeConnections, err))
+		return s.PublishMsg(m.WithData(err))
 	}
 
-	return s.PublishMsg(Compose(NodeConnections, conns))
+	return s.PublishMsg(m.WithData(NodeConnectionsResponse{Connections: conns}))
 }
 
 func handleUnknownMessage(

@@ -46,6 +46,7 @@ func handle(
 	m Msg,
 	sc *SubscribeContainer,
 ) {
+	logging.LogInfo("(sub) handling topic: %d", m.Topic)
 	switch m.Topic {
 	case JoinNetwork:
 		handleJoinNetworkRequest(s, m, sc.JoinNodesNetwork, sc.GetNodeStatsPollingDuration)

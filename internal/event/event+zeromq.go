@@ -1,9 +1,9 @@
 package event
 
 import (
+	"encoding/gob"
 	"fmt"
 
-	"github.com/guackamolly/zero-monitor/internal/logging"
 	"github.com/guackamolly/zero-monitor/internal/mq"
 )
 
@@ -24,8 +24,8 @@ func (p ZeroMQEventPubSub) Publish(e Event) error {
 	if err != nil {
 		return err
 	}
-
-	return p.PublishMsg(msg)
+	p.ReplyMsg(msg.Identity, msg)
+	return nil
 }
 
 func (p ZeroMQEventPubSub) Subscribe(e Event) chan (EventOutput) {
@@ -36,15 +36,16 @@ func (p ZeroMQEventPubSub) Subscribe(e Event) chan (EventOutput) {
 	t := msg.Topic
 
 	ch := make(chan (EventOutput))
-	go func() {
-		p.OnMsgReceived(t, func(m mq.Msg) {
-			if m.Topic != t {
-				return
-			}
+	p.OnMsgReceived(t, func(m mq.Msg) {
+		if m.Topic != t {
+			return
+		}
 
-			ch <- p.msgToEventOutput(m)
-		})
-	}()
+		go func() {
+			o, _ := p.msgToEventOutput(m)
+			ch <- o
+		}()
+	})
 	return ch
 }
 
@@ -56,18 +57,34 @@ func (p ZeroMQEventPubSub) eventToMsg(e Event) (mq.Msg, error) {
 			return mq.Msg{}, fmt.Errorf("no pub client associated with id, %v", te.NodeID)
 		}
 
-		return mq.Compose(mq.NodeConnections).WithIdentity(sid), nil
+		return mq.Compose(mq.NodeConnections).WithIdentity(sid).WithMetadata(e), nil
 	default:
 		return mq.Msg{}, fmt.Errorf("couldn't match event with a topic, %v", e)
 	}
 }
 
-func (p ZeroMQEventPubSub) msgToEventOutput(m mq.Msg) EventOutput {
-	if e, ok := m.Metadata.(Event); ok {
-		return NewBaseEventOutput(e, m.Data)
-	}
+func (p ZeroMQEventPubSub) msgToEventOutput(m mq.Msg) (EventOutput, error) {
+	switch m.Topic {
+	case mq.NodeConnections:
+		if resp, ok := m.Data.(mq.NodeConnectionsResponse); ok {
+			return NewQueryNodeConnectionsEventOutput(
+				m.Metadata.(Event),
+				resp.Connections,
+				nil,
+			), nil
+		}
 
-	// TODO: handle cast fails!
-	logging.LogWarning("received message that couldn't be casted to EventOutput")
-	return nil
+		return NewQueryNodeConnectionsEventOutput(
+			m.Metadata.(Event),
+			nil,
+			m.Data.(error),
+		), nil
+	default:
+		return nil, fmt.Errorf("couldn't match message with a topic, %v", m)
+	}
+}
+
+func init() {
+	gob.Register(BaseEvent{})
+	gob.Register(QueryNodeConnectionsEvent{})
 }

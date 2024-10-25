@@ -43,10 +43,10 @@ func (s NodeCommanderService) Connections(id string) ([]models.Connection, error
 		return nil, err
 	}
 
-	conns, ok := r.Data().([]models.Connection)
+	out, ok := r.(event.QueryNodeConnectionsEventOutput)
 	if !ok {
 		return nil, fmt.Errorf("failed to parse %v to connection slice", r)
 	}
 
-	return conns, nil
+	return out.Connections, nil
 }

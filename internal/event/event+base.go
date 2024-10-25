@@ -9,7 +9,7 @@ type BaseEvent struct {
 type BaseEventOutput struct {
 	EventOutput
 	origin Event
-	data   any
+	err    error
 }
 
 func (e BaseEvent) ID() string {
@@ -20,20 +20,8 @@ func (o BaseEventOutput) Origin() Event {
 	return o.origin
 }
 
-func (o BaseEventOutput) Data() any {
-	if o.Error() == nil {
-		return o.data
-	}
-
-	return nil
-}
-
 func (o BaseEventOutput) Error() error {
-	if e, ok := o.data.(error); ok {
-		return e
-	}
-
-	return nil
+	return o.err
 }
 
 func NewBaseEvent(
@@ -46,10 +34,10 @@ func NewBaseEvent(
 
 func NewBaseEventOutput(
 	origin Event,
-	data any,
+	err error,
 ) EventOutput {
 	return BaseEventOutput{
 		origin: origin,
-		data:   data,
+		err:    err,
 	}
 }

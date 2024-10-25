@@ -74,8 +74,6 @@ func (s Socket) PublishMsg(m Msg) error {
 }
 
 func (s Socket) ReceiveMsg() (Msg, error) {
-	logging.LogInfo("waiting for messages...")
-
 	zm, err := s.Recv()
 	if err != nil {
 		return Msg{}, err
@@ -95,7 +93,10 @@ func (s Socket) ReceiveMsg() (Msg, error) {
 		return Msg{}, err
 	}
 
-	return m.WithIdentity(zm.Frames[0]), nil
+	m = m.WithIdentity(zm.Frames[0])
+	s.onMsgReceived(m)
+
+	return m, nil
 }
 
 // Replies to a pub socket from the sub socket.

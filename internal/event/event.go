@@ -9,7 +9,6 @@ type Event interface {
 // Represents the output of an event.
 type EventOutput interface {
 	Origin() Event
-	Data() any
 	Error() error
 }
 
