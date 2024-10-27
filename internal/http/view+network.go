@@ -1,6 +1,7 @@
 package http
 
 import (
+	"slices"
 	"time"
 
 	"github.com/guackamolly/zero-monitor/internal/data/models"
@@ -69,6 +70,8 @@ func NewNetworkNodeProcessesView(
 	node models.Node,
 	processes []models.Process,
 ) NetworkNodeProcessesView {
+	slices.Reverse(processes)
+
 	return NetworkNodeProcessesView{
 		NodeView:  NodeView(node),
 		Processes: processes,
