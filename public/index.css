@@ -30,7 +30,8 @@ main {
     flex-grow: 1;
 }
 
-table {
+
+table.full {
     width: 100%;
 }
 
