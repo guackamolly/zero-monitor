@@ -51,7 +51,8 @@ func createPublishContainer() mq.PublishContainer {
 
 	return mq.PublishContainer{
 		GetCurrentNode:            nrs.Node,
-		GetCurrentNodeConnections: nrs.Temp,
+		GetCurrentNodeConnections: nrs.Connections,
+		GetCurrentNodeProcesses:   nrs.Processes,
 		StartNodeStatsPolling:     nrs.Start,
 		UpdateNodeStatsPolling:    nrs.Update,
 	}

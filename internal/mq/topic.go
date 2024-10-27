@@ -8,4 +8,5 @@ const (
 	UpdateNodeStats
 	UpdateNodeStatsPollDuration
 	NodeConnections
+	NodeProcesses
 )

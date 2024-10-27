@@ -14,6 +14,7 @@ type SystemRepository interface {
 	Info() (models.MachineInfo, error)
 	Stats() (models.Stats, error)
 	Conns() ([]models.Connection, error)
+	Procs() ([]models.Process, error)
 }
 
 func localIP() (net.IP, error) {

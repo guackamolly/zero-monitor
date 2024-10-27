@@ -30,6 +30,7 @@ var (
 		"network":                 serverPublicRoot + "tpl/network/*.gohtml",
 		"network/:id":             serverPublicRoot + "tpl/network/:id/*.gohtml",
 		"network/:id/connections": serverPublicRoot + "tpl/network/:id/connections/*.gohtml",
+		"network/:id/processes":   serverPublicRoot + "tpl/network/:id/processes/*.gohtml",
 		"settings":                serverPublicRoot + "tpl/settings/*.gohtml",
 	}
 

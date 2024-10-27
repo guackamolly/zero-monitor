@@ -12,6 +12,16 @@ type QueryNodeConnectionsEventOutput struct {
 	Connections []models.Connection
 }
 
+type QueryNodeProcessesEvent struct {
+	Event
+	NodeID string
+}
+
+type QueryNodeProcessesEventOutput struct {
+	EventOutput
+	Processes []models.Process
+}
+
 func NewQueryNodeConnectionsEvent(
 	nodeID string,
 ) QueryNodeConnectionsEvent {
@@ -29,5 +39,25 @@ func NewQueryNodeConnectionsEventOutput(
 	return QueryNodeConnectionsEventOutput{
 		EventOutput: NewBaseEventOutput(origin, err),
 		Connections: connections,
+	}
+}
+
+func NewQueryNodeProcessesEvent(
+	nodeID string,
+) QueryNodeProcessesEvent {
+	return QueryNodeProcessesEvent{
+		Event:  NewBaseEvent("query-node-processes-event"),
+		NodeID: nodeID,
+	}
+}
+
+func NewQueryNodeProcessesEventOutput(
+	origin Event,
+	processes []models.Process,
+	err error,
+) QueryNodeProcessesEventOutput {
+	return QueryNodeProcessesEventOutput{
+		EventOutput: NewBaseEventOutput(origin, err),
+		Processes:   processes,
 	}
 }

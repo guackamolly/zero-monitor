@@ -25,6 +25,7 @@ type SubscribeContainer struct {
 type PublishContainer struct {
 	GetCurrentNode            domain.GetCurrentNode
 	GetCurrentNodeConnections domain.GetCurrentNodeConnections
+	GetCurrentNodeProcesses   domain.GetCurrentNodeProcesses
 	StartNodeStatsPolling     domain.StartNodeStatsPolling
 	UpdateNodeStatsPolling    domain.UpdateNodeStatsPolling
 }

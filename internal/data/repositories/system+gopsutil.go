@@ -12,6 +12,7 @@ import (
 	"github.com/shirou/gopsutil/host"
 	"github.com/shirou/gopsutil/mem"
 	nett "github.com/shirou/gopsutil/net"
+	"github.com/shirou/gopsutil/process"
 )
 
 type GopsUtilSystemRepository struct {
@@ -185,7 +186,7 @@ func (r GopsUtilSystemRepository) Stats() (models.Stats, error) {
 func (r GopsUtilSystemRepository) Conns() ([]models.Connection, error) {
 	conns, err := nett.Connections("inet")
 	if err != nil {
-		return []models.Connection{}, err
+		return nil, err
 	}
 
 	l := len(conns)
@@ -196,6 +197,30 @@ func (r GopsUtilSystemRepository) Conns() ([]models.Connection, error) {
 			conn.Status,
 			conn.Laddr,
 			conn.Raddr,
+		)
+	}
+
+	return v, nil
+}
+
+func (r GopsUtilSystemRepository) Procs() ([]models.Process, error) {
+	procs, err := process.Processes()
+	if err != nil {
+		return nil, err
+	}
+
+	l := len(procs)
+	v := make([]models.Process, l)
+	for i, proc := range procs {
+		n, err := proc.Name()
+		if err != nil {
+			logging.LogWarning("failed to get name of process %d, %v", proc.Pid, err)
+			continue
+		}
+
+		v[i] = models.NewProcess(
+			proc.Pid,
+			n,
 		)
 	}
 

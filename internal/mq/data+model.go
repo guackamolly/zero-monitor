@@ -27,12 +27,17 @@ type NodeConnectionsResponse struct {
 	Connections []models.Connection
 }
 
+type NodeProcessesResponse struct {
+	Processes []models.Process
+}
+
 func init() {
 	gob.Register(JoinNetworkRequest{})
 	gob.Register(JoinNetworkResponse{})
 	gob.Register(UpdateNodeStatsRequest{})
 	gob.Register(UpdateNodeStatsPollDurationRequest{})
 	gob.Register(NodeConnectionsResponse{})
+	gob.Register(NodeProcessesResponse{})
 
 	gob.Register(models.Node{})
 

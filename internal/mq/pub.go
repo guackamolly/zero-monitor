@@ -44,6 +44,9 @@ func (s Socket) RegisterPublishers() {
 			case NodeConnections:
 				handleNodeConnectionsRequest(s, m, pc.GetCurrentNodeConnections)
 				continue
+			case NodeProcesses:
+				handleNodeProcessesRequest(s, m, pc.GetCurrentNodeProcesses)
+				continue
 			default:
 				logging.LogError("failed to recognize sub reply message, %v", m)
 			}
@@ -98,6 +101,19 @@ func handleNodeConnectionsRequest(
 	}
 
 	return s.PublishMsg(m.WithData(NodeConnectionsResponse{Connections: conns}))
+}
+
+func handleNodeProcessesRequest(
+	s Socket,
+	m Msg,
+	processes domain.GetCurrentNodeProcesses,
+) error {
+	conns, err := processes()
+	if err != nil {
+		return s.PublishMsg(m.WithData(err))
+	}
+
+	return s.PublishMsg(m.WithData(NodeProcessesResponse{Processes: conns}))
 }
 
 func handleUnknownMessage(

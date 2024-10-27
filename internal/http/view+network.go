@@ -21,6 +21,11 @@ type NetworkNodeConnectionsView struct {
 	Connections []models.Connection
 }
 
+type NetworkNodeProcessesView struct {
+	NodeView
+	Processes []models.Process
+}
+
 func NewNetworkView(
 	nodes []models.Node,
 	nodeStatsPollBurst time.Duration,
@@ -57,5 +62,15 @@ func NewNetworkNodeConnectionsView(
 	return NetworkNodeConnectionsView{
 		NodeView:    NodeView(node),
 		Connections: connections,
+	}
+}
+
+func NewNetworkNodeProcessesView(
+	node models.Node,
+	processes []models.Process,
+) NetworkNodeProcessesView {
+	return NetworkNodeProcessesView{
+		NodeView:  NodeView(node),
+		Processes: processes,
 	}
 }

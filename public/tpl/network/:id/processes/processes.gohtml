@@ -1,0 +1,22 @@
+{{ define "processes" }}
+<table>
+    <thead>
+        <tr>
+            <th scope="col">PID</th>
+            <th scope="col">Name</th>
+            <th scope="col">(Allocated) Memory</th>
+            <th scope="col">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {{ range . }}
+        <tr>
+            <th scope="row">{{.PID}}</th>
+            <td>{{.Name}}</td>
+            <td>nil</td>
+            <td>Kill</td>
+        </tr>
+        {{ end }}
+    </tbody>
+</table>
+{{ end }}

@@ -53,6 +53,25 @@ func networkIdConnectionsHandler(ectx echo.Context) error {
 	})
 }
 
+func networkIdProcessesHandler(ectx echo.Context) error {
+	return withServiceContainer(ectx, func(sc *ServiceContainer) error {
+		id := ectx.Param("id")
+		n, ok := sc.NodeManager.Node(id)
+		if !ok {
+			// todo: handle
+		}
+
+		logging.LogInfo("fetching node processes")
+		procs, err := sc.NodeCommander.Processes(n.ID)
+		if err != nil {
+			logging.LogError("failed to fetch node processes, %v", procs)
+			// todo: handle
+		}
+
+		return ectx.Render(200, "network/:id/processes", NewNetworkNodeProcessesView(n, procs))
+	})
+}
+
 func networkWebsocketHandler(ectx echo.Context) error {
 	return withServiceContainer(ectx, func(sc *ServiceContainer) error {
 		ws, err := upgrader.Upgrade(ectx.Response(), ectx.Request(), nil)
