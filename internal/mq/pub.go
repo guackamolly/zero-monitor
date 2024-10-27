@@ -32,23 +32,25 @@ func (s Socket) RegisterPublishers() {
 				logging.LogError("failed to receive message from sub socket, %v", err)
 				continue
 			}
+			topic := m.Topic
 
-			logging.LogInfo("(pub) handling topic: %d", m.Topic)
-			switch m.Topic {
+			logging.LogInfo("(pub) handling topic: %d", topic)
+			switch topic {
 			case JoinNetwork:
-				handleJoinNetworkResponse(s, m, pc.StartNodeStatsPolling)
-				continue
+				err = handleJoinNetworkResponse(s, m, pc.StartNodeStatsPolling)
 			case UpdateNodeStatsPollDuration:
-				handleUpdateStatsPollDurationRequest(m, pc.UpdateNodeStatsPolling)
-				continue
+				err = handleUpdateStatsPollDurationRequest(m, pc.UpdateNodeStatsPolling)
 			case NodeConnections:
-				handleNodeConnectionsRequest(s, m, pc.GetCurrentNodeConnections)
-				continue
+				err = handleNodeConnectionsRequest(s, m, pc.GetCurrentNodeConnections)
 			case NodeProcesses:
-				handleNodeProcessesRequest(s, m, pc.GetCurrentNodeProcesses)
-				continue
+				err = handleNodeProcessesRequest(s, m, pc.GetCurrentNodeProcesses)
 			default:
-				logging.LogError("failed to recognize sub reply message, %v", m)
+				err = fmt.Errorf("failed to recognize sub reply message, %v", m)
+			}
+
+			if err != nil {
+				logging.LogError("(pub) failed to handle topic %d, %v", topic, err)
+				err = nil
 			}
 		}
 	}()
