@@ -215,12 +215,33 @@ func (r GopsUtilSystemRepository) Procs() ([]models.Process, error) {
 		n, err := proc.Name()
 		if err != nil {
 			logging.LogWarning("failed to get name of process %d, %v", proc.Pid, err)
-			continue
+			n = "-"
+		}
+
+		usr, err := proc.Username()
+		if err != nil {
+			logging.LogWarning("failed to get user of process %d, %v", proc.Pid, err)
+			usr = "-"
+		}
+
+		cmd, err := proc.Cmdline()
+		if err != nil {
+			logging.LogWarning("failed to get command path of process %d, %v", proc.Pid, err)
+			cmd = "-"
+		}
+
+		mem, err := proc.MemoryInfo()
+		if err != nil {
+			logging.LogWarning("failed to get memory info of process %d, %v", proc.Pid, err)
+			mem = &process.MemoryInfoStat{}
 		}
 
 		v[i] = models.NewProcess(
 			proc.Pid,
+			usr,
 			n,
+			cmd,
+			mem.RSS,
 		)
 	}
 

@@ -3,8 +3,9 @@
     <thead>
         <tr>
             <th scope="col">PID</th>
+            <th scope="col">User</th>
             <th scope="col">Name</th>
-            <th scope="col">(Allocated) Memory</th>
+            <th scope="col">Memory</th>
             <th scope="col">Actions</th>
         </tr>
     </thead>
@@ -12,9 +13,15 @@
         {{ range . }}
         <tr>
             <th scope="row">{{.PID}}</th>
-            <td>{{.Name}}</td>
-            <td>nil</td>
-            <td>Kill</td>
+            <td>{{.User}}</td>
+            <td>
+                <span class="tooltip">
+                    {{.Name}}
+                    <span class="tooltip-text">{{.CMD}}</span>
+                </span>
+            </td>
+            <td>{{.Memory}}</td>
+            <td><button>Kill</button></td>
         </tr>
         {{ end }}
     </tbody>
