@@ -20,10 +20,14 @@ type GopsUtilSystemRepository struct {
 	totalTx uint64
 	rx      uint64
 	tx      uint64
+	procs   map[int32]models.Process
 }
 
 func NewGopsUtilSystemRepository() *GopsUtilSystemRepository {
-	r := &GopsUtilSystemRepository{}
+	r := &GopsUtilSystemRepository{
+		procs: map[int32]models.Process{},
+	}
+
 	go func() {
 		for {
 			time.Sleep(time.Second)
@@ -204,46 +208,74 @@ func (r GopsUtilSystemRepository) Conns() ([]models.Connection, error) {
 }
 
 func (r GopsUtilSystemRepository) Procs() ([]models.Process, error) {
-	procs, err := process.Processes()
+	pids, err := process.Pids()
 	if err != nil {
 		return nil, err
 	}
 
-	l := len(procs)
+	l := len(pids)
 	v := make([]models.Process, l)
-	for i, proc := range procs {
-		n, err := proc.Name()
+	cache := map[int32]models.Process{}
+
+	for i, pid := range pids {
+		pproc, err := process.NewProcess(pid)
 		if err != nil {
-			logging.LogWarning("failed to get name of process %d, %v", proc.Pid, err)
-			n = "-"
+			logging.LogError("failed to get data of process %d, %v", pid, err)
+			continue
 		}
 
-		usr, err := proc.Username()
+		proc := r.cacheProc(pproc)
+		mem, err := pproc.MemoryInfo()
 		if err != nil {
-			logging.LogWarning("failed to get user of process %d, %v", proc.Pid, err)
-			usr = "-"
-		}
-
-		cmd, err := proc.Cmdline()
-		if err != nil {
-			logging.LogWarning("failed to get command path of process %d, %v", proc.Pid, err)
-			cmd = "-"
-		}
-
-		mem, err := proc.MemoryInfo()
-		if err != nil {
-			logging.LogWarning("failed to get memory info of process %d, %v", proc.Pid, err)
+			logging.LogWarning("failed to get memory info of process %d, %v", pproc.Pid, err)
 			mem = &process.MemoryInfoStat{}
 		}
 
-		v[i] = models.NewProcess(
-			proc.Pid,
-			usr,
-			n,
-			cmd,
-			mem.RSS,
-		)
+		cache[pid] = proc
+		v[i] = proc.WithUpdatedMemory(mem.RSS)
+	}
+
+	// delete processes that don't exist anymore
+	for pid := range r.procs {
+		if _, ok := cache[pid]; !ok {
+			delete(r.procs, pid)
+		}
 	}
 
 	return v, nil
+}
+
+func (r GopsUtilSystemRepository) cacheProc(pproc *process.Process) models.Process {
+	pid := pproc.Pid
+	if proc, ok := r.procs[pid]; ok {
+		return proc
+	}
+
+	n, err := pproc.Name()
+	if err != nil {
+		logging.LogWarning("failed to get name of process %d, %v", pid, err)
+		n = "-"
+	}
+
+	usr, err := pproc.Username()
+	if err != nil {
+		logging.LogWarning("failed to get user of process %d, %v", pid, err)
+		usr = "-"
+	}
+
+	cmd, err := pproc.Cmdline()
+	if err != nil {
+		logging.LogWarning("failed to get command path of process %d, %v", pid, err)
+		cmd = "-"
+	}
+
+	proc := models.NewProcess(
+		pid,
+		usr,
+		n,
+		cmd,
+	)
+
+	r.procs[pid] = proc
+	return proc
 }

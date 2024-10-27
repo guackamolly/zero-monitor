@@ -13,13 +13,18 @@ func NewProcess(
 	user string,
 	name string,
 	cmd string,
-	memory uint64,
 ) Process {
 	return Process{
-		PID:    pid,
-		User:   user,
-		Name:   name,
-		CMD:    cmd,
-		Memory: Memory(memory),
+		PID:  pid,
+		User: user,
+		Name: name,
+		CMD:  cmd,
 	}
+}
+
+func (p Process) WithUpdatedMemory(
+	memory uint64,
+) Process {
+	p.Memory = Memory(memory)
+	return p
 }
