@@ -231,8 +231,14 @@ func (r GopsUtilSystemRepository) Procs() ([]models.Process, error) {
 			mem = &process.MemoryInfoStat{}
 		}
 
+		cpu, err := pproc.CPUPercent()
+		if err != nil {
+			logging.LogWarning("failed to get cpu info of process %d, %v", pproc.Pid, err)
+			cpu = 0
+		}
+
 		cache[pid] = proc
-		v[i] = proc.WithUpdatedMemory(mem.RSS)
+		v[i] = proc.WithUpdatedMemory(mem.RSS).WithUpdatedCPU(cpu)
 	}
 
 	// delete processes that don't exist anymore

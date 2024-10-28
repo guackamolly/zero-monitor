@@ -62,8 +62,12 @@
             <section class="main-content-1">
                 <h1>Task Manager</h1>
                 {{ if .Online }}
-                <p>This page shows all processes that are currently running on
-                    node <b>{{.Hostname}}</b>.
+                <p>This page shows all the processes that are currently running
+                    on node <b>{{.Hostname}}</b>.
+                    <br>
+                    Currently, the node is running <b>{{len .Processes}}</b>
+                    processes, using a total {{.RAMUsage}} of memory and
+                    consuming {{.CPUUsage}} of CPU.
                 </p>
                 <div class="divider"></div>
                 {{ template "processes" .Processes }}

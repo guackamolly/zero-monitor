@@ -6,6 +6,7 @@
             <th scope="col">User</th>
             <th scope="col">Name</th>
             <th scope="col">Memory</th>
+            <th scope="col">CPU</th>
             <th scope="col">Actions</th>
         </tr>
     </thead>
@@ -21,6 +22,7 @@
                 </span>
             </td>
             <td>{{.Memory}}</td>
+            <td>{{.CPU}}</td>
             <td><button>Kill</button></td>
         </tr>
         {{ end }}
