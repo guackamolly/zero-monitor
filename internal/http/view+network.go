@@ -77,3 +77,23 @@ func NewNetworkNodeProcessesView(
 		Processes: processes,
 	}
 }
+
+func (v NetworkNodeProcessesView) CPU() string {
+	cpu := models.Percent(0)
+	for _, p := range v.Processes {
+		cpu += p.CPU
+	}
+
+	cpu = cpu / models.Percent(v.Info.CPU.Count)
+
+	return cpu.String()
+}
+
+func (v NetworkNodeProcessesView) Memory() string {
+	mem := models.Memory(0)
+	for _, p := range v.Processes {
+		mem += p.Memory
+	}
+
+	return mem.String()
+}

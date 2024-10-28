@@ -66,8 +66,8 @@
                     on node <b>{{.Hostname}}</b>.
                     <br>
                     Currently, the node is running <b>{{len .Processes}}</b>
-                    processes, using a total {{.RAMUsage}} of memory and
-                    consuming {{.CPUUsage}} of CPU.
+                    processes, using a total {{.Memory}} of memory and
+                    consuming {{.CPU}} of CPU.
                 </p>
                 <div class="divider"></div>
                 {{ template "processes" .Processes }}
