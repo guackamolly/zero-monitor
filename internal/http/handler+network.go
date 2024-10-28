@@ -77,11 +77,6 @@ func networkIdProcessesHandler(ectx echo.Context) error {
 func networkIdProcessesFormHandler(ectx echo.Context) error {
 	return withServiceContainer(ectx, func(sc *ServiceContainer) error {
 		id := ectx.Param("id")
-		n, ok := sc.NodeManager.Node(id)
-		if !ok {
-			// todo: handle
-		}
-
 		pid, err := strconv.Atoi(ectx.FormValue("kill"))
 		if err != nil {
 			logging.LogError("failed to convert pid %s to int, %v", pid, err)
@@ -95,14 +90,7 @@ func networkIdProcessesFormHandler(ectx echo.Context) error {
 			// todo: handle
 		}
 
-		logging.LogInfo("fetching node processes")
-		procs, err := sc.NodeCommander.Processes(n.ID)
-		if err != nil {
-			logging.LogError("failed to fetch node processes, %v", procs)
-			// todo: handle
-		}
-
-		return ectx.Render(200, "network/:id/processes", NewNetworkNodeProcessesView(n, procs))
+		return ectx.Redirect(301, ectx.Request().URL.Path)
 	})
 }
 
