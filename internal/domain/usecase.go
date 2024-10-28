@@ -18,4 +18,4 @@ type GetNodeStatsPollingDurationUpdates func() chan (time.Duration)
 type JoinNodesNetwork func(models.Node) error
 type UpdateNodesNetwork func(models.Node) error
 
-type KillNodeProcess func(int32) ([]models.Process, error)
+type KillNodeProcess func(int32) error

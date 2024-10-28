@@ -89,9 +89,16 @@ func networkIdProcessesFormHandler(ectx echo.Context) error {
 		}
 
 		logging.LogInfo("killing node process")
-		procs, err := sc.NodeCommander.KillProcess(id, int32(pid))
+		err = sc.NodeCommander.KillProcess(id, int32(pid))
 		if err != nil {
-			logging.LogError("failed to kill node process, %v", procs)
+			logging.LogError("failed to kill node process, %v", err)
+			// todo: handle
+		}
+
+		logging.LogInfo("fetching node processes")
+		procs, err := sc.NodeCommander.Processes(n.ID)
+		if err != nil {
+			logging.LogError("failed to fetch node processes, %v", procs)
 			// todo: handle
 		}
 

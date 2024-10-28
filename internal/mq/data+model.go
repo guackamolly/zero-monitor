@@ -35,10 +35,6 @@ type KillNodeProcessRequest struct {
 	PID int32
 }
 
-type KillNodeProcessResponse struct {
-	Processes []models.Process
-}
-
 type OPError struct {
 	Err string
 }
@@ -55,7 +51,6 @@ func init() {
 	gob.Register(NodeConnectionsResponse{})
 	gob.Register(NodeProcessesResponse{})
 	gob.Register(KillNodeProcessRequest{})
-	gob.Register(KillNodeProcessResponse{})
 
 	gob.Register(models.Node{})
 	gob.Register(OPError{})

@@ -1,7 +1,5 @@
 package event
 
-import "github.com/guackamolly/zero-monitor/internal/data/models"
-
 type KillNodeProcessEvent struct {
 	Event
 	NodeID string
@@ -10,7 +8,6 @@ type KillNodeProcessEvent struct {
 
 type KillNodeProcessEventOutput struct {
 	EventOutput
-	Processes []models.Process
 }
 
 func NewKillNodeProcessEvent(
@@ -26,11 +23,9 @@ func NewKillNodeProcessEvent(
 
 func NewKillNodeProcessEventOutput(
 	origin Event,
-	processes []models.Process,
 	err error,
 ) KillNodeProcessEventOutput {
 	return KillNodeProcessEventOutput{
 		EventOutput: NewBaseEventOutput(origin, err),
-		Processes:   processes,
 	}
 }

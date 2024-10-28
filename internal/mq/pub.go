@@ -130,12 +130,12 @@ func handleKillNodeProcessRequest(
 		return fmt.Errorf("couldn't cast data to KillNodeProcessRequest, %v", m.Data)
 	}
 
-	procs, err := killNodeProcess(req.PID)
+	err := killNodeProcess(req.PID)
 	if err != nil {
 		return s.PublishMsg(m.WithError(err))
 	}
 
-	return s.PublishMsg(m.WithData(KillNodeProcessResponse{Processes: procs}))
+	return s.PublishMsg(m)
 }
 
 func handleUnknownMessage(

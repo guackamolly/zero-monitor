@@ -2,6 +2,7 @@ package event
 
 import (
 	"encoding/gob"
+	"errors"
 	"fmt"
 
 	"github.com/guackamolly/zero-monitor/internal/mq"
@@ -81,50 +82,49 @@ func (p ZeroMQEventPubSub) eventToMsg(e Event) (mq.Msg, error) {
 func (p ZeroMQEventPubSub) msgToEventOutput(m mq.Msg) (EventOutput, error) {
 	switch m.Topic {
 	case mq.NodeConnections:
-		if resp, ok := m.Data.(mq.NodeConnectionsResponse); ok {
-			return NewQueryNodeConnectionsEventOutput(
-				m.Metadata.(Event),
-				resp.Connections,
-				nil,
-			), nil
-		}
-
+		d, err := typedMsgData[mq.NodeConnectionsResponse](m)
 		return NewQueryNodeConnectionsEventOutput(
 			m.Metadata.(Event),
-			nil,
-			m.Data.(error),
+			d.Connections,
+			err,
 		), nil
 	case mq.NodeProcesses:
-		if resp, ok := m.Data.(mq.NodeProcessesResponse); ok {
-			return NewQueryNodeProcessesEventOutput(
-				m.Metadata.(Event),
-				resp.Processes,
-				nil,
-			), nil
-		}
-
+		d, err := typedMsgData[mq.NodeProcessesResponse](m)
 		return NewQueryNodeProcessesEventOutput(
 			m.Metadata.(Event),
-			nil,
-			m.Data.(error),
+			d.Processes,
+			err,
 		), nil
 	case mq.KillNodeProcess:
-		if resp, ok := m.Data.(mq.KillNodeProcessResponse); ok {
-			return NewKillNodeProcessEventOutput(
-				m.Metadata.(Event),
-				resp.Processes,
-				nil,
-			), nil
-		}
-
+		err := errorMsgData(m)
 		return NewKillNodeProcessEventOutput(
 			m.Metadata.(Event),
-			nil,
-			m.Data.(error),
+			err,
 		), nil
 	default:
 		return nil, fmt.Errorf("couldn't match message with a topic, %v", m)
 	}
+}
+
+func typedMsgData[T any](
+	msg mq.Msg,
+) (T, error) {
+	if t, ok := msg.Data.(T); ok {
+		return t, nil
+	}
+
+	var t T
+	return t, errorMsgData(msg)
+}
+
+func errorMsgData(
+	msg mq.Msg,
+) error {
+	if te, ok := msg.Data.(mq.OPError); ok {
+		return errors.New(te.Error())
+	}
+
+	return fmt.Errorf("failed to understand data type, %v", msg.Data)
 }
 
 func init() {
