@@ -72,6 +72,17 @@ func (s NodeReporterService) Processes() ([]models.Process, error) {
 	return s.system.Procs()
 }
 
+func (s NodeReporterService) KillProcess(pid int32) ([]models.Process, error) {
+	err := s.system.KillProc(pid)
+	procs, perr := s.system.Procs()
+
+	if err != nil {
+		return procs, err
+	}
+
+	return procs, perr
+}
+
 // tries to fetch system info, and if it fails, sleeps for 2 seconds until trying again.
 // blocking call.
 func (s NodeReporterService) systemInfo() models.MachineInfo {

@@ -44,6 +44,8 @@ func (s Socket) RegisterPublishers() {
 				err = handleNodeConnectionsRequest(s, m, pc.GetCurrentNodeConnections)
 			case NodeProcesses:
 				err = handleNodeProcessesRequest(s, m, pc.GetCurrentNodeProcesses)
+			case KillNodeProcess:
+				err = handleKillNodeProcessRequest(s, m, pc.KillNodeProcess)
 			default:
 				err = fmt.Errorf("failed to recognize sub reply message, %v", m)
 			}
@@ -99,7 +101,7 @@ func handleNodeConnectionsRequest(
 ) error {
 	conns, err := connections()
 	if err != nil {
-		return s.PublishMsg(m.WithData(err))
+		return s.PublishMsg(m.WithError(err))
 	}
 
 	return s.PublishMsg(m.WithData(NodeConnectionsResponse{Connections: conns}))
@@ -110,12 +112,30 @@ func handleNodeProcessesRequest(
 	m Msg,
 	processes domain.GetCurrentNodeProcesses,
 ) error {
-	conns, err := processes()
+	procs, err := processes()
 	if err != nil {
-		return s.PublishMsg(m.WithData(err))
+		return s.PublishMsg(m.WithError(err))
 	}
 
-	return s.PublishMsg(m.WithData(NodeProcessesResponse{Processes: conns}))
+	return s.PublishMsg(m.WithData(NodeProcessesResponse{Processes: procs}))
+}
+
+func handleKillNodeProcessRequest(
+	s Socket,
+	m Msg,
+	killNodeProcess domain.KillNodeProcess,
+) error {
+	req, ok := m.Data.(KillNodeProcessRequest)
+	if !ok {
+		return fmt.Errorf("couldn't cast data to KillNodeProcessRequest, %v", m.Data)
+	}
+
+	procs, err := killNodeProcess(req.PID)
+	if err != nil {
+		return s.PublishMsg(m.WithError(err))
+	}
+
+	return s.PublishMsg(m.WithData(KillNodeProcessResponse{Processes: procs}))
 }
 
 func handleUnknownMessage(

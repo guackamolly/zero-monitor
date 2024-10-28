@@ -28,6 +28,11 @@ func (m Msg) WithData(data any) Msg {
 	return m
 }
 
+func (m Msg) WithError(err error) Msg {
+	m.Data = &OPError{Err: err.Error()}
+	return m
+}
+
 func encode(m Msg) ([]byte, error) {
 	var buf bytes.Buffer
 	var b []byte

@@ -251,6 +251,26 @@ func (r GopsUtilSystemRepository) Procs() ([]models.Process, error) {
 	return v, nil
 }
 
+func (r GopsUtilSystemRepository) KillProc(pid int32) error {
+	_, ok := r.procs[pid]
+	if !ok {
+		return fmt.Errorf("process not associated to PID %d", pid)
+	}
+
+	pproc, err := process.NewProcess(pid)
+	if err != nil {
+		return err
+	}
+
+	err = pproc.Kill()
+	if err != nil {
+		return err
+	}
+
+	delete(r.procs, pid)
+	return nil
+}
+
 func (r GopsUtilSystemRepository) cacheProc(pproc *process.Process) models.Process {
 	pid := pproc.Pid
 	if proc, ok := r.procs[pid]; ok {

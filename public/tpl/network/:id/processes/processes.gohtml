@@ -1,31 +1,36 @@
 {{ define "processes" }}
-<table>
-    <thead>
-        <tr>
-            <th scope="col">PID</th>
-            <th scope="col">User</th>
-            <th scope="col">Name</th>
-            <th scope="col">Memory</th>
-            <th scope="col">CPU</th>
-            <th scope="col">Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        {{ range . }}
-        <tr>
-            <th scope="row">{{.PID}}</th>
-            <td>{{.User}}</td>
-            <td>
-                <span class="tooltip">
-                    {{.Name}}
-                    <span class="tooltip-text">{{.CMD}}</span>
-                </span>
-            </td>
-            <td>{{.Memory}}</td>
-            <td>{{.CPU}}</td>
-            <td><button>Kill</button></td>
-        </tr>
-        {{ end }}
-    </tbody>
-</table>
+<form method="post">
+    <table>
+        <thead>
+            <tr>
+                <th scope="col">PID</th>
+                <th scope="col">User</th>
+                <th scope="col">Name</th>
+                <th scope="col">Memory</th>
+                <th scope="col">CPU</th>
+                <th scope="col">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{ range . }}
+            <tr>
+                <th scope="row">{{.PID}}</th>
+                <td>{{.User}}</td>
+                <td>
+                    <span class="tooltip">
+                        {{.Name}}
+                        <span class="tooltip-text">{{.CMD}}</span>
+                    </span>
+                </td>
+                <td>{{.Memory}}</td>
+                <td>{{.CPU}}</td>
+                <td>
+                    <button type="submit" name="kill"
+                        value="{{.PID}}">Kill</button>
+                </td>
+            </tr>
+            {{ end }}
+        </tbody>
+    </table>
+</form>
 {{ end }}

@@ -55,5 +55,6 @@ func createPublishContainer() mq.PublishContainer {
 		GetCurrentNodeProcesses:   nrs.Processes,
 		StartNodeStatsPolling:     nrs.Start,
 		UpdateNodeStatsPolling:    nrs.Update,
+		KillNodeProcess:           nrs.KillProcess,
 	}
 }

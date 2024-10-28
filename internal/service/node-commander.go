@@ -42,3 +42,13 @@ func (s NodeCommanderService) Processes(id string) ([]models.Process, error) {
 
 	return out.Processes, nil
 }
+
+func (s NodeCommanderService) KillProcess(id string, pid int32) ([]models.Process, error) {
+	ev := event.NewKillNodeProcessEvent(id, pid)
+	out, err := event.PublishAndSubscribeFirst[event.KillNodeProcessEventOutput](ev, s.publisher, s.subscriber)
+	if err != nil {
+		return nil, err
+	}
+
+	return out.Processes, nil
+}

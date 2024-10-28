@@ -31,6 +31,22 @@ type NodeProcessesResponse struct {
 	Processes []models.Process
 }
 
+type KillNodeProcessRequest struct {
+	PID int32
+}
+
+type KillNodeProcessResponse struct {
+	Processes []models.Process
+}
+
+type OPError struct {
+	Err string
+}
+
+func (e *OPError) Error() string {
+	return e.Err
+}
+
 func init() {
 	gob.Register(JoinNetworkRequest{})
 	gob.Register(JoinNetworkResponse{})
@@ -38,7 +54,10 @@ func init() {
 	gob.Register(UpdateNodeStatsPollDurationRequest{})
 	gob.Register(NodeConnectionsResponse{})
 	gob.Register(NodeProcessesResponse{})
+	gob.Register(KillNodeProcessRequest{})
+	gob.Register(KillNodeProcessResponse{})
 
 	gob.Register(models.Node{})
+	gob.Register(OPError{})
 
 }

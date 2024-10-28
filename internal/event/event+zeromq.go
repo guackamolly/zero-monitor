@@ -66,6 +66,13 @@ func (p ZeroMQEventPubSub) eventToMsg(e Event) (mq.Msg, error) {
 		}
 
 		return mq.Compose(mq.NodeProcesses).WithIdentity(sid).WithMetadata(e), nil
+	case KillNodeProcessEvent:
+		sid, ok := p.Clients[te.NodeID]
+		if !ok {
+			return mq.Msg{}, fmt.Errorf("no pub client associated with id, %v", te.NodeID)
+		}
+
+		return mq.Compose(mq.KillNodeProcess, mq.KillNodeProcessRequest{PID: te.PID}).WithIdentity(sid).WithMetadata(e), nil
 	default:
 		return mq.Msg{}, fmt.Errorf("couldn't match event with a topic, %v", e)
 	}
@@ -101,6 +108,20 @@ func (p ZeroMQEventPubSub) msgToEventOutput(m mq.Msg) (EventOutput, error) {
 			nil,
 			m.Data.(error),
 		), nil
+	case mq.KillNodeProcess:
+		if resp, ok := m.Data.(mq.KillNodeProcessResponse); ok {
+			return NewKillNodeProcessEventOutput(
+				m.Metadata.(Event),
+				resp.Processes,
+				nil,
+			), nil
+		}
+
+		return NewKillNodeProcessEventOutput(
+			m.Metadata.(Event),
+			nil,
+			m.Data.(error),
+		), nil
 	default:
 		return nil, fmt.Errorf("couldn't match message with a topic, %v", m)
 	}
@@ -110,4 +131,5 @@ func init() {
 	gob.Register(BaseEvent{})
 	gob.Register(QueryNodeConnectionsEvent{})
 	gob.Register(QueryNodeProcessesEvent{})
+	gob.Register(KillNodeProcessEvent{})
 }
