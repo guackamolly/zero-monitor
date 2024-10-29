@@ -34,6 +34,10 @@ func networkIdHandler(ectx echo.Context) error {
 func networkIdConnectionsHandler(ectx echo.Context) error {
 	return withServiceContainer(ectx, func(sc *ServiceContainer) error {
 		return withPathNode(ectx, sc, func(n models.Node) error {
+			if !n.Online {
+				return ectx.Render(200, "network/:id/connections", NewNetworkNodeConnectionsView(n, []models.Connection{}))
+			}
+
 			logging.LogInfo("fetching node connections")
 			conns, err := sc.NodeCommander.Connections(n.ID)
 			if err != nil {
@@ -49,6 +53,10 @@ func networkIdConnectionsHandler(ectx echo.Context) error {
 func networkIdProcessesHandler(ectx echo.Context) error {
 	return withServiceContainer(ectx, func(sc *ServiceContainer) error {
 		return withPathNode(ectx, sc, func(n models.Node) error {
+			if !n.Online {
+				return ectx.Render(200, "network/:id/processes", NewNetworkNodeProcessesView(n, []models.Process{}))
+			}
+
 			logging.LogInfo("fetching node processes")
 			procs, err := sc.NodeCommander.Processes(n.ID)
 			if err != nil {
@@ -64,6 +72,10 @@ func networkIdProcessesHandler(ectx echo.Context) error {
 func networkIdProcessesFormHandler(ectx echo.Context) error {
 	return withServiceContainer(ectx, func(sc *ServiceContainer) error {
 		return withPathNode(ectx, sc, func(n models.Node) error {
+			if !n.Online {
+				return ectx.Redirect(301, ectx.Request().URL.Path)
+			}
+
 			pid, err := strconv.Atoi(ectx.FormValue("kill"))
 			if err != nil {
 				logging.LogError("failed to convert pid %s to int, %v", pid, err)
