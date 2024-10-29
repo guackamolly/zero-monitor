@@ -5,3 +5,5 @@ go.work
 
 cmd/test
 *.pprof
+
+*~
