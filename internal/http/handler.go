@@ -36,8 +36,7 @@ func httpErrorHandler() func(err error, c echo.Context) {
 
 		// If all cast fail, serve fallback
 		if !ok {
-			c.File(fallback)
-			return
+			he = echo.NewHTTPError(500, err)
 		}
 
 		// if error page available, serve it

@@ -36,6 +36,7 @@ var (
 
 	errors = map[int]string{
 		404: serverPublicRoot + "404/index.html",
+		500: serverPublicRoot + "500/index.html",
 	}
 
 	root     = files[WithVirtualHost("/index.html")]
