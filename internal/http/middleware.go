@@ -3,6 +3,7 @@ package http
 import (
 	"context"
 
+	"github.com/guackamolly/zero-monitor/internal/data/models"
 	"github.com/guackamolly/zero-monitor/internal/logging"
 	"github.com/labstack/echo/v4"
 )
@@ -43,4 +44,14 @@ func withServiceContainer(ectx echo.Context, with func(*ServiceContainer) error)
 	}
 
 	return echo.ErrFailedDependency
+}
+
+func withPathNode(ectx echo.Context, sc *ServiceContainer, with func(models.Node) error) error {
+	id := ectx.Param("id")
+	n, ok := sc.NodeManager.Node(id)
+	if ok {
+		return with(n)
+	}
+
+	return echo.ErrNotFound
 }

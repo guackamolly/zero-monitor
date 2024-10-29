@@ -3,6 +3,7 @@ package http
 import (
 	"strconv"
 
+	"github.com/guackamolly/zero-monitor/internal/data/models"
 	"github.com/guackamolly/zero-monitor/internal/logging"
 	"github.com/labstack/echo/v4"
 )
@@ -24,73 +25,60 @@ func networkHandler(ectx echo.Context) error {
 
 func networkIdHandler(ectx echo.Context) error {
 	return withServiceContainer(ectx, func(sc *ServiceContainer) error {
-		id := ectx.Param("id")
-		n, ok := sc.NodeManager.Node(id)
-		if !ok {
-			// todo: handle
-		}
-
-		println(ok)
-
-		return ectx.Render(200, "network/:id", NewNetworkNodeInformationView(n))
+		return withPathNode(ectx, sc, func(n models.Node) error {
+			return ectx.Render(200, "network/:id", NewNetworkNodeInformationView(n))
+		})
 	})
 }
 
 func networkIdConnectionsHandler(ectx echo.Context) error {
 	return withServiceContainer(ectx, func(sc *ServiceContainer) error {
-		id := ectx.Param("id")
-		n, ok := sc.NodeManager.Node(id)
-		if !ok {
-			// todo: handle
-		}
+		return withPathNode(ectx, sc, func(n models.Node) error {
+			logging.LogInfo("fetching node connections")
+			conns, err := sc.NodeCommander.Connections(n.ID)
+			if err != nil {
+				logging.LogError("failed to fetch node connections, %v", conns)
+				// todo: handle
+			}
 
-		logging.LogInfo("fetching node connections")
-		conns, err := sc.NodeCommander.Connections(n.ID)
-		if err != nil {
-			logging.LogError("failed to fetch node connections, %v", conns)
-			// todo: handle
-		}
-
-		return ectx.Render(200, "network/:id/connections", NewNetworkNodeConnectionsView(n, conns))
+			return ectx.Render(200, "network/:id/connections", NewNetworkNodeConnectionsView(n, conns))
+		})
 	})
 }
 
 func networkIdProcessesHandler(ectx echo.Context) error {
 	return withServiceContainer(ectx, func(sc *ServiceContainer) error {
-		id := ectx.Param("id")
-		n, ok := sc.NodeManager.Node(id)
-		if !ok {
-			// todo: handle
-		}
+		return withPathNode(ectx, sc, func(n models.Node) error {
+			logging.LogInfo("fetching node processes")
+			procs, err := sc.NodeCommander.Processes(n.ID)
+			if err != nil {
+				logging.LogError("failed to fetch node processes, %v", procs)
+				// todo: handle
+			}
 
-		logging.LogInfo("fetching node processes")
-		procs, err := sc.NodeCommander.Processes(n.ID)
-		if err != nil {
-			logging.LogError("failed to fetch node processes, %v", procs)
-			// todo: handle
-		}
-
-		return ectx.Render(200, "network/:id/processes", NewNetworkNodeProcessesView(n, procs))
+			return ectx.Render(200, "network/:id/processes", NewNetworkNodeProcessesView(n, procs))
+		})
 	})
 }
 
 func networkIdProcessesFormHandler(ectx echo.Context) error {
 	return withServiceContainer(ectx, func(sc *ServiceContainer) error {
-		id := ectx.Param("id")
-		pid, err := strconv.Atoi(ectx.FormValue("kill"))
-		if err != nil {
-			logging.LogError("failed to convert pid %s to int, %v", pid, err)
-			// todo: handle failed conversion
-		}
+		return withPathNode(ectx, sc, func(n models.Node) error {
+			pid, err := strconv.Atoi(ectx.FormValue("kill"))
+			if err != nil {
+				logging.LogError("failed to convert pid %s to int, %v", pid, err)
+				// todo: handle failed conversion
+			}
 
-		logging.LogInfo("killing node process")
-		err = sc.NodeCommander.KillProcess(id, int32(pid))
-		if err != nil {
-			logging.LogError("failed to kill node process, %v", err)
-			// todo: handle
-		}
+			logging.LogInfo("killing node process")
+			err = sc.NodeCommander.KillProcess(n.ID, int32(pid))
+			if err != nil {
+				logging.LogError("failed to kill node process, %v", err)
+				// todo: handle
+			}
 
-		return ectx.Redirect(301, ectx.Request().URL.Path)
+			return ectx.Redirect(301, ectx.Request().URL.Path)
+		})
 	})
 }
 
