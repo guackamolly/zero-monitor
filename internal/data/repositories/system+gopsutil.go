@@ -16,10 +16,10 @@ import (
 )
 
 type GopsUtilSystemRepository struct {
-	totalRx uint64
-	totalTx uint64
-	rx      uint64
-	tx      uint64
+	TotalRx uint64
+	TotalTx uint64
+	Rx      uint64
+	Tx      uint64
 	procs   map[int32]models.Process
 }
 
@@ -38,10 +38,10 @@ func NewGopsUtilSystemRepository() *GopsUtilSystemRepository {
 			}
 
 			if len(ctr) == 1 {
-				r.rx = ctr[0].BytesRecv - r.totalRx
-				r.tx = ctr[0].BytesSent - r.totalTx
-				r.totalRx = ctr[0].BytesRecv
-				r.totalTx = ctr[0].BytesSent
+				r.Rx = ctr[0].BytesRecv - r.TotalRx
+				r.Tx = ctr[0].BytesSent - r.TotalTx
+				r.TotalRx = ctr[0].BytesRecv
+				r.TotalTx = ctr[0].BytesSent
 			}
 		}
 	}()
@@ -180,10 +180,10 @@ func (r GopsUtilSystemRepository) Stats() (models.Stats, error) {
 		disk.UsedPercent,
 		temp,
 		uptime,
-		r.rx,
-		r.tx,
-		r.totalRx,
-		r.totalTx,
+		r.Rx,
+		r.Tx,
+		r.TotalRx,
+		r.TotalTx,
 	), nil
 }
 
