@@ -40,7 +40,7 @@ func httpErrorHandler() func(err error, c echo.Context) {
 		}
 
 		// if error page available, serve it
-		if f, eok := errors[he.Code]; eok {
+		if f, eok := httpErrors[he.Code]; eok {
 			c.Response().WriteHeader(he.Code)
 			c.File(f)
 			return

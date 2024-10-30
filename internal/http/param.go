@@ -1,3 +1,5 @@
 package http
 
-const ()
+const (
+	redirectErrorQueryParam = "x-redirect-err"
+)

@@ -1,6 +1,8 @@
 package http
 
 import (
+	"errors"
+	"fmt"
 	"strconv"
 
 	"github.com/guackamolly/zero-monitor/internal/data/models"
@@ -52,14 +54,20 @@ func networkIdConnectionsHandler(ectx echo.Context) error {
 func networkIdProcessesHandler(ectx echo.Context) error {
 	return withServiceContainer(ectx, func(sc *ServiceContainer) error {
 		return withPathNode(ectx, sc, func(n models.Node) error {
+			rerr, rok := FromRedirectWithError(ectx)
+
 			if !n.Online {
-				return ectx.Render(200, "network/:id/processes", NewNetworkNodeProcessesView(n, []models.Process{}, nil))
+				return ectx.Render(200, "network/:id/processes", NewNetworkNodeProcessesView(n, []models.Process{}, rerr))
 			}
 
 			logging.LogInfo("fetching node processes")
 			procs, err := sc.NodeCommander.Processes(n.ID)
 			if err != nil {
 				logging.LogError("failed to fetch node processes, %v", procs)
+			}
+
+			if rok {
+				err = errors.Join(err, rerr)
 			}
 
 			return ectx.Render(200, "network/:id/processes", NewNetworkNodeProcessesView(n, procs, err))
@@ -74,17 +82,18 @@ func networkIdProcessesFormHandler(ectx echo.Context) error {
 				return ectx.Redirect(301, ectx.Request().URL.Path)
 			}
 
-			pid, err := strconv.Atoi(ectx.FormValue("kill"))
+			killPid := ectx.FormValue("kill")
+			pid, err := strconv.Atoi(killPid)
 			if err != nil {
 				logging.LogError("failed to convert pid %s to int, %v", pid, err)
-				// todo: handle failed conversion
+				return RedirectWithError(ectx, fmt.Errorf("process with PID %s couldn't be found", killPid))
 			}
 
 			logging.LogInfo("killing node process")
 			err = sc.NodeCommander.KillProcess(n.ID, int32(pid))
 			if err != nil {
 				logging.LogError("failed to kill node process, %v", err)
-				// todo: handle
+				return RedirectWithError(ectx, err)
 			}
 
 			return ectx.Redirect(301, ectx.Request().URL.Path)
