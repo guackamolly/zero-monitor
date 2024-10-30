@@ -103,3 +103,11 @@ func TestCelsiusString(t *testing.T) {
 		})
 	}
 }
+
+func TestIORateString(t *testing.T) {
+	input := models.IORate(500)
+	output := "500 B/s"
+	if input.String() != output {
+		t.Errorf("got %s, expected: %s", input, output)
+	}
+}
