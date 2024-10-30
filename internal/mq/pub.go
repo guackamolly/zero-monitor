@@ -135,7 +135,7 @@ func handleKillNodeProcessRequest(
 		return s.PublishMsg(m.WithError(err))
 	}
 
-	return s.PublishMsg(m)
+	return s.PublishMsg(m.WithData(nil))
 }
 
 func handleUnknownMessage(

@@ -120,6 +120,10 @@ func typedMsgData[T any](
 func errorMsgData(
 	msg mq.Msg,
 ) error {
+	if msg.Data == nil {
+		return nil
+	}
+
 	if te, ok := msg.Data.(mq.OPError); ok {
 		return errors.New(te.Error())
 	}
