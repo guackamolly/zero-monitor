@@ -27,7 +27,7 @@ func (v Percent) String() string {
 }
 
 func (v Celsius) String() string {
-	return fmt.Sprintf("%f ºC", v)
+	return fmt.Sprintf("%0.0f ºC", v)
 }
 
 func (v Memory) String() string {

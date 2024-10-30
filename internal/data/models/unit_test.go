@@ -37,15 +37,6 @@ func TestPercentString(t *testing.T) {
 	}
 }
 
-func TestCelsiusString(t *testing.T) {
-	input := models.Celsius(50)
-	output := input.String()
-
-	if output != "50 ºC" {
-		t.Errorf("expected 50ºC, but got: %s", output)
-	}
-}
-
 func TestMemoryString(t *testing.T) {
 	testCases := []struct {
 		desc   string
@@ -76,6 +67,32 @@ func TestMemoryString(t *testing.T) {
 			desc:   "if value is equal or greater than a terabyte, String() should end with 'TB'",
 			input:  models.Memory(1099511627776),
 			output: "1 TB",
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			if tC.input.String() != tC.output {
+				t.Errorf("got %s, expected: %s", tC.input, tC.output)
+			}
+		})
+	}
+}
+
+func TestCelsiusString(t *testing.T) {
+	testCases := []struct {
+		desc   string
+		input  models.Celsius
+		output string
+	}{
+		{
+			desc:   "if value cannot be rounded to an higher value, String() returns <integer> ºC",
+			input:  models.Celsius(50.5),
+			output: "50 ºC",
+		},
+		{
+			desc:   "if value can be rounded to an higher value, String() returns <integer + 1> ºC",
+			input:  models.Celsius(50.51),
+			output: "51 ºC",
 		},
 	}
 	for _, tC := range testCases {
