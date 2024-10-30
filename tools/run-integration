@@ -4,5 +4,5 @@ root="$(dirname "$0")/.."
 
 (
     cd $root
-    go test ./... -tags=integration
+    go test ./... -tags=integration -count=1
 )
