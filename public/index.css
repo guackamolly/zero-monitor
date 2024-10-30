@@ -206,6 +206,10 @@ button {
     background-color: var(--border);
 }
 
+.error {
+    color: var(--redish);
+}
+
 .gallery {
     display: flex;
     flex-direction: row;

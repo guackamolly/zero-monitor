@@ -35,17 +35,16 @@ func networkIdConnectionsHandler(ectx echo.Context) error {
 	return withServiceContainer(ectx, func(sc *ServiceContainer) error {
 		return withPathNode(ectx, sc, func(n models.Node) error {
 			if !n.Online {
-				return ectx.Render(200, "network/:id/connections", NewNetworkNodeConnectionsView(n, []models.Connection{}))
+				return ectx.Render(200, "network/:id/connections", NewNetworkNodeConnectionsView(n, []models.Connection{}, nil))
 			}
 
 			logging.LogInfo("fetching node connections")
 			conns, err := sc.NodeCommander.Connections(n.ID)
 			if err != nil {
 				logging.LogError("failed to fetch node connections, %v", conns)
-				// todo: handle
 			}
 
-			return ectx.Render(200, "network/:id/connections", NewNetworkNodeConnectionsView(n, conns))
+			return ectx.Render(200, "network/:id/connections", NewNetworkNodeConnectionsView(n, conns, err))
 		})
 	})
 }
@@ -54,17 +53,16 @@ func networkIdProcessesHandler(ectx echo.Context) error {
 	return withServiceContainer(ectx, func(sc *ServiceContainer) error {
 		return withPathNode(ectx, sc, func(n models.Node) error {
 			if !n.Online {
-				return ectx.Render(200, "network/:id/processes", NewNetworkNodeProcessesView(n, []models.Process{}))
+				return ectx.Render(200, "network/:id/processes", NewNetworkNodeProcessesView(n, []models.Process{}, nil))
 			}
 
 			logging.LogInfo("fetching node processes")
 			procs, err := sc.NodeCommander.Processes(n.ID)
 			if err != nil {
 				logging.LogError("failed to fetch node processes, %v", procs)
-				// todo: handle
 			}
 
-			return ectx.Render(200, "network/:id/processes", NewNetworkNodeProcessesView(n, procs))
+			return ectx.Render(200, "network/:id/processes", NewNetworkNodeProcessesView(n, procs, err))
 		})
 	})
 }

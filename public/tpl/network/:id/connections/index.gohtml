@@ -66,6 +66,9 @@
                     for node <b>{{.Hostname}}</b>.
                 </p>
                 <div class="divider"></div>
+                {{ if .Err }}
+                {{template "error" .Err }}
+                {{ end }}
                 {{ template "connections" .Connections }}
                 {{ else }}
                 <p>

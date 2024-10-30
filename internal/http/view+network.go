@@ -20,11 +20,13 @@ type NetworkNodeInformationView struct {
 type NetworkNodeConnectionsView struct {
 	NodeView
 	Connections []models.Connection
+	Err         error
 }
 
 type NetworkNodeProcessesView struct {
 	NodeView
 	Processes []models.Process
+	Err       error
 }
 
 func NewNetworkView(
@@ -59,22 +61,26 @@ func NewNetworkNodeInformationView(
 func NewNetworkNodeConnectionsView(
 	node models.Node,
 	connections []models.Connection,
+	err error,
 ) NetworkNodeConnectionsView {
 	return NetworkNodeConnectionsView{
 		NodeView:    NodeView(node),
 		Connections: connections,
+		Err:         err,
 	}
 }
 
 func NewNetworkNodeProcessesView(
 	node models.Node,
 	processes []models.Process,
+	err error,
 ) NetworkNodeProcessesView {
 	slices.Reverse(processes)
 
 	return NetworkNodeProcessesView{
 		NodeView:  NodeView(node),
 		Processes: processes,
+		Err:       err,
 	}
 }
 

@@ -70,6 +70,9 @@
                     consuming {{.CPU}} of CPU.
                 </p>
                 <div class="divider"></div>
+                {{ if .Err }}
+                {{template "error" .Err }}
+                {{ end }}
                 {{ template "processes" .Processes }}
                 {{ else }}
                 <p>
