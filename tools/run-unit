@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+root="$(dirname "$0")/.."
+
+(
+    cd $root
+    go test ./...
+)
