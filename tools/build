@@ -1,0 +1,40 @@
+#!/usr/bin/bash
+dists=(
+    android/arm64
+    darwin/amd64
+    darwin/arm64
+    linux/386
+    linux/amd64
+    linux/arm
+    linux/arm64
+    windows/386
+    windows/amd64
+    windows/arm
+    windows/arm64
+)
+
+root="$(dirname "$0")/.."
+
+target="$1"
+target_path="cmd/$target/$target.go"
+dist_path="$root/dist"
+
+if [[ -z "$target" || ! -f "$target_path" ]]; then
+    echo "Invalid target. Please specify one of the following targets:"
+    (
+        cd "$root/cmd"
+        ls -d *
+    )
+
+    exit 1
+fi
+
+for dist in ${dists[@]}; do
+    os_arch=(${dist//\// })
+    echo "> Building $dist"
+
+    env GOOS=${os_arch[0]} GOARCH=${os_arch[1]} go build -ldflags="-extldflags=-static -s -w" -o "$dist_path/${target}_${os_arch[0]}_${os_arch[1]}" "$target_path"
+    if [[ ! $? -eq 0 ]]; then
+        echo "Couldn't build for $dist."
+    fi
+done
