@@ -14,8 +14,8 @@ type SpeedtestPhase byte
 type Speedtest struct {
 	Provider      string
 	Server        string
-	DownloadSpeed IORate
-	UploadSpeed   IORate
+	DownloadSpeed BitRate
+	UploadSpeed   BitRate
 	Latency       Duration
 	Phase         SpeedtestPhase
 }
@@ -27,8 +27,8 @@ func NewSpeedtest(
 	return Speedtest{
 		Provider:      provider,
 		Server:        server,
-		DownloadSpeed: IORate(0),
-		UploadSpeed:   IORate(0),
+		DownloadSpeed: BitRate(0),
+		UploadSpeed:   BitRate(0),
 		Latency:       Duration(0),
 		Phase:         SpeedtestInit,
 	}
@@ -42,16 +42,16 @@ func (t Speedtest) WithUpdatedLatency(
 }
 
 func (t Speedtest) WithUpdatedDownloadSpeed(
-	speed uint64,
+	speed float64,
 ) Speedtest {
-	t.DownloadSpeed = IORate(speed)
+	t.DownloadSpeed = BitRate(speed)
 	return t
 }
 
 func (t Speedtest) WithUpdatedUploadSpeed(
-	speed uint64,
+	speed float64,
 ) Speedtest {
-	t.UploadSpeed = IORate(speed)
+	t.UploadSpeed = BitRate(speed)
 	return t
 }
 

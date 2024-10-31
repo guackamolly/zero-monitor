@@ -10,6 +10,10 @@ const (
 	mb = kb * kb
 	gb = mb * kb
 	tb = gb * kb
+
+	kbit = 1000.0
+	mbit = kbit * kbit
+	gbit = mbit * kbit
 )
 
 type Percent float64
@@ -17,6 +21,7 @@ type Celsius float64
 type Memory uint64
 type Duration time.Duration
 type IORate uint64
+type BitRate float64
 
 func (v Percent) String() string {
 	if v < 0 {
@@ -56,4 +61,20 @@ func (v Duration) String() string {
 
 func (v IORate) String() string {
 	return fmt.Sprintf("%s/s", Memory(v))
+}
+
+func (v BitRate) String() string {
+	if v < kbit {
+		return fmt.Sprintf("%0.1f bps", v)
+	}
+
+	if v < mbit {
+		return fmt.Sprintf("%0.1f Kbps", v/kbit)
+	}
+
+	if v < gbit {
+		return fmt.Sprintf("%0.1f Mbps", v/mbit)
+	}
+
+	return fmt.Sprintf("%0.1f Gbps", v/gbit)
 }

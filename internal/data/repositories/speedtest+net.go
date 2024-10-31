@@ -39,12 +39,13 @@ func (r NetSpeedtestRepository) Start() (chan (models.Speedtest), error) {
 		ch <- st
 
 		r.client.SetCallbackDownload(func(downRate speedtest.ByteRate) {
-			st = st.WithUpdatedDownloadSpeed(uint64(downRate))
+			st = st.WithUpdatedDownloadSpeed(float64(downRate) / 0.125)
+			println(downRate.String())
 			ch <- st
 		})
 
 		r.client.SetCallbackUpload(func(upRate speedtest.ByteRate) {
-			st = st.WithUpdatedUploadSpeed(uint64(upRate))
+			st = st.WithUpdatedUploadSpeed(float64(upRate) / 0.125)
 			ch <- st
 		})
 
@@ -67,6 +68,7 @@ func (r NetSpeedtestRepository) Start() (chan (models.Speedtest), error) {
 		ch <- st
 
 		srv.Context.Reset()
+		close(ch)
 	}()
 
 	return ch, nil
