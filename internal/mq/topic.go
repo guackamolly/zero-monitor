@@ -10,4 +10,5 @@ const (
 	NodeConnections
 	NodeProcesses
 	KillNodeProcess
+	StartNodeSpeedtest
 )

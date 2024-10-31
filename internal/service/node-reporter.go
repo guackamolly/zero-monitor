@@ -14,13 +14,16 @@ type NodeReporterService struct {
 	node              models.Node
 	statsPollDuration time.Duration
 	system            repositories.SystemRepository
+	speedtest         repositories.SpeedtestRepository
 }
 
 func NewNodeReporterService(
 	system repositories.SystemRepository,
+	speedtest repositories.SpeedtestRepository,
 ) *NodeReporterService {
 	s := &NodeReporterService{
-		system: system,
+		system:    system,
+		speedtest: speedtest,
 	}
 
 	id := internal.MachineId
@@ -74,6 +77,10 @@ func (s NodeReporterService) Processes() ([]models.Process, error) {
 
 func (s NodeReporterService) KillProcess(pid int32) error {
 	return s.system.KillProc(pid)
+}
+
+func (s NodeReporterService) Speedtest() (chan (models.Speedtest), error) {
+	return s.speedtest.Start()
 }
 
 // tries to fetch system info, and if it fails, sleeps for 2 seconds until trying again.

@@ -52,3 +52,26 @@ func (s NodeCommanderService) KillProcess(id string, pid int32) error {
 
 	return out.Error()
 }
+
+func (s NodeCommanderService) Speedtest(id string) (chan (models.Speedtest), error) {
+	ev := event.NewStartNodeSpeedtestEvent(id)
+	out, err := event.PublishAndSubscribe[event.NodeSpeedtestEventOutput](ev, s.publisher, s.subscriber)
+	if err != nil {
+		return nil, err
+	}
+
+	ch := make(chan (models.Speedtest))
+	go func() {
+		for o := range out {
+			if err := o.Error(); err != nil {
+				continue
+			}
+
+			ch <- o.Speedtest
+		}
+
+		close(ch)
+	}()
+
+	return ch, nil
+}

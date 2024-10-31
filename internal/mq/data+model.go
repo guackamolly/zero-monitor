@@ -35,6 +35,10 @@ type KillNodeProcessRequest struct {
 	PID int32
 }
 
+type NodeSpeedtestResponse struct {
+	Speedtest models.Speedtest
+}
+
 type OPError struct {
 	Err string
 }
@@ -51,6 +55,7 @@ func init() {
 	gob.Register(NodeConnectionsResponse{})
 	gob.Register(NodeProcessesResponse{})
 	gob.Register(KillNodeProcessRequest{})
+	gob.Register(NodeSpeedtestResponse{})
 
 	gob.Register(models.Node{})
 	gob.Register(OPError{})

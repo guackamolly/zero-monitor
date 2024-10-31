@@ -12,6 +12,7 @@ import (
 	"github.com/guackamolly/zero-monitor/internal/logging"
 	"github.com/guackamolly/zero-monitor/internal/mq"
 	"github.com/guackamolly/zero-monitor/internal/service"
+	"github.com/showwin/speedtest-go/speedtest"
 )
 
 func main() {
@@ -47,7 +48,8 @@ func main() {
 
 func createPublishContainer() mq.PublishContainer {
 	system := repositories.NewGopsUtilSystemRepository()
-	nrs := service.NewNodeReporterService(system)
+	speedtest := repositories.NewNetSpeedtestRepository(speedtest.New())
+	nrs := service.NewNodeReporterService(system, speedtest)
 
 	return mq.PublishContainer{
 		GetCurrentNode:            nrs.Node,
@@ -56,5 +58,6 @@ func createPublishContainer() mq.PublishContainer {
 		StartNodeStatsPolling:     nrs.Start,
 		UpdateNodeStatsPolling:    nrs.Update,
 		KillNodeProcess:           nrs.KillProcess,
+		StartNodeSpeedtest:        nrs.Speedtest,
 	}
 }

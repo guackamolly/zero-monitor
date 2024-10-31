@@ -29,6 +29,7 @@ type PublishContainer struct {
 	StartNodeStatsPolling     domain.StartNodeStatsPolling
 	UpdateNodeStatsPolling    domain.UpdateNodeStatsPolling
 	KillNodeProcess           domain.KillNodeProcess
+	StartNodeSpeedtest        domain.StartNodeSpeedtest
 }
 
 func InjectSubscribeContainer(

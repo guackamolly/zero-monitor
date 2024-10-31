@@ -1,6 +1,10 @@
 package event
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/guackamolly/zero-monitor/internal/logging"
+)
 
 // Publishes an event in a channel using [p], subscribes it's first value using [s], and closes
 // before finishing.
@@ -28,6 +32,38 @@ func PublishAndSubscribeFirst[T any](ev Event, p EventPublisher, s EventSubscrib
 	if !ok {
 		return out, fmt.Errorf("failed to parse %v to connection slice", r)
 	}
+
+	return out, nil
+}
+
+func PublishAndSubscribe[T any](ev Event, p EventPublisher, s EventSubscriber) (chan (T), error) {
+	var out chan (T)
+
+	err := p.Publish(ev)
+	if err != nil {
+		return out, err
+	}
+
+	ch, sclose := s.Subscribe(ev)
+	if ch == nil {
+		return out, fmt.Errorf("couldn't subscribe to event, %v", ev)
+	}
+
+	out = make(chan (T))
+	go func() {
+		defer sclose()
+		defer close(out)
+
+		for r := range ch {
+			tout, ok := r.(T)
+			if !ok {
+				logging.LogError("failed to parse %v to %v", r, new(T))
+				continue
+			}
+
+			out <- tout
+		}
+	}()
 
 	return out, nil
 }

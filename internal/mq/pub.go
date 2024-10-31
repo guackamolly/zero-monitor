@@ -46,6 +46,8 @@ func (s Socket) RegisterPublishers() {
 				err = handleNodeProcessesRequest(s, m, pc.GetCurrentNodeProcesses)
 			case KillNodeProcess:
 				err = handleKillNodeProcessRequest(s, m, pc.KillNodeProcess)
+			case StartNodeSpeedtest:
+				err = handleStartNodeSpeedtestRequest(s, m, pc.StartNodeSpeedtest)
 			default:
 				err = fmt.Errorf("failed to recognize sub reply message, %v", m)
 			}
@@ -136,6 +138,28 @@ func handleKillNodeProcessRequest(
 	}
 
 	return s.PublishMsg(m.WithData(nil))
+}
+
+func handleStartNodeSpeedtestRequest(
+	s Socket,
+	m Msg,
+	startNodeSpeedtest domain.StartNodeSpeedtest,
+) error {
+	ch, err := startNodeSpeedtest()
+	if err != nil {
+		return s.PublishMsg(m.WithError(err))
+	}
+
+	go func() {
+		for st := range ch {
+			err = s.PublishMsg(m.WithData(NodeSpeedtestResponse{Speedtest: st}))
+			if err != nil {
+				logging.LogError("failed to publish node speed test response, %v", err)
+			}
+		}
+	}()
+
+	return nil
 }
 
 func handleUnknownMessage(

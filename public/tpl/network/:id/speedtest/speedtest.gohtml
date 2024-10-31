@@ -1,0 +1,20 @@
+{{ define "speedtest" }}
+
+<h2>Test Information</h1>
+<p>
+    Provider: {{.Provider}}
+    <br>
+    Server: {{.Server}}
+</p>
+
+<p>
+    Latency: {{.Latency}}
+    <br>
+    Download Speed: {{.DownloadSpeed}}
+    <br>
+    Upload Speed: {{.UploadSpeed}}
+    <br>
+    {{.Phase}}
+</p>
+
+{{ end }}
