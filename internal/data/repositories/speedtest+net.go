@@ -56,7 +56,10 @@ func (r NetSpeedtestRepository) Start() (chan (models.Speedtest), error) {
 		ch <- st
 
 		err = srv.PingTest(nil)
-		st = st.WithUpdatedLatency(int64(srv.Latency)).NextPhase()
+		st = st.WithUpdatedLatency(int64(srv.Latency))
+		ch <- st
+
+		st = st.NextPhase()
 		ch <- st
 
 		// 3. Download phase
