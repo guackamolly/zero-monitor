@@ -1,7 +1,7 @@
 package http
 
 import (
-	"github.com/google/uuid"
+	"github.com/guackamolly/zero-monitor/internal/data/models"
 	"github.com/labstack/echo/v4"
 )
 
@@ -33,7 +33,7 @@ func FromRedirectWithError(ectx echo.Context) (error, bool) {
 }
 
 func StoreHandlerError(err error) string {
-	uuid := uuid.NewString()
+	uuid := models.UUID()
 	handlerErrorsBucket[uuid] = err
 
 	return uuid
