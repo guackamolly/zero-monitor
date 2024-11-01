@@ -31,7 +31,6 @@ func (t *Template) Render(w io.Writer, name string, data interface{}, c echo.Con
 
 	tpl, ok := t.templates[name]
 	if !ok {
-		// network/:id/speedtest/speedtest
 		s := strings.Split(name, "/")
 		name = strings.Join(s[:len(s)-1], "/")
 		part = s[len(s)-1]

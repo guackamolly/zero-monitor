@@ -1,4 +1,4 @@
-{{ define "network/:id/speedtest" }}
+{{ define "network/:id/speedtest/:id" }}
 <!DOCTYPE html>
 <html>
     <head>
@@ -35,6 +35,23 @@
         <link rel="apple-touch-icon" href="static/apple-touch-icon.png">
         <link rel='stylesheet' type='text/css' media='screen' href='index.css'>
         <link rel='stylesheet' type='text/css' media='print' href='index.css'>
+
+        <script>
+            const socket = new WebSocket(`ws://${window.location.host}${window.location.pathname}`);
+            socket.onopen = () => {
+                console.log('WebSocket connection opened');
+            };
+
+            socket.onmessage = (event) => {
+                console.log(event.data)
+                const view = JSON.parse(event.data);
+                document.getElementById(view.ID).innerHTML = view.Value;
+            };
+
+            socket.onclose = () => {
+                console.log('WebSocket connection closed');  
+            };
+        </script>
     </head>
 
     <body>
@@ -63,17 +80,15 @@
                 <h1>Speedtest</h1>
                 {{ if .Online }}
                 <p>
-                    This page initializes a speedtest on node
-                    <b>{{.Hostname}}</b>.
+                    This speedtest was initialized on node <b>{{.Hostname}}</b>
+                    at {{.Speedtest.TakenAt}}.
                 </p>
                 <div class="divider"></div>
                 {{ if .Err }}
                 {{template "error" .Err }}
                 {{ end }}
-                <section id="speedtest">
-                    <form method="post">
-                        <button type="submit">Start</button>
-                    </form>
+                <section>
+                    {{ template "speedtest" .Speedtest }}
                 </section>
                 {{ else }}
                 <p>

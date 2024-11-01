@@ -9,4 +9,5 @@ var (
 	networkIdConnectionsRoute = WithVirtualHost("/network/:id/connections")
 	networkIdProcessesRoute   = WithVirtualHost("/network/:id/processes")
 	networkIdSpeedtestRoute   = WithVirtualHost("/network/:id/speedtest")
+	networkIdSpeedtestIdRoute = WithVirtualHost("/network/:id/speedtest/:id2")
 )

@@ -10,6 +10,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+// GET /network
 func networkHandler(ectx echo.Context) error {
 	if upgrader.WantsToUpgrade(*ectx.Request()) {
 		return networkWebsocketHandler(ectx)
@@ -25,6 +26,7 @@ func networkHandler(ectx echo.Context) error {
 	})
 }
 
+// GET /network/:id
 func networkIdHandler(ectx echo.Context) error {
 	return withServiceContainer(ectx, func(sc *ServiceContainer) error {
 		return withPathNode(ectx, sc, func(n models.Node) error {
@@ -33,6 +35,7 @@ func networkIdHandler(ectx echo.Context) error {
 	})
 }
 
+// GET /network/:id/connections
 func networkIdConnectionsHandler(ectx echo.Context) error {
 	return withServiceContainer(ectx, func(sc *ServiceContainer) error {
 		return withPathNode(ectx, sc, func(n models.Node) error {
@@ -51,6 +54,7 @@ func networkIdConnectionsHandler(ectx echo.Context) error {
 	})
 }
 
+// GET /network/:id/processes
 func networkIdProcessesHandler(ectx echo.Context) error {
 	return withServiceContainer(ectx, func(sc *ServiceContainer) error {
 		return withPathNode(ectx, sc, func(n models.Node) error {
@@ -75,6 +79,7 @@ func networkIdProcessesHandler(ectx echo.Context) error {
 	})
 }
 
+// POST /network/:id/processes
 func networkIdProcessesFormHandler(ectx echo.Context) error {
 	return withServiceContainer(ectx, func(sc *ServiceContainer) error {
 		return withPathNode(ectx, sc, func(n models.Node) error {
@@ -101,22 +106,60 @@ func networkIdProcessesFormHandler(ectx echo.Context) error {
 	})
 }
 
+// GET /network/:id/speedtest
 func networkIdSpeedtestHandler(ectx echo.Context) error {
+	return withServiceContainer(ectx, func(sc *ServiceContainer) error {
+		return withPathNode(ectx, sc, func(n models.Node) error {
+			if !n.Online {
+				return ectx.Render(200, "network/:id/speedtest", NewStartNetworkNodeSpeedtestView(n, nil))
+			}
+
+			return ectx.Render(200, "network/:id/speedtest", NewStartNetworkNodeSpeedtestView(n, nil))
+		})
+	})
+}
+
+// POST /network/:id/speedtest
+func networkIdSpeedtestFormHandler(ectx echo.Context) error {
+	return withServiceContainer(ectx, func(sc *ServiceContainer) error {
+		return withPathNode(ectx, sc, func(n models.Node) error {
+			if !n.Online {
+				return ectx.Redirect(301, ectx.Request().URL.Path)
+			}
+
+			logging.LogInfo("starting speedtest")
+			st, err := sc.NodeCommander.StartSpeedtest(n.ID)
+			if err != nil {
+				logging.LogError("failed to start speedtest, %v", err)
+				return RedirectWithError(ectx, err)
+			}
+
+			return ectx.Redirect(301, ectx.Request().URL.JoinPath(st.ID).Path)
+		})
+	})
+}
+
+// GET /network/:id/speedtest/:id
+func networkIdSpeedtestIdHandler(ectx echo.Context) error {
 	if upgrader.WantsToUpgrade(*ectx.Request()) {
 		return networkIdSpeedtestWebsocketHandler(ectx)
 	}
 
 	return withServiceContainer(ectx, func(sc *ServiceContainer) error {
 		return withPathNode(ectx, sc, func(n models.Node) error {
-			if !n.Online {
-				return ectx.Render(200, "network/:id/speedtest", NewNetworkNodeSpeedtestView(n, models.Speedtest{}, nil))
-			}
+			return withSpeedtest(ectx, sc, func(st models.Speedtest) error {
+				// todo: test?
+				if !n.Online {
+					return ectx.Redirect(301, ectx.Request().URL.JoinPath("..").Path)
+				}
 
-			return ectx.Render(200, "network/:id/speedtest", NewNetworkNodeSpeedtestView(n, models.Speedtest{}, nil))
+				return ectx.Render(200, "network/:id/speedtest/:id", NewNetworkNodeSpeedtestView(n, st, nil))
+			})
 		})
 	})
 }
 
+// GET /network
 func networkWebsocketHandler(ectx echo.Context) error {
 	return withServiceContainer(ectx, func(sc *ServiceContainer) error {
 		ws, err := upgrader.Upgrade(ectx.Response(), ectx.Request(), nil)
@@ -145,35 +188,64 @@ func networkWebsocketHandler(ectx echo.Context) error {
 	})
 }
 
+// GET /network/:id/speedtest/:id
 func networkIdSpeedtestWebsocketHandler(ectx echo.Context) error {
 	return withServiceContainer(ectx, func(sc *ServiceContainer) error {
 		return withPathNode(ectx, sc, func(n models.Node) error {
-			ws, err := upgrader.Upgrade(ectx.Response(), ectx.Request(), nil)
-			if err != nil {
-				return err
-			}
-			defer ws.Close()
-
-			s, err := sc.NodeCommander.Speedtest(n.ID)
-			if err != nil {
-				ws.WriteTemplate(ectx, "network/:id/speedtest/speedtest", NewNetworkNodeSpeedtestView(n, models.Speedtest{}, err))
-			}
-
-			for cn := range s {
-				// todo: if client breaks, stream is hanging on commander side, need to notify it!
-				if ws.IsClosed() {
-					break
-				}
-
-				view := SpeedtestView(cn)
-				err = ws.WriteTemplate(ectx, "network/:id/speedtest/speedtest", view)
+			return withSpeedtest(ectx, sc, func(st models.Speedtest) error {
+				ws, err := upgrader.Upgrade(ectx.Response(), ectx.Request(), nil)
 				if err != nil {
-					logging.LogError("failed to write template in ws %v, %v", ws, err)
-					continue
+					return err
 				}
-			}
+				defer ws.Close()
 
-			return nil
+				s, ok := sc.NodeCommander.SpeedtestUpdates(st.ID)
+				if !ok {
+					ws.WriteTemplate(ectx, "network/:id/speedtest/:id", NewNetworkNodeSpeedtestView(n, models.Speedtest{}, err))
+					return ws.Close()
+				}
+
+				ph := st.Phase
+				for st = range s {
+					// todo: if client breaks, stream is hanging on commander side, need to notify it!
+					if ws.IsClosed() {
+						break
+					}
+
+					if st.Phase != ph {
+						ph = st.Phase
+						status, err := RenderString(ectx, "network/:id/speedtest/:id/status", SpeedtestPhaseView(ph))
+						if err != nil {
+							logging.LogError("failed to write template in ws %v, %v", ws, err)
+							continue
+						}
+
+						err = ws.WriteJSON(NewSpeedtestStatusElementView(status))
+						if err != nil {
+							logging.LogError("failed to write template in ws %v, %v", ws, err)
+							continue
+						}
+					}
+
+					switch st.Phase {
+					case models.SpeedtestLatency:
+						err = ws.WriteJSON(NewSpeedtestLatencyElementView(st.Latency))
+					case models.SpeedtestDownload:
+						err = ws.WriteJSON(NewSpeedtestDownloadElementView(st.DownloadSpeed))
+					case models.SpeedtestUpload:
+						err = ws.WriteJSON(NewSpeedtestUploadElementView(st.UploadSpeed))
+					default:
+						err = nil
+					}
+
+					if err != nil {
+						logging.LogError("failed to write template in ws %v, %v", ws, err)
+						continue
+					}
+				}
+
+				return nil
+			})
 		})
 	})
 }

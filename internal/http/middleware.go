@@ -55,3 +55,13 @@ func withPathNode(ectx echo.Context, sc *ServiceContainer, with func(models.Node
 
 	return echo.ErrNotFound
 }
+
+func withSpeedtest(ectx echo.Context, sc *ServiceContainer, with func(models.Speedtest) error) error {
+	id := ectx.Param("id2")
+	st, ok := sc.NodeCommander.Speedtest(id)
+	if ok {
+		return with(st)
+	}
+
+	return echo.ErrNotFound
+}

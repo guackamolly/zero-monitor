@@ -7,8 +7,6 @@ import (
 	"github.com/guackamolly/zero-monitor/internal/data/models"
 )
 
-type SpeedtestView models.Speedtest
-
 type NetworkView struct {
 	Online             []NodeView
 	Offline            []NodeView
@@ -29,6 +27,11 @@ type NetworkNodeProcessesView struct {
 	NodeView
 	Processes []models.Process
 	Err       error
+}
+
+type StartNetworkNodeSpeedtestView struct {
+	NodeView
+	Err error
 }
 
 type NetworkNodeSpeedtestView struct {
@@ -92,6 +95,16 @@ func NewNetworkNodeProcessesView(
 	}
 }
 
+func NewStartNetworkNodeSpeedtestView(
+	node models.Node,
+	err error,
+) StartNetworkNodeSpeedtestView {
+	return StartNetworkNodeSpeedtestView{
+		NodeView: NodeView(node),
+		Err:      err,
+	}
+}
+
 func NewNetworkNodeSpeedtestView(
 	node models.Node,
 	speedtest models.Speedtest,
@@ -99,7 +112,7 @@ func NewNetworkNodeSpeedtestView(
 ) NetworkNodeSpeedtestView {
 	return NetworkNodeSpeedtestView{
 		NodeView:  NodeView(node),
-		Speedtest: SpeedtestView(speedtest),
+		Speedtest: NewSpeedtestView(speedtest),
 		Err:       err,
 	}
 }

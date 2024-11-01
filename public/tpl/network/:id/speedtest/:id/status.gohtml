@@ -1,0 +1,21 @@
+{{ define "status" }}
+{{ if not . }}
+1. Initializing
+<img src="static/svg/loading-dots-24.svg"
+    alt="Loading indicator. Three dots animation." />
+{{ else if .IsLatencyPhase }}
+2. Latency Estimation
+<img src="static/svg/loading-dots-24.svg"
+    alt="Loading indicator. Three dots animation." />
+{{ else if .IsDownloadPhase }}
+3. Download Rate
+<img src="static/svg/loading-dots-24.svg"
+    alt="Loading indicator. Three dots animation." />
+{{ else if .IsUploadPhase }}
+4. Upload Rate
+<img src="static/svg/loading-dots-24.svg"
+    alt="Loading indicator. Three dots animation." />
+{{ else }}
+Concluded
+{{ end }}
+{{ end }}

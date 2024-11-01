@@ -1,6 +1,8 @@
 package http
 
 import (
+	"strings"
+
 	"github.com/guackamolly/zero-monitor/internal/data/models"
 	"github.com/labstack/echo/v4"
 )
@@ -37,4 +39,15 @@ func StoreHandlerError(err error) string {
 	handlerErrorsBucket[uuid] = err
 
 	return uuid
+}
+
+func RenderString(ectx echo.Context, tpl string, v any) (string, error) {
+	var buf strings.Builder
+
+	err := ectx.Echo().Renderer.Render(&buf, tpl, v, ectx)
+	if err != nil {
+		return "", err
+	}
+
+	return buf.String(), nil
 }

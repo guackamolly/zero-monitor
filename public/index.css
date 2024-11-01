@@ -260,9 +260,6 @@ button {
 
 .speedtest-status {
     text-align: center;
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
 }
 
 .speedtest-results {
