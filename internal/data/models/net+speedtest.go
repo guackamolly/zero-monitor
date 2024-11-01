@@ -1,5 +1,7 @@
 package models
 
+import "time"
+
 // Init > Latency > Download > Upload > Finish
 const (
 	SpeedtestInit SpeedtestPhase = iota + 1
@@ -12,6 +14,8 @@ const (
 type SpeedtestPhase byte
 
 type Speedtest struct {
+	ID             string
+	TakenAt        time.Time
 	ServerProvider string
 	ServerLocation string
 	ServerMediator string
@@ -23,12 +27,15 @@ type Speedtest struct {
 }
 
 func NewSpeedtest(
+	id string,
 	serverprovider string,
 	serverlocation string,
 	servermediator string,
 	serverdistance float64,
 ) Speedtest {
 	return Speedtest{
+		ID:             id,
+		TakenAt:        time.Now(),
 		ServerProvider: serverprovider,
 		ServerLocation: serverlocation,
 		ServerMediator: servermediator,

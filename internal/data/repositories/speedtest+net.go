@@ -37,7 +37,7 @@ func (r NetSpeedtestRepository) Start() (chan (models.Speedtest), error) {
 		// 1. Init phase
 		srv := r.closestServer
 
-		st := models.NewSpeedtest(srv.Sponsor, srv.Name, ooklaServerMediator, srv.Distance*1000)
+		st := models.NewSpeedtest(models.UUID(), srv.Sponsor, srv.Name, ooklaServerMediator, srv.Distance*1000)
 		ch <- st
 
 		r.client.SetCallbackDownload(func(downRate speedtest.ByteRate) {
