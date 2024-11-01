@@ -68,16 +68,16 @@
                     Guackamolly Apps</a>
             </div>
 
-            <div>
+            <nav>
                 <a href="dashboard">Dashboard</a>
                 <a href="network">Network</a>
                 <a href="settings">Settings</a>
-            </div>
+            </nav>
         </header>
         <main>
             <section class="main-content-1">
                 <h1>Speedtest</h1>
-                {{ if .Online }}
+                {{ if not .Online }}
                 <p>
                     This page initializes a speedtest on node
                     <b>{{.Hostname}}</b>.
@@ -96,6 +96,11 @@
                 {{ end }}
             </section>
         </main>
+        <footer>
+            <nav>
+                <a href="network/{{.ID}}/speedtest/history">History</a>
+            </nav>
+        </footer>
     </body>
 </html>
 {{end}}

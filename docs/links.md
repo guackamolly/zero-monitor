@@ -7,3 +7,5 @@ https://icon.kitchen/i/H4sIAAAAAAAAA02Qu25DIQyG38Vdz3BSqQtrhk6VKiVb1cGA4aBwOeXSq
 ## Spinner
 
 https://github.com/n3r4zzurr0/svg-spinners/blob/main/svg-css/pulse-rings-multiple.svg
+
+https://github.com/n3r4zzurr0/svg-spinners/blob/main/svg-css/3-dots-scale.svg
