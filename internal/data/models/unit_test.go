@@ -111,3 +111,65 @@ func TestIORateString(t *testing.T) {
 		t.Errorf("got %s, expected: %s", input, output)
 	}
 }
+
+func TestBitRateString(t *testing.T) {
+	testCases := []struct {
+		desc   string
+		input  models.BitRate
+		output string
+	}{
+		{
+			desc:   "if value is less than a kilobit (1000), String() should end with 'bps'",
+			input:  models.BitRate(999.9),
+			output: "999.9 bps",
+		},
+		{
+			desc:   "if value is less than a megabit (1000000), String() should end with 'Kbps'",
+			input:  models.BitRate(900000.0),
+			output: "900.0 Kbps",
+		},
+		{
+			desc:   "if value is less than a gigabit (1000000000), String() should end with 'Mbps'",
+			input:  models.BitRate(900000000.0),
+			output: "900.0 Mbps",
+		},
+		{
+			desc:   "if value is more than a gigabit (1000000000), String() should end with 'Gbps'",
+			input:  models.BitRate(9000000000.0),
+			output: "9.0 Gbps",
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			if tC.input.String() != tC.output {
+				t.Errorf("got %s, expected: %s", tC.input, tC.output)
+			}
+		})
+	}
+}
+
+func TestDistanceString(t *testing.T) {
+	testCases := []struct {
+		desc   string
+		input  models.Distance
+		output string
+	}{
+		{
+			desc:   "if value is less than kilometer (1000), String() should end with 'm'",
+			input:  models.Distance(999),
+			output: "999.0 m",
+		},
+		{
+			desc:   "if value is more than kilometer (1000), String() should end with 'Km'",
+			input:  models.Distance(1000.1),
+			output: "1.0 Km",
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			if tC.input.String() != tC.output {
+				t.Errorf("got %s, expected: %s", tC.input, tC.output)
+			}
+		})
+	}
+}

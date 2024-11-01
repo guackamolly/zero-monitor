@@ -7,7 +7,7 @@ import (
 )
 
 func TestSpeedtestNextPhase(t *testing.T) {
-	speedtest := models.NewSpeedtest("zero-monitor", "srv-01")
+	speedtest := models.NewSpeedtest("zero-monitor", "okla", "srv-01", 10)
 	initialSpeedtest := speedtest
 	nextPhase := func() models.Speedtest {
 		speedtest = speedtest.NextPhase()
@@ -60,7 +60,7 @@ func TestSpeedtestNextPhase(t *testing.T) {
 }
 
 func TestSpeedtestFinished(t *testing.T) {
-	speedtest := models.NewSpeedtest("zero-monitor", "srv-01")
+	speedtest := models.NewSpeedtest("zero-monitor", "okla", "srv-01", 10)
 	initialSpeedtest := speedtest
 	nextPhase := func() models.Speedtest {
 		speedtest = speedtest.NextPhase()
@@ -108,7 +108,7 @@ func TestSpeedtestFinished(t *testing.T) {
 }
 
 func TestSpeedtestFinishedLatency(t *testing.T) {
-	speedtest := models.NewSpeedtest("zero-monitor", "srv-01")
+	speedtest := models.NewSpeedtest("zero-monitor", "okla", "srv-01", 10)
 	initialSpeedtest := speedtest
 	nextPhase := func() models.Speedtest {
 		speedtest = speedtest.NextPhase()
@@ -156,7 +156,7 @@ func TestSpeedtestFinishedLatency(t *testing.T) {
 }
 
 func TestSpeedtestFinishedDownload(t *testing.T) {
-	speedtest := models.NewSpeedtest("zero-monitor", "srv-01")
+	speedtest := models.NewSpeedtest("zero-monitor", "okla", "srv-01", 10)
 	initialSpeedtest := speedtest
 	nextPhase := func() models.Speedtest {
 		speedtest = speedtest.NextPhase()
@@ -204,7 +204,7 @@ func TestSpeedtestFinishedDownload(t *testing.T) {
 }
 
 func TestSpeedtestFinishedUpload(t *testing.T) {
-	speedtest := models.NewSpeedtest("zero-monitor", "srv-01")
+	speedtest := models.NewSpeedtest("zero-monitor", "okla", "srv-01", 10)
 	initialSpeedtest := speedtest
 	nextPhase := func() models.Speedtest {
 		speedtest = speedtest.NextPhase()

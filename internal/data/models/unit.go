@@ -14,6 +14,9 @@ const (
 	kbit = 1000.0
 	mbit = kbit * kbit
 	gbit = mbit * kbit
+
+	m  = 1
+	km = 1000 * m
 )
 
 type Percent float64
@@ -22,6 +25,7 @@ type Memory uint64
 type Duration time.Duration
 type IORate uint64
 type BitRate float64
+type Distance float64
 
 func (v Percent) String() string {
 	if v < 0 {
@@ -77,4 +81,12 @@ func (v BitRate) String() string {
 	}
 
 	return fmt.Sprintf("%0.1f Gbps", v/gbit)
+}
+
+func (v Distance) String() string {
+	if v < km {
+		return fmt.Sprintf("%0.1f m", v)
+	}
+
+	return fmt.Sprintf("%0.1f Km", v/km)
 }

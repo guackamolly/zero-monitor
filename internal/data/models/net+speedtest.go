@@ -12,25 +12,31 @@ const (
 type SpeedtestPhase byte
 
 type Speedtest struct {
-	Provider      string
-	Server        string
-	DownloadSpeed BitRate
-	UploadSpeed   BitRate
-	Latency       Duration
-	Phase         SpeedtestPhase
+	ServerProvider string
+	ServerLocation string
+	ServerMediator string
+	ServerDistance Distance
+	DownloadSpeed  BitRate
+	UploadSpeed    BitRate
+	Latency        Duration
+	Phase          SpeedtestPhase
 }
 
 func NewSpeedtest(
-	provider string,
-	server string,
+	serverprovider string,
+	serverlocation string,
+	servermediator string,
+	serverdistance float64,
 ) Speedtest {
 	return Speedtest{
-		Provider:      provider,
-		Server:        server,
-		DownloadSpeed: BitRate(0),
-		UploadSpeed:   BitRate(0),
-		Latency:       Duration(0),
-		Phase:         SpeedtestInit,
+		ServerProvider: serverprovider,
+		ServerLocation: serverlocation,
+		ServerMediator: servermediator,
+		ServerDistance: Distance(serverdistance),
+		DownloadSpeed:  BitRate(0),
+		UploadSpeed:    BitRate(0),
+		Latency:        Duration(0),
+		Phase:          SpeedtestInit,
 	}
 }
 

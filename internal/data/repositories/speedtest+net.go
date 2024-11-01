@@ -7,6 +7,8 @@ import (
 	"github.com/showwin/speedtest-go/speedtest"
 )
 
+const ooklaServerMediator = "Ookla"
+
 type NetSpeedtestRepository struct {
 	client        *speedtest.Speedtest
 	closestServer *speedtest.Server
@@ -35,7 +37,7 @@ func (r NetSpeedtestRepository) Start() (chan (models.Speedtest), error) {
 		// 1. Init phase
 		srv := r.closestServer
 
-		st := models.NewSpeedtest(srv.Sponsor, srv.Name)
+		st := models.NewSpeedtest(srv.Sponsor, srv.Name, ooklaServerMediator, srv.Distance*1000)
 		ch <- st
 
 		r.client.SetCallbackDownload(func(downRate speedtest.ByteRate) {
