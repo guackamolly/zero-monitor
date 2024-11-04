@@ -36,6 +36,7 @@
         <link rel='stylesheet' type='text/css' media='screen' href='index.css'>
         <link rel='stylesheet' type='text/css' media='print' href='index.css'>
 
+        {{ if not .Speedtest.Finished }}
         <script>
             const socket = new WebSocket(`ws://${window.location.host}${window.location.pathname}`);
             socket.onopen = () => {
@@ -43,7 +44,8 @@
             };
 
             socket.onmessage = (event) => {
-                console.log(event.data)
+                console.log(event.data);
+
                 const view = JSON.parse(event.data);
                 document.getElementById(view.ID).innerHTML = view.Value;
             };
@@ -52,6 +54,7 @@
                 console.log('WebSocket connection closed');  
             };
         </script>
+        {{ end }}
     </head>
 
     <body>
@@ -78,7 +81,6 @@
         <main>
             <section class="main-content-1">
                 <h1>Speedtest</h1>
-                {{ if .Online }}
                 <p>
                     This speedtest was initialized on node <b>{{.Hostname}}</b>
                     at {{.Speedtest.TakenAt}}.
@@ -90,11 +92,6 @@
                 <section>
                     {{ template "speedtest" .Speedtest }}
                 </section>
-                {{ else }}
-                <p>
-                    This node is currently offline.
-                </p>
-                {{ end }}
             </section>
         </main>
         <footer>

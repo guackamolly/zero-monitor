@@ -217,5 +217,7 @@ func updateServiceContainer(
 ) http.ServiceContainer {
 	zps := event.NewZeroMQEventPubSub(s)
 	sc.NodeCommander = service.NewNodeCommanderService(zps, zps)
+	sc.NodeSpeedtest = service.NewNodeSpeedtestService(zps, zps)
+
 	return sc
 }

@@ -128,7 +128,7 @@ func networkIdSpeedtestFormHandler(ectx echo.Context) error {
 			}
 
 			logging.LogInfo("starting speedtest")
-			st, err := sc.NodeCommander.StartSpeedtest(n.ID)
+			st, err := sc.NodeSpeedtest.Start(n.ID)
 			if err != nil {
 				logging.LogError("failed to start speedtest, %v", err)
 				return RedirectWithError(ectx, err)
@@ -148,7 +148,10 @@ func networkIdSpeedtestIdHandler(ectx echo.Context) error {
 	return withServiceContainer(ectx, func(sc *ServiceContainer) error {
 		return withPathNode(ectx, sc, func(n models.Node) error {
 			return withSpeedtest(ectx, sc, func(st models.Speedtest) error {
-				// todo: test?
+				if st.Finished() {
+					return ectx.Render(200, "network/:id/speedtest/:id", NewNetworkNodeSpeedtestView(n, st, nil))
+				}
+
 				if !n.Online {
 					return ectx.Redirect(301, ectx.Request().URL.JoinPath("..").Path)
 				}
@@ -199,7 +202,7 @@ func networkIdSpeedtestWebsocketHandler(ectx echo.Context) error {
 				}
 				defer ws.Close()
 
-				s, ok := sc.NodeCommander.SpeedtestUpdates(st.ID)
+				s, ok := sc.NodeSpeedtest.Updates(st.ID)
 				if !ok {
 					ws.WriteTemplate(ectx, "network/:id/speedtest/:id", NewNetworkNodeSpeedtestView(n, models.Speedtest{}, err))
 					return ws.Close()

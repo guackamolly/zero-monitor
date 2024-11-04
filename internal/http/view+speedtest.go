@@ -40,6 +40,10 @@ func NewSpeedtestUploadElementView(
 	return NewElementView("speedtest-upload", upload.String())
 }
 
+func (v SpeedtestView) Status() SpeedtestPhaseView {
+	return SpeedtestPhaseView(v.Phase)
+}
+
 func (v SpeedtestPhaseView) IsLatencyPhase() bool {
 	return v == SpeedtestPhaseView(models.SpeedtestLatency)
 }

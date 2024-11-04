@@ -17,6 +17,7 @@ type ServiceContainer struct {
 	NodeManager         *service.NodeManagerService
 	NodeScheduler       *service.NodeSchedulerService
 	NodeCommander       *service.NodeCommanderService
+	NodeSpeedtest       *service.NodeSpeedtestService
 	MasterConfiguration *service.MasterConfigurationService
 }
 

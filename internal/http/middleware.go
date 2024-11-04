@@ -58,7 +58,7 @@ func withPathNode(ectx echo.Context, sc *ServiceContainer, with func(models.Node
 
 func withSpeedtest(ectx echo.Context, sc *ServiceContainer, with func(models.Speedtest) error) error {
 	id := ectx.Param("id2")
-	st, ok := sc.NodeCommander.Speedtest(id)
+	st, ok := sc.NodeSpeedtest.Speedtest(id)
 	if ok {
 		return with(st)
 	}
