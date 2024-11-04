@@ -5,6 +5,5 @@
 - Find a solution for common template files (e.g., error.gohtml) and websocket initialization
 - Optimize network template render
 - Find a solution for a fixed size speedtest container
-- Limit decimal cases of duration in case of ns/ms/sec unit.
 - Focus speedtest updating span
 - Multiple WS clients dont receive the same speedtest updates

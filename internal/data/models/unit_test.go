@@ -2,6 +2,7 @@ package models_test
 
 import (
 	"testing"
+	"time"
 
 	"github.com/guackamolly/zero-monitor/internal/data/models"
 )
@@ -163,6 +164,52 @@ func TestDistanceString(t *testing.T) {
 			desc:   "if value is more than kilometer (1000), String() should end with 'Km'",
 			input:  models.Distance(1000.1),
 			output: "1.0 Km",
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			if tC.input.String() != tC.output {
+				t.Errorf("got %s, expected: %s", tC.input, tC.output)
+			}
+		})
+	}
+}
+
+func TestDurationString(t *testing.T) {
+	testCases := []struct {
+		desc   string
+		input  models.Duration
+		output string
+	}{
+		{
+			desc:   "if value is less than a microsecond, String() should end with 'ns'",
+			input:  models.Duration(91 * time.Nanosecond),
+			output: "91 ns",
+		},
+		{
+			desc:   "if value is less than a millisecond, String() should end with 'us'",
+			input:  models.Duration(87 * time.Microsecond),
+			output: "87 us",
+		},
+		{
+			desc:   "if value is less than a second, String() should end with 'ms'",
+			input:  models.Duration(999 * time.Millisecond),
+			output: "999 ms",
+		},
+		{
+			desc:   "if value is less than a minute, String() should end with 's'",
+			input:  models.Duration(50 * time.Second),
+			output: "50 s",
+		},
+		{
+			desc:   "if value is less than an hour, String() should end with 'min'",
+			input:  models.Duration(50 * time.Minute),
+			output: "50 min",
+		},
+		{
+			desc:   "if value is more than an hour, String() should use internal time.Duration format",
+			input:  models.Duration(72 * time.Minute),
+			output: "1h12m0s",
 		},
 	}
 	for _, tC := range testCases {

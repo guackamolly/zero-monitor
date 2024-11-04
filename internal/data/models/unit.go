@@ -60,7 +60,29 @@ func (v Memory) String() string {
 }
 
 func (v Duration) String() string {
-	return fmt.Sprint(time.Duration(v))
+	d := time.Duration(v)
+
+	if d < time.Microsecond {
+		return fmt.Sprintf("%d ns", v)
+	}
+
+	if d < time.Millisecond {
+		return fmt.Sprintf("%d us", d.Microseconds())
+	}
+
+	if d < time.Second {
+		return fmt.Sprintf("%d ms", d.Milliseconds())
+	}
+
+	if d < time.Minute {
+		return fmt.Sprintf("%0.0f s", d.Seconds())
+	}
+
+	if d < time.Hour {
+		return fmt.Sprintf("%0.0f min", d.Minutes())
+	}
+
+	return d.String()
 }
 
 func (v IORate) String() string {
