@@ -38,6 +38,12 @@
 
         {{ if not .Speedtest.Finished }}
         <script>
+            const animatedElements = {
+                'speedtest-latency': false,
+                'speedtest-upload': false,
+                'speedtest-download': false,
+            };
+
             const socket = new WebSocket(`ws://${window.location.host}${window.location.pathname}`);
             socket.onopen = () => {
                 console.log('WebSocket connection opened');
@@ -48,6 +54,16 @@
 
                 const view = JSON.parse(event.data);
                 document.getElementById(view.ID).innerHTML = view.Value;
+
+                if(view.ID === 'speedtest-status') {
+                    for(const k in animatedElements) {
+                        document.getElementById(k).classList.remove('speedtest-animate');
+                    }
+                }
+
+                if(view.ID in animatedElements) {
+                    document.getElementById(view.ID).classList.add('speedtest-animate');
+                }
             };
 
             socket.onclose = () => {

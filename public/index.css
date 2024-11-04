@@ -258,6 +258,12 @@ button {
     gap: 8px;
 }
 
+.speedtest-animate {
+    font-size: large;
+    font-weight: bold;
+    transition: 300ms;
+}
+
 .speedtest-status {
     text-align: center;
 }
@@ -274,12 +280,6 @@ button {
     text-align: center;
     align-items: start;
     gap: 8px;
-}
-
-.aaa {
-    overflow-wrap: break-word;
-    width: min-content;
-    text-align: center;
 }
 
 /* Tooltips original source: https://www.w3schools.com/css/css_tooltip.asp */
