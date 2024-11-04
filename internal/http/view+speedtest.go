@@ -1,6 +1,10 @@
 package http
 
-import "github.com/guackamolly/zero-monitor/internal/data/models"
+import (
+	"time"
+
+	"github.com/guackamolly/zero-monitor/internal/data/models"
+)
 
 type SpeedtestPhaseView models.SpeedtestPhase
 
@@ -42,6 +46,10 @@ func NewSpeedtestUploadElementView(
 
 func (v SpeedtestView) Status() SpeedtestPhaseView {
 	return SpeedtestPhaseView(v.Phase)
+}
+
+func (v SpeedtestView) TakenAt() string {
+	return v.Speedtest.TakenAt.Format(time.DateTime)
 }
 
 func (v SpeedtestPhaseView) IsLatencyPhase() bool {
