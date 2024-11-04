@@ -42,7 +42,6 @@ func (r NetSpeedtestRepository) Start() (chan (models.Speedtest), error) {
 
 		r.client.SetCallbackDownload(func(downRate speedtest.ByteRate) {
 			st = st.WithUpdatedDownloadSpeed(float64(downRate) / 0.125)
-			println(downRate.String())
 			ch <- st
 		})
 
