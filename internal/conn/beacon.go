@@ -3,6 +3,8 @@ package conn
 import (
 	"log"
 	"net"
+
+	"github.com/guackamolly/zero-monitor/internal/data/models"
 )
 
 type Connection struct {
@@ -24,7 +26,7 @@ func StartBeaconServer(conn *net.UDPConn, subConn Connection) {
 				continue
 			}
 
-			d, err := decode(buf)
+			d, err := models.Decode[msg](buf)
 			if err != nil {
 				log.Printf("failed to decode beacon data, %v\n", err)
 				continue
@@ -36,7 +38,7 @@ func StartBeaconServer(conn *net.UDPConn, subConn Connection) {
 			log.Printf("received probe beacon from %v\n", addr)
 
 			go func() {
-				b, err := encode(compose(helloKey, subConn))
+				b, err := models.Encode(compose(helloKey, subConn))
 				if err != nil {
 					log.Printf("failed to encode beacon reply data, %v", err)
 					return

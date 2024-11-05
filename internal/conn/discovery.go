@@ -5,6 +5,8 @@ import (
 	"log"
 	"net"
 	"time"
+
+	"github.com/guackamolly/zero-monitor/internal/data/models"
 )
 
 // At most a node can send 5 beacon requests in parallel.
@@ -127,7 +129,7 @@ func broadcastProbeBeacon(port uint16) (Connection, error) {
 	}
 
 	defer conn.Close()
-	bs, err := encode(compose(probeKey))
+	bs, err := models.Encode(compose(probeKey))
 	if err != nil {
 		return Connection{}, err
 	}
@@ -161,7 +163,7 @@ func broadcastProbeBeacon(port uint16) (Connection, error) {
 		return Connection{}, err
 	}
 
-	d, err := decode(buf)
+	d, err := models.Decode[msg](buf)
 	if err != nil {
 		return Connection{}, err
 	}

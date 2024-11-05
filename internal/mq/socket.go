@@ -6,6 +6,7 @@ import (
 	"log"
 
 	"github.com/go-zeromq/zmq4"
+	"github.com/guackamolly/zero-monitor/internal/data/models"
 	"github.com/guackamolly/zero-monitor/internal/logging"
 )
 
@@ -83,7 +84,7 @@ func (s Socket) OnMsgReceived(t Topic, h func(m Msg)) func() {
 func (s Socket) PublishMsg(m Msg) error {
 	logging.LogInfo("publishing Msg with topic: %d", m.Topic)
 
-	b, err := encode(m)
+	b, err := models.Encode(m)
 	if err != nil {
 		return err
 	}
@@ -108,10 +109,10 @@ func (s Socket) ReceiveMsg() (Msg, error) {
 	}
 
 	if s.framesLength == 1 {
-		return decode(zm.Frames[0])
+		return models.Decode[Msg](zm.Frames[0])
 	}
 
-	m, err := decode(zm.Frames[1])
+	m, err := models.Decode[Msg](zm.Frames[1])
 	if err != nil {
 		return Msg{}, err
 	}
@@ -125,7 +126,7 @@ func (s Socket) ReceiveMsg() (Msg, error) {
 // Replies to a pub socket from the sub socket.
 // Receiver must be a sub socket.
 func (s Socket) ReplyMsg(id []byte, m Msg) {
-	b, err := encode(m)
+	b, err := models.Encode(m)
 	if err != nil {
 		log.Printf("failed to encode reply message, %v\n", err)
 	}
