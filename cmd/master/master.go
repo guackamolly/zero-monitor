@@ -11,7 +11,10 @@ import (
 
 	"github.com/guackamolly/zero-monitor/internal/config"
 	"github.com/guackamolly/zero-monitor/internal/conn"
+	dbb "github.com/guackamolly/zero-monitor/internal/data/db"
+	dbbolt "github.com/guackamolly/zero-monitor/internal/data/db/db-bolt"
 	"github.com/guackamolly/zero-monitor/internal/data/models"
+	"github.com/guackamolly/zero-monitor/internal/data/repositories"
 	"github.com/guackamolly/zero-monitor/internal/event"
 	"github.com/guackamolly/zero-monitor/internal/http"
 	"github.com/guackamolly/zero-monitor/internal/logging"
@@ -41,8 +44,12 @@ func main() {
 	uconn := initializeBeaconServer(addrToConn(s.Addr()))
 	defer uconn.Close()
 
+	// 4. Initialize database.
+	db := initializeDatabase()
+	defer db.Close()
+
 	// 5. Initialize http server.
-	sc = updateServiceContainer(sc, &s)
+	sc = updateServiceContainer(sc, &s, db)
 	ctx = http.InjectServiceContainer(ctx, sc)
 	e := initializeHttpServer(ctx)
 	defer e.Close()
@@ -122,6 +129,16 @@ func initializeHttpServer(ctx context.Context) *echo.Echo {
 	}()
 
 	return e
+}
+
+func initializeDatabase() dbb.Database {
+	db := dbbolt.NewBoltDatabase(dbbolt.Path())
+	err := db.Open()
+	if err != nil {
+		logging.LogFatal("couldn't initialize database, %v", db)
+	}
+
+	return db
 }
 
 func addrToConn(addr net.Addr) conn.Connection {
@@ -214,10 +231,17 @@ func createSubContainer(sc http.ServiceContainer) mq.SubscribeContainer {
 func updateServiceContainer(
 	sc http.ServiceContainer,
 	s *mq.Socket,
+	db dbb.Database,
 ) http.ServiceContainer {
 	zps := event.NewZeroMQEventPubSub(s)
+	stt, ok := db.Table(dbb.TableSpeedtest)
+	if !ok {
+		logging.LogFatal("table %s hasn't been initialized", dbb.TableSpeedtest)
+	}
+	sps := repositories.NewDatabaseSpeedtestStoreRepository(stt.(dbb.SpeedtestTable))
+
 	sc.NodeCommander = service.NewNodeCommanderService(zps, zps)
-	sc.NodeSpeedtest = service.NewNodeSpeedtestService(zps, zps)
+	sc.NodeSpeedtest = service.NewNodeSpeedtestService(zps, zps, sps)
 
 	return sc
 }

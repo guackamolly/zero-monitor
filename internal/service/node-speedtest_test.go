@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/guackamolly/zero-monitor/internal/data/models"
+	"github.com/guackamolly/zero-monitor/internal/data/repositories"
 	"github.com/guackamolly/zero-monitor/internal/event"
 	"github.com/guackamolly/zero-monitor/internal/service"
 )
@@ -13,6 +14,26 @@ type TestPublishSubscriber struct {
 	event.EventPublisher
 	event.EventSubscriber
 	outputs []event.EventOutput
+}
+
+type TestSpeedtestStoreRepository struct {
+	repositories.SpeedtestStoreRepository
+	speedtests []models.Speedtest
+}
+
+func (r TestSpeedtestStoreRepository) Save(nodeid string, speedtest models.Speedtest) error {
+	r.speedtests = append(r.speedtests, speedtest)
+	return nil
+}
+
+func (r TestSpeedtestStoreRepository) History(nodeid string) ([]models.Speedtest, error) {
+	return r.speedtests, nil
+}
+
+func NewTestSpeedtestStoreRepository() *TestSpeedtestStoreRepository {
+	return &TestSpeedtestStoreRepository{
+		speedtests: []models.Speedtest{},
+	}
 }
 
 func NewTestPublishSubscriber(
@@ -51,8 +72,9 @@ func TestSpeedtestsUpdatesAreNotAvailableAfterSpeedtestFinishes(t *testing.T) {
 	ps := NewTestPublishSubscriber(
 		event.NewNodeSpeedtestEventOutput(nil, models.NewSpeedtest("<speedtest-id>", "zero-monitor", "world", "ookla", 5), nil),
 	)
+	sps := NewTestSpeedtestStoreRepository()
 
-	s := service.NewNodeSpeedtestService(ps, ps)
+	s := service.NewNodeSpeedtestService(ps, ps, sps)
 	nid := "<node-id>"
 
 	st, err := s.Start(nid)
@@ -76,8 +98,9 @@ func TestSpeedtestsUpdatesChannelIsClosedAfterSpeedtestFinishes(t *testing.T) {
 	ps := NewTestPublishSubscriber(
 		event.NewNodeSpeedtestEventOutput(nil, models.NewSpeedtest("<speedtest-id>", "zero-monitor", "world", "ookla", 0), nil),
 	)
+	sps := NewTestSpeedtestStoreRepository()
 
-	s := service.NewNodeSpeedtestService(ps, ps)
+	s := service.NewNodeSpeedtestService(ps, ps, sps)
 	nid := "<node-id>"
 
 	st, err := s.Start(nid)
@@ -101,8 +124,9 @@ func TestSpeedtestIsUpdatedWheneverUpdatesChannelEmitsNewValues(t *testing.T) {
 		event.NewNodeSpeedtestEventOutput(nil, models.NewSpeedtest("<speedtest-id>", "zero-monitor", "world", "ookla", 5), nil),
 		event.NewNodeSpeedtestEventOutput(nil, models.NewSpeedtest("<speedtest-id>", "zero-monitor", "world", "ookla", 2), nil),
 	)
+	sps := NewTestSpeedtestStoreRepository()
 
-	s := service.NewNodeSpeedtestService(ps, ps)
+	s := service.NewNodeSpeedtestService(ps, ps, sps)
 	nid := "<node-id>"
 
 	st, err := s.Start(nid)

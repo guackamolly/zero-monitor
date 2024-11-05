@@ -4,7 +4,9 @@ import (
 	"fmt"
 
 	"github.com/guackamolly/zero-monitor/internal/data/models"
+	"github.com/guackamolly/zero-monitor/internal/data/repositories"
 	"github.com/guackamolly/zero-monitor/internal/event"
+	"github.com/guackamolly/zero-monitor/internal/logging"
 )
 
 // Service for managing nodes speedtests.
@@ -13,17 +15,20 @@ type NodeSpeedtestService struct {
 	updates    map[string]chan (models.Speedtest)
 	publisher  event.EventPublisher
 	subscriber event.EventSubscriber
+	store      repositories.SpeedtestStoreRepository
 }
 
 func NewNodeSpeedtestService(
 	publisher event.EventPublisher,
 	subscriber event.EventSubscriber,
+	store repositories.SpeedtestStoreRepository,
 ) *NodeSpeedtestService {
 	s := &NodeSpeedtestService{
 		speedtests: map[string]models.Speedtest{},
 		updates:    map[string]chan models.Speedtest{},
 		publisher:  publisher,
 		subscriber: subscriber,
+		store:      store,
 	}
 
 	return s
@@ -38,20 +43,29 @@ func (s NodeSpeedtestService) Start(nodeid string) (models.Speedtest, error) {
 
 	ch := make(chan (models.Speedtest))
 	go func() {
-		var sid string
+		var st models.Speedtest
 		for o := range out {
 			if err := o.Error(); err != nil {
 				continue
 			}
 
-			sid = o.Speedtest.ID
+			st = o.Speedtest
+			s.speedtests[st.ID] = st
+			ch <- st
 
-			s.speedtests[sid] = o.Speedtest
-			ch <- o.Speedtest
+			// todo: this is a workaround to break out of channel, since upstream is not closing channel
+			if st.Finished() {
+				break
+			}
+		}
+
+		err = s.store.Save(nodeid, st)
+		if err != nil {
+			logging.LogError("couldn't store speedtest, %v", err)
 		}
 
 		close(ch)
-		delete(s.updates, sid)
+		delete(s.updates, st.ID)
 	}()
 
 	st, ok := <-ch
