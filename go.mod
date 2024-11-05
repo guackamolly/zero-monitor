@@ -12,6 +12,7 @@ require (
 	github.com/labstack/echo/v4 v4.12.0
 	github.com/shirou/gopsutil v3.21.11+incompatible
 	github.com/showwin/speedtest-go v1.7.9
+	go.etcd.io/bbolt v1.3.11
 )
 
 require (
