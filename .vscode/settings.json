@@ -3,5 +3,8 @@
         "build.env": {
             "GOFLAGS": "-tags=integration"
         }
-    }
+    },
+    "go.testFlags": [
+        "-tags=integration"
+    ]
 }
