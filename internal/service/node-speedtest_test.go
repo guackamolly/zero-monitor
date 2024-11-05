@@ -21,7 +21,7 @@ type TestSpeedtestStoreRepository struct {
 	speedtests []models.Speedtest
 }
 
-func (r TestSpeedtestStoreRepository) Save(nodeid string, speedtest models.Speedtest) error {
+func (r *TestSpeedtestStoreRepository) Save(nodeid string, speedtest models.Speedtest) error {
 	r.speedtests = append(r.speedtests, speedtest)
 	return nil
 }
