@@ -139,6 +139,20 @@ func networkIdSpeedtestFormHandler(ectx echo.Context) error {
 	})
 }
 
+// GET /network/:id/speedtest/history
+func networkIdSpeedtestHistoryHandler(ectx echo.Context) error {
+	return withServiceContainer(ectx, func(sc *ServiceContainer) error {
+		return withPathNode(ectx, sc, func(n models.Node) error {
+			sts, ok := sc.NodeSpeedtest.History(n.ID)
+			if !ok {
+				logging.LogWarning("no history found for node %s", n.ID)
+				sts = []models.Speedtest{}
+			}
+			return ectx.Render(200, "network/:id/speedtest/history", NewNetworkNodeSpeedtestHistoryView(n, sts, nil))
+		})
+	})
+}
+
 // GET /network/:id/speedtest/:id
 func networkIdSpeedtestIdHandler(ectx echo.Context) error {
 	if upgrader.WantsToUpgrade(*ectx.Request()) {

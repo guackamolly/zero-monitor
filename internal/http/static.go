@@ -27,13 +27,14 @@ var (
 	}
 
 	templates = map[string]string{
-		"network":                   serverPublicRoot + "tpl/network/*.gohtml",
-		"network/:id":               serverPublicRoot + "tpl/network/:id/*.gohtml",
-		"network/:id/connections":   serverPublicRoot + "tpl/network/:id/connections/*.gohtml",
-		"network/:id/processes":     serverPublicRoot + "tpl/network/:id/processes/*.gohtml",
-		"network/:id/speedtest":     serverPublicRoot + "tpl/network/:id/speedtest/*.gohtml",
-		"network/:id/speedtest/:id": serverPublicRoot + "tpl/network/:id/speedtest/:id/*.gohtml",
-		"settings":                  serverPublicRoot + "tpl/settings/*.gohtml",
+		"network":                       serverPublicRoot + "tpl/network/*.gohtml",
+		"network/:id":                   serverPublicRoot + "tpl/network/:id/*.gohtml",
+		"network/:id/connections":       serverPublicRoot + "tpl/network/:id/connections/*.gohtml",
+		"network/:id/processes":         serverPublicRoot + "tpl/network/:id/processes/*.gohtml",
+		"network/:id/speedtest":         serverPublicRoot + "tpl/network/:id/speedtest/*.gohtml",
+		"network/:id/speedtest/history": serverPublicRoot + "tpl/network/:id/speedtest/history/*.gohtml",
+		"network/:id/speedtest/:id":     serverPublicRoot + "tpl/network/:id/speedtest/:id/*.gohtml",
+		"settings":                      serverPublicRoot + "tpl/settings/*.gohtml",
 	}
 
 	httpErrors = map[int]string{

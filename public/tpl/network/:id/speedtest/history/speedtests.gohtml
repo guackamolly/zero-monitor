@@ -1,0 +1,22 @@
+{{ define "speedtests" }}
+{{ range . }}
+<details>
+    <summary>{{.TakenAt}}</summary>
+    <article class="speedtest-preview">
+        <span>
+            <b>Latency</b>:{{.Latency}}
+        </span>
+        <span>
+            <b>Download</b>:{{.DownloadSpeed}}
+        </span>
+
+        <span>
+            <b>Upload</b>:{{.UploadSpeed}}
+        </span>
+    </article>
+    <p>
+        <a href="network/{{.NodeID}}/speedtest/{{.ID}}">+ Information</a>
+    </p>
+</details>
+{{ end }}
+{{ end }}

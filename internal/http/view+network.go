@@ -40,6 +40,12 @@ type NetworkNodeSpeedtestView struct {
 	Err       error
 }
 
+type NetworkNodeSpeedtestHistoryView struct {
+	NodeView
+	Speedtests []SpeedtestView
+	Err        error
+}
+
 func NewNetworkView(
 	nodes []models.Node,
 	nodeStatsPollBurst time.Duration,
@@ -112,8 +118,28 @@ func NewNetworkNodeSpeedtestView(
 ) NetworkNodeSpeedtestView {
 	return NetworkNodeSpeedtestView{
 		NodeView:  NodeView(node),
-		Speedtest: NewSpeedtestView(speedtest),
+		Speedtest: NewSpeedtestView(node.ID, speedtest),
 		Err:       err,
+	}
+}
+
+func NewNetworkNodeSpeedtestHistoryView(
+	node models.Node,
+	speedtests []models.Speedtest,
+	err error,
+) NetworkNodeSpeedtestHistoryView {
+	sts := make([]SpeedtestView, len(speedtests))
+	for i := len(speedtests) - 1; i >= 0; i-- {
+		sts[i] = NewSpeedtestView(node.ID, speedtests[i])
+	}
+
+	// reverse to show most recent speedtests first
+	slices.Reverse(sts)
+
+	return NetworkNodeSpeedtestHistoryView{
+		NodeView:   NodeView(node),
+		Speedtests: sts,
+		Err:        err,
 	}
 }
 

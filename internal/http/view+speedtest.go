@@ -7,16 +7,18 @@ import (
 )
 
 type SpeedtestPhaseView models.SpeedtestPhase
-
 type SpeedtestView struct {
 	models.Speedtest
+	NodeID string
 }
 
 func NewSpeedtestView(
+	nodeid string,
 	speedtest models.Speedtest,
 ) SpeedtestView {
 	return SpeedtestView{
 		Speedtest: speedtest,
+		NodeID:    nodeid,
 	}
 }
 
