@@ -17,6 +17,15 @@ func NewDatabaseSpeedtestStoreRepository(
 	}
 }
 
+func (r DatabaseSpeedtestStoreRepository) Lookup(id string) (models.Speedtest, bool, error) {
+	entity, ok, err := r.tbl.Lookup(id)
+	if ok {
+		return entity.Speedtest, ok, nil
+	}
+
+	return models.Speedtest{}, ok, err
+}
+
 func (r DatabaseSpeedtestStoreRepository) Save(nodeid string, speedtest models.Speedtest) error {
 	entity := db.NewSpeedtestEntity(speedtest, nodeid)
 	return r.tbl.Insert(entity)

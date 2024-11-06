@@ -8,5 +8,6 @@ type SpeedtestRepository interface {
 
 type SpeedtestStoreRepository interface {
 	Save(nodeid string, speedtest models.Speedtest) error
+	Lookup(id string) (models.Speedtest, bool, error)
 	History(nodeid string) ([]models.Speedtest, error)
 }
