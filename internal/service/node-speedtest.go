@@ -11,7 +11,13 @@ import (
 
 // Service for managing nodes speedtests.
 type NodeSpeedtestService struct {
-	speedtests map[string]models.Speedtest
+	// NodeID -> Speedtests
+	history map[string][]models.Speedtest
+	// NodeID -> bool
+	loadedHistory map[string]bool
+	// Speedtest ID -> Speedtest
+	cache map[string]models.Speedtest
+	// Speedtest ID -> chan(Speedtest)
 	updates    map[string]chan (models.Speedtest)
 	publisher  event.EventPublisher
 	subscriber event.EventSubscriber
@@ -24,11 +30,13 @@ func NewNodeSpeedtestService(
 	store repositories.SpeedtestStoreRepository,
 ) *NodeSpeedtestService {
 	s := &NodeSpeedtestService{
-		speedtests: map[string]models.Speedtest{},
-		updates:    map[string]chan models.Speedtest{},
-		publisher:  publisher,
-		subscriber: subscriber,
-		store:      store,
+		cache:         map[string]models.Speedtest{},
+		updates:       map[string]chan models.Speedtest{},
+		history:       map[string][]models.Speedtest{},
+		loadedHistory: map[string]bool{},
+		publisher:     publisher,
+		subscriber:    subscriber,
+		store:         store,
 	}
 
 	return s
@@ -50,7 +58,7 @@ func (s NodeSpeedtestService) Start(nodeid string) (models.Speedtest, error) {
 			}
 
 			st = o.Speedtest
-			s.speedtests[st.ID] = st
+			s.cache[st.ID] = st
 			ch <- st
 
 			// todo: this is a workaround to break out of channel, since upstream is not closing channel
@@ -66,6 +74,10 @@ func (s NodeSpeedtestService) Start(nodeid string) (models.Speedtest, error) {
 
 		close(ch)
 		delete(s.updates, st.ID)
+
+		if hs := s.history[nodeid]; hs != nil {
+			s.history[nodeid] = append(hs, st)
+		}
 	}()
 
 	st, ok := <-ch
@@ -87,10 +99,39 @@ func (s NodeSpeedtestService) Updates(id string) (chan (models.Speedtest), bool)
 }
 
 func (s NodeSpeedtestService) Speedtest(id string) (models.Speedtest, bool) {
-	sts, ok := s.speedtests[id]
-	if !ok {
-		return models.Speedtest{}, false
+	sts, ok := s.cache[id]
+	if ok {
+		return sts, true
 	}
 
-	return sts, true
+	sts, ok, err := s.store.Lookup(id)
+	if err != nil {
+		logging.LogError("failed to lookup speedtest on store, %v", err)
+	}
+
+	return sts, ok
+}
+
+func (s NodeSpeedtestService) History(nodeid string) ([]models.Speedtest, bool) {
+	s.loadHistory(nodeid)
+
+	sts, ok := s.history[nodeid]
+	return sts, ok
+}
+
+func (s *NodeSpeedtestService) loadHistory(nodeid string) {
+	if s.loadedHistory[nodeid] {
+		return
+	}
+
+	hs, err := s.store.History(nodeid)
+	if err != nil {
+		logging.LogError("failed to load history for node %s, %v", nodeid, err)
+	}
+
+	s.history[nodeid] = hs
+	s.loadedHistory[nodeid] = true
+	for _, st := range hs {
+		s.cache[st.ID] = st
+	}
 }

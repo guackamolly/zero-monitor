@@ -1,11 +1,11 @@
 package service_test
 
 import (
+	"slices"
 	"testing"
 	"time"
 
 	"github.com/guackamolly/zero-monitor/internal/data/models"
-	"github.com/guackamolly/zero-monitor/internal/data/repositories"
 	"github.com/guackamolly/zero-monitor/internal/event"
 	"github.com/guackamolly/zero-monitor/internal/service"
 )
@@ -17,7 +17,6 @@ type TestPublishSubscriber struct {
 }
 
 type TestSpeedtestStoreRepository struct {
-	repositories.SpeedtestStoreRepository
 	speedtests []models.Speedtest
 }
 
@@ -30,9 +29,21 @@ func (r TestSpeedtestStoreRepository) History(nodeid string) ([]models.Speedtest
 	return r.speedtests, nil
 }
 
-func NewTestSpeedtestStoreRepository() *TestSpeedtestStoreRepository {
+func (r TestSpeedtestStoreRepository) Lookup(id string) (models.Speedtest, bool, error) {
+	for _, st := range r.speedtests {
+		if st.ID == id {
+			return st, true, nil
+		}
+	}
+
+	return models.Speedtest{}, false, nil
+}
+
+func NewTestSpeedtestStoreRepository(
+	speedtests ...models.Speedtest,
+) *TestSpeedtestStoreRepository {
 	return &TestSpeedtestStoreRepository{
-		speedtests: []models.Speedtest{},
+		speedtests: speedtests,
 	}
 }
 
@@ -143,5 +154,65 @@ func TestSpeedtestIsUpdatedWheneverUpdatesChannelEmitsNewValues(t *testing.T) {
 	ust, _ := s.Speedtest(st.ID)
 	if ust != st {
 		t.Errorf("expected %v but got %v", st, ust)
+	}
+}
+
+func TestSpeedtestLookupOnStoreIfSpeedtestIsNotCached(t *testing.T) {
+	speedtest := models.NewSpeedtest("<speedtest-id>", "zero-monitor", "world", "ookla", 5)
+	ps := NewTestPublishSubscriber()
+	sps := NewTestSpeedtestStoreRepository(speedtest)
+	s := service.NewNodeSpeedtestService(ps, ps, sps)
+
+	st, _ := s.Speedtest(speedtest.ID)
+	if st != speedtest {
+		t.Errorf("expected %v but got %v", speedtest, st)
+	}
+}
+
+func TestHistoryReturnsStoredSpeedtestsBeforeAnySpeedtestFinishes(t *testing.T) {
+	speedtest := models.NewSpeedtest("<speedtest-id>", "zero-monitor", "world", "ookla", 5)
+	storeSpeedtests := []models.Speedtest{speedtest}
+	ps := NewTestPublishSubscriber()
+	sps := NewTestSpeedtestStoreRepository(storeSpeedtests...)
+	s := service.NewNodeSpeedtestService(ps, ps, sps)
+
+	nodeid := "node.id"
+
+	hs, _ := s.History(nodeid)
+	if !slices.Equal(hs, storeSpeedtests) {
+		t.Errorf("expected %v but got %v", storeSpeedtests, hs)
+	}
+}
+
+func TestHistoryReturnsStoredSpeedtestsAndStartedSpeedtestAfterItFinishes(t *testing.T) {
+	speedtest := models.NewSpeedtest("<speedtest-id>", "zero-monitor", "world", "ookla", 5)
+	speedtest2 := models.Speedtest{ID: "<speedtest-id-2>", Phase: models.SpeedtestFinish}
+	storeSpeedtests := []models.Speedtest{speedtest}
+	ps := NewTestPublishSubscriber(
+		event.NewNodeSpeedtestEventOutput(nil, speedtest2, nil),
+	)
+	sps := NewTestSpeedtestStoreRepository(storeSpeedtests...)
+	s := service.NewNodeSpeedtestService(ps, ps, sps)
+	nodeid := "node.id"
+	// 1. load history
+	s.History(nodeid)
+
+	// 2. start speedtest
+	st, err := s.Start(nodeid)
+	if err != nil {
+		t.Fatalf("didn't expect Start() to fail, %v", err)
+	}
+	ch, ok := s.Updates(st.ID)
+	if !ok {
+		t.Fatal("didn't expect Updates() to fail")
+	}
+
+	forceUnbufferedChannelClose(ch)
+
+	// 3. load history again
+	hs, _ := s.History(nodeid)
+	expected := append(storeSpeedtests, speedtest2)
+	if !slices.Equal(hs, expected) {
+		t.Errorf("expected %v but got %v", expected, hs)
 	}
 }
