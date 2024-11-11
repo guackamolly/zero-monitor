@@ -35,6 +35,41 @@
         <link rel="apple-touch-icon" href="static/apple-touch-icon.png">
         <link rel='stylesheet' type='text/css' media='screen' href='index.css'>
         <link rel='stylesheet' type='text/css' media='print' href='index.css'>
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const tooltip = document.getElementById('chart-tooltip');
+                console.log(tooltip)
+                if(!tooltip) {
+                    return;
+                }
+
+                function showChartTooltip(evt, text) {
+                    tooltip.innerHTML = text;
+                    tooltip.style.display = "block";
+                    tooltip.style.left = evt.pageX + 10 + 'px';
+                    tooltip.style.top = evt.pageY + 10 + 'px';
+                }
+    
+                function hideChartTooltip() {
+                    tooltip.style.display = "none";
+                }
+
+                const circles = document.querySelectorAll('circle');
+                for(const circle of circles) {
+                    const title = circle.firstElementChild;
+                    if (!title || title.nodeName !== 'title') {
+                        continue;
+                    }
+
+                    circle.onmouseover = (evt) => showChartTooltip(evt, title.textContent);
+                    circle.onclick = (evt) => showChartTooltip(evt, title.textContent);
+                    circle.onmouseout = (evt) => hideChartTooltip(evt);
+
+                    // prevent default browser tooltip
+                    circle.removeChild(title);
+                }
+            });
+        </script>
     </head>
 
     <body>
@@ -65,9 +100,23 @@
                     This page show the speedtest history of node
                     <b>{{.Hostname}}</b>.
                 </p>
+                <p>
+                    This node is averaging a download and upload speed of
+                    <b>{{.AverageDownloadSpeed}}</b>/<b>{{.AverageUploadSpeed}}</b>,
+                    respectively.
+                    <br>
+                    {{ with .PeakDownloadSpeedtest }}
+                    The highest download speed was registered on
+                    <a
+                        href="network/{{.NodeID}}/speedtest/{{.ID}}"><b>{{.TakenAt}}</b></a>.
+                    {{ end }}
+                </p>
                 <div class="divider"></div>
                 {{ template "speedtests" .Speedtests }}
             </section>
+            {{ if .Chart }}
+            {{ template "chart" .Chart }}
+            {{ end }}
         </main>
     </body>
 </html>

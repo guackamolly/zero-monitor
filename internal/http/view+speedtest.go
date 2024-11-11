@@ -12,6 +12,10 @@ type SpeedtestView struct {
 	NodeID string
 }
 
+type SpeedtestHistoryChartView struct {
+	ChartView
+}
+
 func NewSpeedtestView(
 	nodeid string,
 	speedtest models.Speedtest,
@@ -44,6 +48,46 @@ func NewSpeedtestUploadElementView(
 	upload models.BitRate,
 ) ElementView {
 	return NewElementView("speedtest-upload", upload.String())
+}
+
+func NewSpeedtestHistoryChartView(
+	speedtests []models.Speedtest,
+) SpeedtestHistoryChartView {
+	xaxis := NewAxisView(
+		float64(speedtests[len(speedtests)-1].TakenAt.UnixMilli())-float64(time.Minute.Milliseconds()),
+		float64(speedtests[0].TakenAt.UnixMilli())+float64(time.Minute.Milliseconds()),
+		"",
+	)
+
+	yaxis := NewAxisView(
+		50*models.Mbit,
+		120*models.Mbit,
+		"Bitrate (Mbps)",
+	)
+
+	xvalues := make([]float64, len(speedtests))
+	y1values := make([]float64, len(speedtests))
+	y2values := make([]float64, len(speedtests))
+	for i, st := range speedtests {
+		t := st.TakenAt.UnixMilli()
+
+		xvalues[i] = float64(t)
+		y1values[i] = float64(st.DownloadSpeed)
+		y2values[i] = float64(st.UploadSpeed)
+	}
+
+	lines := []LineView{
+		NewLineView("Download", xvalues, y1values, TimeFormatter, BitrateFormatter, func(i int) string {
+			return speedtests[i].DownloadSpeed.String()
+		}),
+		NewLineView("Upload", xvalues, y2values, TimeFormatter, BitrateFormatter, func(i int) string {
+			return speedtests[i].UploadSpeed.String()
+		}),
+	}
+
+	return SpeedtestHistoryChartView{
+		NewLineChartView(lines, xaxis, yaxis),
+	}
 }
 
 func (v SpeedtestView) Status() SpeedtestPhaseView {

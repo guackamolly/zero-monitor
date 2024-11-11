@@ -11,9 +11,9 @@ const (
 	gb = mb * kb
 	tb = gb * kb
 
-	kbit = 1000.0
-	mbit = kbit * kbit
-	gbit = mbit * kbit
+	Kbit = 1000.0
+	Mbit = Kbit * Kbit
+	Gbit = Mbit * Kbit
 
 	m  = 1
 	km = 1000 * m
@@ -90,19 +90,19 @@ func (v IORate) String() string {
 }
 
 func (v BitRate) String() string {
-	if v < kbit {
+	if v < Kbit {
 		return fmt.Sprintf("%0.1f bps", v)
 	}
 
-	if v < mbit {
-		return fmt.Sprintf("%0.1f Kbps", v/kbit)
+	if v < Mbit {
+		return fmt.Sprintf("%0.1f Kbps", v/Kbit)
 	}
 
-	if v < gbit {
-		return fmt.Sprintf("%0.1f Mbps", v/mbit)
+	if v < Gbit {
+		return fmt.Sprintf("%0.1f Mbps", v/Mbit)
 	}
 
-	return fmt.Sprintf("%0.1f Gbps", v/gbit)
+	return fmt.Sprintf("%0.1f Gbps", v/Gbit)
 }
 
 func (v Distance) String() string {

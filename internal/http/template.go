@@ -20,6 +20,9 @@ var funcMap = template.FuncMap{
 
 		return s
 	},
+	"html": func(unsafe string) template.HTML {
+		return template.HTML(unsafe)
+	},
 }
 
 type Template struct {

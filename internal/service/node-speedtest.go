@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+	"slices"
 
 	"github.com/guackamolly/zero-monitor/internal/data/models"
 	"github.com/guackamolly/zero-monitor/internal/data/repositories"
@@ -116,6 +117,10 @@ func (s NodeSpeedtestService) History(nodeid string) ([]models.Speedtest, bool) 
 	s.loadHistory(nodeid)
 
 	sts, ok := s.history[nodeid]
+	slices.SortFunc(sts, func(x, y models.Speedtest) int {
+		return -x.TakenAt.Compare(y.TakenAt)
+	})
+
 	return sts, ok
 }
 

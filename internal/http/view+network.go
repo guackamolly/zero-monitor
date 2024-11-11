@@ -43,6 +43,7 @@ type NetworkNodeSpeedtestView struct {
 type NetworkNodeSpeedtestHistoryView struct {
 	NodeView
 	Speedtests []SpeedtestView
+	Chart      SpeedtestHistoryChartView
 	Err        error
 }
 
@@ -129,15 +130,13 @@ func NewNetworkNodeSpeedtestHistoryView(
 	err error,
 ) NetworkNodeSpeedtestHistoryView {
 	sts := make([]SpeedtestView, len(speedtests))
-	for i := len(speedtests) - 1; i >= 0; i-- {
+	for i := range speedtests {
 		sts[i] = NewSpeedtestView(node.ID, speedtests[i])
 	}
 
-	// reverse to show most recent speedtests first
-	slices.Reverse(sts)
-
 	return NetworkNodeSpeedtestHistoryView{
 		NodeView:   NodeView(node),
+		Chart:      NewSpeedtestHistoryChartView(speedtests),
 		Speedtests: sts,
 		Err:        err,
 	}
@@ -161,4 +160,33 @@ func (v NetworkNodeProcessesView) Memory() string {
 	}
 
 	return mem.String()
+}
+
+func (v NetworkNodeSpeedtestHistoryView) AverageDownloadSpeed() string {
+	avg := 0.0
+	for _, st := range v.Speedtests {
+		avg += float64(st.DownloadSpeed)
+	}
+
+	return models.BitRate(avg / float64(len(v.Speedtests))).String()
+}
+
+func (v NetworkNodeSpeedtestHistoryView) AverageUploadSpeed() string {
+	avg := 0.0
+	for _, st := range v.Speedtests {
+		avg += float64(st.UploadSpeed)
+	}
+
+	return models.BitRate(avg / float64(len(v.Speedtests))).String()
+}
+
+func (v NetworkNodeSpeedtestHistoryView) PeakDownloadSpeedtest() SpeedtestView {
+	var peak SpeedtestView
+	for _, st := range v.Speedtests {
+		if st.DownloadSpeed > peak.DownloadSpeed {
+			peak = st
+		}
+	}
+
+	return peak
 }

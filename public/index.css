@@ -323,6 +323,22 @@ button {
     border-color: gray transparent transparent transparent;
 }
 
+.chart {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+#chart-tooltip {
+    position: absolute;
+    display: none;
+    background: cornsilk;
+    border: 1px solid black;
+    border-radius: 5px;
+    padding: 5px;
+}
+
 .youtube-video>img {
     max-width: 100%;
     border: 2px solid var(--border);
