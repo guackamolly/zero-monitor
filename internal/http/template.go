@@ -12,6 +12,12 @@ import (
 
 // Global utility template functions.
 var funcMap = template.FuncMap{
+	"sum": func(x, y float64) float64 {
+		return x + y
+	},
+	"sub": func(x, y float64) float64 {
+		return x - y
+	},
 	"sequence": func(count int) []int {
 		s := make([]int, count)
 		for i := 0; i < int(count); i++ {

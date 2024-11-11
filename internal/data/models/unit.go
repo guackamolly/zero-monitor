@@ -5,6 +5,15 @@ import (
 	"time"
 )
 
+type Symbol string
+
+const (
+	Bit  = "b"
+	Kbit = "Kb"
+	Mbit = "Mb"
+	Gbit = "Gb"
+)
+
 const (
 	kb = 1024
 	mb = kb * kb
@@ -59,6 +68,10 @@ func (v Memory) String() string {
 	return fmt.Sprintf("%d TB", v/tb)
 }
 
+func (v Duration) Milliseconds() int64 {
+	return time.Duration(v).Milliseconds()
+}
+
 func (v Duration) String() string {
 	d := time.Duration(v)
 
@@ -87,6 +100,38 @@ func (v Duration) String() string {
 
 func (v IORate) String() string {
 	return fmt.Sprintf("%s/s", Memory(v))
+}
+
+func (v BitRate) Symbol() Symbol {
+	if v < kbit {
+		return Bit
+	}
+
+	if v < mbit {
+		return Kbit
+	}
+
+	if v < gbit {
+		return Mbit
+	}
+
+	return Gbit
+}
+
+func (v BitRate) Value() float64 {
+	if v < kbit {
+		return float64(v)
+	}
+
+	if v < mbit {
+		return float64(v / kbit)
+	}
+
+	if v < gbit {
+		return float64(v / mbit)
+	}
+
+	return float64(v / gbit)
 }
 
 func (v BitRate) String() string {
