@@ -6,3 +6,4 @@
 - Optimize network template render
 - Find a solution for a fixed size speedtest container
 - Multiple WS clients dont receive the same speedtest updates
+- If client breaks ws connection, speedtest is not saved (because channel is not consumed anymore)
