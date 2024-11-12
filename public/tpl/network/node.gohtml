@@ -1,86 +1,79 @@
 {{ define "node" }}
-<div class="server-card">
-    <div class="server-card-header">
-        {{ if .Online }}
-        <div class="badge">Online</div>
-        {{else}}
-        <div class="badge offline">Offline</div>
-        {{ end }}
-        <span><b>{{.Hostname}}</b></span>
-        <a href="network/{{.ID}}">Click</a>
-        🇵🇹
-    </div>
-    <div class="server-card-body">
-        <div class="server-card-stat-block">
-            <div class="server-card-stat-field">
-                <span
-                    class="server-card-stat-field-label">OS</span>
-                <span>{{.OS}}</span>
-            </div>
-            <div class="server-card-stat-field">
-                <span
-                    class="server-card-stat-field-label">Distribution</span>
-                <span>{{.Distribution}}</span>
-            </div>
-        </div>
-        <div class="server-card-stat-block">
-            <div class="server-card-stat-field">
-                <span
-                    class="server-card-stat-field-label">RAM</span>
-                <span>{{.TotalRAM}}</span>
-            </div>
-            <div class="server-card-stat-field">
-                <span
-                    class="server-card-stat-field-label">Disk</span>
-                <span>{{.TotalDisk}}</span>
-            </div>
-        </div>
-        <div class="server-card-stat-block">
-            <div class="server-card-stat-field">
-                <span
-                    class="server-card-stat-field-label">CPU</span>
-                <span>{{.CPUCount}} Cores</span>
-            </div>
-            <div class="server-card-stat-field">
-                <span
-                    class="server-card-stat-field-label">Uptime</span>
-                <span>{{.Uptime}}</span>
-            </div>
-        </div>
-        <div class="server-card-stat-block">
-            <div class="server-card-stat-field">
-                <span class="server-card-stat-field-label">Rx</span>
-                <span>{{.Rx}}</span>
-            </div>
-            <div class="server-card-stat-field">
-                <span class="server-card-stat-field-label">Tx</span>
-                <span>{{.Tx}}</span>
-            </div>
-        </div>
-        <div class="server-card-progress-block">
+<fieldset>
+    <legend>
+        {{.Hostname}} {{ if not .Online }}(offline) {{ end }}
+        <a href="network/{{.ID}}">+</a>
+    </legend>
+    <div class="node-stat-block">
+        <div class="node-stat-field">
             <span
-                class="server-card-stat-field-label">CPU</span>
-            <div class="progress-bar">
-                <div class="progress-bar-fill"
-                    style="width: {{.CPUUsage}};">{{.CPUUsage}}</div>
-            </div>
+                class="node-stat-field-label">OS</span>
+            <span>{{.OS}}</span>
         </div>
-        <div class="server-card-progress-block">
+        <div class="node-stat-field">
             <span
-                class="server-card-stat-field-label">RAM</span>
-            <div class="progress-bar">
-                <div class="progress-bar-fill"
-                    style="width: {{.RAMUsage}};">{{.RAMUsage}}</div>
-            </div>
-        </div>
-        <div class="server-card-progress-block">
-            <span
-                class="server-card-stat-field-label">Disk</span>
-            <div class="progress-bar">
-                <div class="progress-bar-fill"
-                    style="width: {{.DiskUsage}};">{{.DiskUsage}}</div>
-            </div>
+                class="node-stat-field-label">Distribution</span>
+            <span>{{.Distribution}}</span>
         </div>
     </div>
-</div>
+    <div class="node-stat-block">
+        <div class="node-stat-field">
+            <span
+                class="node-stat-field-label">RAM</span>
+            <span>{{.TotalRAM}}</span>
+        </div>
+        <div class="node-stat-field">
+            <span
+                class="node-stat-field-label">Disk</span>
+            <span>{{.TotalDisk}}</span>
+        </div>
+    </div>
+    <div class="node-stat-block">
+        <div class="node-stat-field">
+            <span
+                class="node-stat-field-label">CPU</span>
+            <span>{{.CPUCount}} Cores</span>
+        </div>
+        <div class="node-stat-field">
+            <span
+                class="node-stat-field-label">Uptime</span>
+            <span>{{.Uptime}}</span>
+        </div>
+    </div>
+    <div class="node-stat-block">
+        <div class="node-stat-field">
+            <span class="node-stat-field-label">Rx</span>
+            <span>{{.Rx}}</span>
+        </div>
+        <div class="node-stat-field">
+            <span class="node-stat-field-label">Tx</span>
+            <span>{{.Tx}}</span>
+        </div>
+    </div>
+    <div class="node-progress-block">
+        <span
+            class="node-stat-field-label">CPU</span>
+        <div class="progress-bar">
+            <div class="progress-bar-fill"
+                style="width: {{.CPUUsage}};">{{.CPUUsage}}</div>
+        </div>
+    </div>
+    <div class="node-progress-block">
+        <span
+            class="node-stat-field-label">RAM</span>
+        <div class="progress-bar">
+            <div class="progress-bar-fill"
+                style="width: {{.RAMUsage}};">{{.RAMUsage}}</div>
+        </div>
+    </div>
+    <div class="node-progress-block">
+        <span
+            class="node-stat-field-label">Disk</span>
+        <div class="progress-bar">
+            <div class="progress-bar-fill"
+                style="width: {{.DiskUsage}};">{{.DiskUsage}}</div>
+        </div>
+    </div>
+</fieldset>
+
 {{ end }}

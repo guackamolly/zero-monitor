@@ -6,6 +6,8 @@
     --white: #ffffff;
     --border: #ccc;
     --background: #f2d5cf53;
+    --foreground: #f2d5cfD9;
+    --progress-bar: #eba0ac;
 
     background-color: var(--background);
     font-family: 'Jetbrains Mono', system-ui, -apple-system, BlinkMacSystemFont, segoe ui, Roboto, Oxygen, Ubuntu, Cantarell, open sans, helvetica neue, sans-serif;
@@ -344,21 +346,6 @@ button {
     border: 2px solid var(--border);
 }
 
-/* server-cards */
-.badge {
-    background-color: #52b443;
-    color: #e0e0e0;
-    padding: 4px 8px;
-    text-align: center;
-    border-radius: 5px;
-    height: min-content;
-    width: min-content;
-    font-size: smaller;
-}
-
-.badge.offline {
-    background-color: var(--redish);
-}
 
 .server-nodes {
     display: flex;
@@ -368,76 +355,47 @@ button {
     gap: 1%;
 }
 
-.server-card {
-    width: 400px;
-    border-radius: 8px;
-    border-color: #353535;
-    border-width: 3px;
-    border-style: solid;
-    background-color: #1e1e1e;
-    padding: 8px 4px 4px 8px;
-    color: #e0e0e0;
-}
-
-.server-card-header {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-evenly;
-    padding-left: 4px;
-    padding-right: 4px;
-}
-
-.server-card-body {
-    display: flex;
-    flex-direction: column;
-    padding-top: 16px;
-    padding-left: 4px;
-    padding-right: 4px;
-    gap: 8px;
-}
-
-.server-card-stat-block {
+.node-stat-block {
     display: flex;
     flex-direction: row;
     gap: 12px;
 }
 
-.server-card-stat-field {
+.node-stat-field {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
     border-bottom-style: solid;
-    border-bottom-color: #353535;
+    border-bottom-color: var(--border);
     width: 100%;
 }
 
-.server-card-stat-field-label {
-    color: #949494;
+.node-stat-field-label {
     font-weight: bold;
     margin-bottom: 8px;
 }
 
-.server-card-stat-fill {
+.node-stat-fill {
     display: flex;
     flex-direction: row;
     gap: 12px;
 }
 
-.server-card-progress-block {
+.node-progress-block {
     display: flex;
     flex-direction: row;
     gap: 16px;
 }
 
 .progress-bar {
-    background-color: #111111;
+    background-color: var(--foreground);
     width: 100%;
     height: min-content;
     border-radius: 5px;
 }
 
 .progress-bar-fill {
-    background-color: #3c6ac6;
+    background-color: var(--progress-bar);
     white-space: nowrap;
     border-radius: 5px;
     text-indent: 8px;
