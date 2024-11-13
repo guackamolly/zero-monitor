@@ -37,37 +37,83 @@
         <link rel='stylesheet' type='text/css' media='print' href='index.css'>
         <script>
             document.addEventListener('DOMContentLoaded', () => {
-                const tooltip = document.getElementById('chart-tooltip');
-                console.log(tooltip)
-                if(!tooltip) {
-                    return;
-                }
-
-                function showChartTooltip(evt, text) {
-                    tooltip.innerHTML = text;
-                    tooltip.style.display = "block";
-                    tooltip.style.left = evt.pageX + 10 + 'px';
-                    tooltip.style.top = evt.pageY + 10 + 'px';
-                }
-    
-                function hideChartTooltip() {
-                    tooltip.style.display = "none";
-                }
-
-                const circles = document.querySelectorAll('circle');
-                for(const circle of circles) {
-                    const title = circle.firstElementChild;
-                    if (!title || title.nodeName !== 'title') {
-                        continue;
+                // Setups mouse events for showing a chart tooltip.
+                function setupChartTooltipInteractivity() {
+                    const tooltip = document.getElementById('chart-tooltip');
+                    if (!tooltip) {
+                        return;
                     }
-
-                    circle.onmouseover = (evt) => showChartTooltip(evt, title.textContent);
-                    circle.onclick = (evt) => showChartTooltip(evt, title.textContent);
-                    circle.onmouseout = (evt) => hideChartTooltip(evt);
-
-                    // prevent default browser tooltip
-                    circle.removeChild(title);
+                
+                    function showChartTooltip(evt, text) {
+                        tooltip.innerHTML = text;
+                        tooltip.style.display = "block";
+                        tooltip.style.left = evt.pageX + 10 + 'px';
+                        tooltip.style.top = evt.pageY + 10 + 'px';
+                    }
+                
+                    function hideChartTooltip() {
+                        tooltip.style.display = "none";
+                    }
+                
+                    const circles = document.querySelectorAll('circle');
+                    for (const circle of circles) {
+                        const title = circle.firstElementChild;
+                        if (!title || title.nodeName !== 'title') {
+                            continue;
+                        }
+                
+                        circle.onmouseover = (evt) => showChartTooltip(evt, title.textContent);
+                        circle.onclick = (evt) => showChartTooltip(evt, title.textContent);
+                        circle.onmouseout = (evt) => hideChartTooltip(evt);
+                
+                        // prevent default browser tooltip
+                        circle.removeChild(title);
+                    }
                 }
+
+                // Matches a width value and returns the closest breakpoint.
+                function breakpointResolver(width) {
+                    if (width <= 560) {
+                        return 560;
+                    }
+            
+                    if (width > 560 && width < 860) {
+                        return 860;
+                    }
+            
+                    return 1440;
+                }
+
+                // Renders a chart based on a breakpoint.
+                async function updateChart(breakpoint) {
+                    try {
+                        const resp = await fetch(`${window.location.protocol}//${window.location.host}${window.location.pathname}/chart?breakpoint=${breakpoint}`);
+                        if (resp.status !== 200) {
+                            return;
+                        }
+            
+                        const html = await resp.text();
+                        document.getElementById('speedtest-history-chart').outerHTML = html;
+                        setupChartTooltipInteractivity();
+                    } catch (error) {
+                        console.error(error);
+                    }
+                }
+            
+                // Observes window resize to render best looking chart for the window width.
+                let breakpoint = breakpointResolver(window.innerWidth);
+                window.addEventListener('resize', function (ev) {
+                    const newWidth = window.innerWidth;
+                    const newBreakpoint = breakpointResolver(newWidth);
+                    if (newBreakpoint === breakpoint) {
+                        return;
+                    }
+            
+                    breakpoint = newBreakpoint;
+                    updateChart(breakpoint);
+                });
+
+                setupChartTooltipInteractivity();
             });
         </script>
     </head>

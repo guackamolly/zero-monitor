@@ -8,6 +8,7 @@ import (
 	"github.com/guackamolly/zero-monitor/internal/data/models"
 	"github.com/guackamolly/zero-monitor/internal/logging"
 	"github.com/labstack/echo/v4"
+	"github.com/mssola/useragent"
 )
 
 // GET /network
@@ -143,12 +144,35 @@ func networkIdSpeedtestFormHandler(ectx echo.Context) error {
 func networkIdSpeedtestHistoryHandler(ectx echo.Context) error {
 	return withServiceContainer(ectx, func(sc *ServiceContainer) error {
 		return withPathNode(ectx, sc, func(n models.Node) error {
-			sts, ok := sc.NodeSpeedtest.History(n.ID)
-			if !ok {
-				logging.LogWarning("no history found for node %s", n.ID)
-				sts = []models.Speedtest{}
-			}
-			return ectx.Render(200, "network/:id/speedtest/history", NewNetworkNodeSpeedtestHistoryView(n, sts, nil))
+			return withUserAgent(ectx, func(ua *useragent.UserAgent) error {
+				sts, ok := sc.NodeSpeedtest.History(n.ID)
+				if !ok {
+					logging.LogWarning("no history found for node %s", n.ID)
+					sts = []models.Speedtest{}
+				}
+				return ectx.Render(200, "network/:id/speedtest/history", NewNetworkNodeSpeedtestHistoryView(n, sts, ua.Mobile(), nil))
+			})
+		})
+	})
+}
+
+// GET /network/:id/speedtest/history/chart
+func networkIdSpeedtestHistoryChartHandler(ectx echo.Context) error {
+	return withServiceContainer(ectx, func(sc *ServiceContainer) error {
+		return withPathNode(ectx, sc, func(n models.Node) error {
+			return withUserAgent(ectx, func(ua *useragent.UserAgent) error {
+				bp, ok := ExtractBreakpoint(ectx)
+				if !ok {
+					bp = DesktopBreakpoint
+				}
+
+				sts, ok := sc.NodeSpeedtest.History(n.ID)
+				if !ok {
+					logging.LogWarning("no history found for node %s", n.ID)
+					sts = []models.Speedtest{}
+				}
+				return ectx.Render(200, "network/:id/speedtest/history/chart", NewSpeedtestHistoryChartView(sts, bp))
+			})
 		})
 	})
 }

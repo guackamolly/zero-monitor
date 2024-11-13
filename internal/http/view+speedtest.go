@@ -52,6 +52,7 @@ func NewSpeedtestUploadElementView(
 
 func NewSpeedtestHistoryChartView(
 	speedtests []models.Speedtest,
+	breakpoint Breakpoint,
 ) SpeedtestHistoryChartView {
 	xaxis := NewAxisView(
 		float64(speedtests[len(speedtests)-1].TakenAt.UnixMilli())-float64(time.Minute.Milliseconds()),
@@ -85,8 +86,9 @@ func NewSpeedtestHistoryChartView(
 		}),
 	}
 
+	width, height := BreakpointToChartSize(breakpoint)
 	return SpeedtestHistoryChartView{
-		NewLineChartView(lines, xaxis, yaxis),
+		NewCustomLineChartView(width, height, lines, xaxis, yaxis),
 	}
 }
 

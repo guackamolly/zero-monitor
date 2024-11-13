@@ -1,9 +1,11 @@
 package http
 
 import (
+	"strconv"
 	"strings"
 
 	"github.com/guackamolly/zero-monitor/internal/data/models"
+	"github.com/guackamolly/zero-monitor/internal/logging"
 	"github.com/labstack/echo/v4"
 )
 
@@ -32,6 +34,29 @@ func FromRedirectWithError(ectx echo.Context) (error, bool) {
 	}
 
 	return err, ok
+}
+
+func ExtractBreakpoint(ectx echo.Context) (Breakpoint, bool) {
+	bp := ectx.Request().URL.Query().Get(breakpointQueryParam)
+	if bp == "" {
+		return 0, false
+	}
+
+	bpconv, err := strconv.ParseInt(bp, 10, 32)
+	if err != nil {
+		logging.LogWarning("failed to convert breakpoint %s to int, %v", bpconv, err)
+		return 0, false
+	}
+	breakpoint := Breakpoint(bpconv)
+	if breakpoint <= MobileBreakpoint {
+		return MobileBreakpoint, true
+	}
+
+	if breakpoint <= TabletBreakpoint {
+		return TabletBreakpoint, true
+	}
+
+	return DesktopBreakpoint, true
 }
 
 func StoreHandlerError(err error) string {

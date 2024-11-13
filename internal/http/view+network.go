@@ -127,6 +127,7 @@ func NewNetworkNodeSpeedtestView(
 func NewNetworkNodeSpeedtestHistoryView(
 	node models.Node,
 	speedtests []models.Speedtest,
+	mobile bool,
 	err error,
 ) NetworkNodeSpeedtestHistoryView {
 	sts := make([]SpeedtestView, len(speedtests))
@@ -134,9 +135,14 @@ func NewNetworkNodeSpeedtestHistoryView(
 		sts[i] = NewSpeedtestView(node.ID, speedtests[i])
 	}
 
+	breakpoint := DesktopBreakpoint
+	if mobile {
+		breakpoint = MobileBreakpoint
+	}
+
 	return NetworkNodeSpeedtestHistoryView{
 		NodeView:   NodeView(node),
-		Chart:      NewSpeedtestHistoryChartView(speedtests),
+		Chart:      NewSpeedtestHistoryChartView(speedtests, breakpoint),
 		Speedtests: sts,
 		Err:        err,
 	}

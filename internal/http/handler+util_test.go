@@ -111,3 +111,61 @@ func TestRedirectWithError(t *testing.T) {
 		})
 	}
 }
+
+func TestExtractBreakpoint(t *testing.T) {
+	testCases := []struct {
+		desc       string
+		input      echo.Context
+		breakpoint sut.Breakpoint
+		ok         bool
+	}{
+		{
+			desc: "returns ok false if breakpoint query param is not set in the url",
+			input: ContextWithRequest(
+				&http.Request{URL: NetURL("http://[::]")},
+			),
+			breakpoint: 0,
+			ok:         false,
+		},
+		{
+			desc: "returns ok false if breakpoint query param value is not a number",
+			input: ContextWithRequest(
+				&http.Request{URL: NetURL("http://[::]?breakpoint=nan")},
+			),
+			breakpoint: 0,
+			ok:         false,
+		},
+		{
+			desc: "returns mobile breakpoint if breakpoint query param value is less or equal than mobile breakpoint",
+			input: ContextWithRequest(
+				&http.Request{URL: NetURL("http://[::]?breakpoint=559")},
+			),
+			breakpoint: sut.MobileBreakpoint,
+			ok:         true,
+		},
+		{
+			desc: "returns tablet breakpoint if breakpoint query param value is less or equal than tablet breakpoint",
+			input: ContextWithRequest(
+				&http.Request{URL: NetURL("http://[::]?breakpoint=859")},
+			),
+			breakpoint: sut.TabletBreakpoint,
+			ok:         true,
+		},
+		{
+			desc: "returns desktop breakpoint if breakpoint query param value is higher than tablet breakpoint",
+			input: ContextWithRequest(
+				&http.Request{URL: NetURL("http://[::]?breakpoint=861")},
+			),
+			breakpoint: sut.DesktopBreakpoint,
+			ok:         true,
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			bp, ok := sut.ExtractBreakpoint(tC.input)
+			if tC.breakpoint != bp || tC.ok != ok {
+				t.Errorf("expected (%v, %v), but got (%v, %v)", tC.breakpoint, tC.ok, bp, ok)
+			}
+		})
+	}
+}
