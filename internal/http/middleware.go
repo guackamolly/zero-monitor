@@ -6,6 +6,7 @@ import (
 	"github.com/guackamolly/zero-monitor/internal/data/models"
 	"github.com/guackamolly/zero-monitor/internal/logging"
 	"github.com/labstack/echo/v4"
+	"github.com/mssola/useragent"
 )
 
 const ctxKey = "ctx.key"
@@ -64,4 +65,9 @@ func withSpeedtest(ectx echo.Context, sc *ServiceContainer, with func(models.Spe
 	}
 
 	return echo.ErrNotFound
+}
+
+func withUserAgent(ectx echo.Context, with func(*useragent.UserAgent) error) error {
+	ua := useragent.New(ectx.Request().UserAgent())
+	return with(ua)
 }

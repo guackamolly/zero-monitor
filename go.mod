@@ -10,6 +10,7 @@ require (
 	github.com/jaypipes/ghw v0.13.0
 	github.com/joho/godotenv v1.5.1
 	github.com/labstack/echo/v4 v4.12.0
+	github.com/mssola/useragent v1.0.0
 	github.com/shirou/gopsutil v3.21.11+incompatible
 	github.com/showwin/speedtest-go v1.7.9
 	github.com/wcharczuk/go-chart/v2 v2.1.2
