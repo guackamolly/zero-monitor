@@ -9,14 +9,6 @@ import (
 	"github.com/wcharczuk/go-chart/v2"
 )
 
-type Breakpoint int
-
-const (
-	MobileBreakpoint  Breakpoint = 560
-	TabletBreakpoint  Breakpoint = 860
-	DesktopBreakpoint Breakpoint = 1440
-)
-
 type ChartView interface {
 	SVG() string
 }
