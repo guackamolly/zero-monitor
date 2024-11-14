@@ -1,27 +1,5 @@
 {{ define "speedtests" }}
 
-{{ if .Mobile }}
-{{ range .Speedtests }}
-<details>
-    <summary>{{.TakenAt}}</summary>
-    <article class="speedtest-preview">
-        <span>
-            <b>Latency</b>:{{.Latency}}
-        </span>
-        <span>
-            <b>Download</b>:{{.DownloadSpeed}}
-        </span>
-
-        <span>
-            <b>Upload</b>:{{.UploadSpeed}}
-        </span>
-    </article>
-    <p>
-        <a href="network/{{.NodeID}}/speedtest/{{.ID}}">+ Information</a>
-    </p>
-</details>
-{{ end }}
-{{ else }}
 <table class="full">
     <thead>
         <tr>
@@ -44,6 +22,5 @@
         {{ end }}
     </tbody>
 </table>
-{{ end }}
 
 {{ end }}
