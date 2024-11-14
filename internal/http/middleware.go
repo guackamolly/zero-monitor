@@ -67,7 +67,6 @@ func withSpeedtest(ectx echo.Context, sc *ServiceContainer, with func(models.Spe
 	return echo.ErrNotFound
 }
 
-func withUserAgent(ectx echo.Context, with func(*useragent.UserAgent) error) error {
-	ua := useragent.New(ectx.Request().UserAgent())
-	return with(ua)
+func extractUserAgent(ectx echo.Context) UserAgent {
+	return UserAgent(*useragent.New(ectx.Request().UserAgent()))
 }
