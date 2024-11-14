@@ -1,5 +1,8 @@
 {{ define "chart" }}
-<article id="speedtest-history-chart" class="chart">
+<article
+    id="speedtest-history-chart"
+    class="chart"
+    breakpoint="{{.Breakpoint}}">
     {{html .SVG}}
     <span id="chart-tooltip"></span>
     <legend>Variance of download & upload speed</legend>

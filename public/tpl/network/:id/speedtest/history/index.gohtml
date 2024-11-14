@@ -100,9 +100,14 @@
                         console.error(error);
                     }
                 }
+
+                const currentChartBreakpoint = () => Number.parseInt(document.getElementById('speedtest-history-chart').getAttribute('breakpoint') ?? `${breakpointResolver(window.innerWidth)}`);
             
                 // Observes window resize to render best looking chart for the window width.
                 let breakpoint = breakpointResolver(window.innerWidth);
+                if(currentChartBreakpoint() !== breakpoint) {
+                    updateChart(breakpoint);
+                }
                 window.addEventListener('resize', function (ev) {
                     const newWidth = window.innerWidth;
                     const newBreakpoint = breakpointResolver(newWidth);
