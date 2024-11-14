@@ -167,7 +167,9 @@ func networkIdSpeedtestHistoryChartHandler(ectx echo.Context) error {
 				logging.LogWarning("no history found for node %s", n.ID)
 				sts = []models.Speedtest{}
 			}
-			return ectx.Render(200, "network/:id/speedtest/history/chart", NewSpeedtestHistoryChartView(sts, bp))
+			return ectx.Render(200, "network/:id/speedtest/history/chart",
+				NewSpeedtestHistoryChartView(EligibleSpeedtestsForChartView(sts), bp),
+			)
 		})
 	})
 }
