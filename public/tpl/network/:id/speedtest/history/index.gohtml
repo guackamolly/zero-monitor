@@ -151,8 +151,11 @@
                 <h1>Speedtest History</h1>
                 <p>
                     This page show the speedtest history of node
-                    <b>{{.Hostname}}</b>.
+                    <b>{{.Hostname}}</b>. Only the {{.Limit}} most recent
+                    speedtests are
+                    listed.
                 </p>
+                {{ if gt (len .Speedtests) 0 }}
                 <p>
                     This node is averaging a download and upload speed of
                     <b>{{.AverageDownloadSpeed}}</b>/<b>{{.AverageUploadSpeed}}</b>.
@@ -163,6 +166,7 @@
                         href="network/{{.NodeID}}/speedtest/{{.ID}}"><b>{{.TakenAt}}</b></a>.
                     {{ end }}
                 </p>
+                {{ end }}
                 <div class="divider"></div>
                 {{ template "speedtests" . }}
             </section>

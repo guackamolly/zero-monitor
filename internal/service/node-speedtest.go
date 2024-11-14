@@ -10,6 +10,10 @@ import (
 	"github.com/guackamolly/zero-monitor/internal/logging"
 )
 
+const (
+	SpeedtestHistoryLimit = 25
+)
+
 // Service for managing nodes speedtests.
 type NodeSpeedtestService struct {
 	// NodeID -> Speedtests
@@ -77,7 +81,11 @@ func (s NodeSpeedtestService) Start(nodeid string) (models.Speedtest, error) {
 		delete(s.updates, st.ID)
 
 		if hs := s.history[nodeid]; hs != nil {
-			s.history[nodeid] = append(hs, st)
+			hs = slices.Insert(hs, 0, st)
+			if len(hs) > SpeedtestHistoryLimit {
+				hs = hs[0:SpeedtestHistoryLimit]
+			}
+			s.history[nodeid] = hs
 		}
 	}()
 
@@ -117,10 +125,6 @@ func (s NodeSpeedtestService) History(nodeid string) ([]models.Speedtest, bool) 
 	s.loadHistory(nodeid)
 
 	sts, ok := s.history[nodeid]
-	slices.SortFunc(sts, func(x, y models.Speedtest) int {
-		return -x.TakenAt.Compare(y.TakenAt)
-	})
-
 	return sts, ok
 }
 
@@ -132,11 +136,21 @@ func (s *NodeSpeedtestService) loadHistory(nodeid string) {
 	hs, err := s.store.History(nodeid)
 	if err != nil {
 		logging.LogError("failed to load history for node %s, %v", nodeid, err)
+		return
 	}
 
-	s.history[nodeid] = hs
+	slices.SortFunc(hs, func(x, y models.Speedtest) int {
+		return -x.TakenAt.Compare(y.TakenAt)
+	})
+
 	s.loadedHistory[nodeid] = true
-	for _, st := range hs {
+	lhs := []models.Speedtest{}
+	for i, st := range hs {
+		if i < SpeedtestHistoryLimit {
+			lhs = append(lhs, st)
+		}
+
 		s.cache[st.ID] = st
 	}
+	s.history[nodeid] = lhs
 }

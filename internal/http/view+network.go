@@ -47,6 +47,7 @@ type NetworkNodeSpeedtestHistoryView struct {
 	Speedtests []SpeedtestView
 	Chart      *SpeedtestHistoryChartView
 	Err        error
+	Limit      int
 }
 
 func NewNetworkView(
@@ -130,6 +131,7 @@ func NewNetworkNodeSpeedtestHistoryView(
 	ctx echo.Context,
 	node models.Node,
 	speedtests []models.Speedtest,
+	limit int,
 	err error,
 ) NetworkNodeSpeedtestHistoryView {
 	sts := make([]SpeedtestView, len(speedtests))
@@ -145,6 +147,7 @@ func NewNetworkNodeSpeedtestHistoryView(
 			ContextView: ctxview,
 			Speedtests:  sts,
 			Err:         err,
+			Limit:       limit,
 		}
 	}
 
@@ -154,6 +157,7 @@ func NewNetworkNodeSpeedtestHistoryView(
 		ContextView: ctxview,
 		Chart:       &chart,
 		Speedtests:  sts,
+		Limit:       limit,
 		Err:         err,
 	}
 }

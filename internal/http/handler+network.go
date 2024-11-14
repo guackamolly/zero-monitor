@@ -7,6 +7,7 @@ import (
 
 	"github.com/guackamolly/zero-monitor/internal/data/models"
 	"github.com/guackamolly/zero-monitor/internal/logging"
+	"github.com/guackamolly/zero-monitor/internal/service"
 	"github.com/labstack/echo/v4"
 )
 
@@ -148,7 +149,9 @@ func networkIdSpeedtestHistoryHandler(ectx echo.Context) error {
 				logging.LogWarning("no history found for node %s", n.ID)
 				sts = []models.Speedtest{}
 			}
-			return ectx.Render(200, "network/:id/speedtest/history", NewNetworkNodeSpeedtestHistoryView(ectx, n, sts, nil))
+			return ectx.Render(200, "network/:id/speedtest/history", NewNetworkNodeSpeedtestHistoryView(
+				ectx, n, sts, service.SpeedtestHistoryLimit, nil),
+			)
 		})
 	})
 }
