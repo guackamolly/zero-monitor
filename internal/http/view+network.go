@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/guackamolly/zero-monitor/internal/data/models"
+	"github.com/labstack/echo/v4"
 )
 
 type NetworkView struct {
@@ -42,8 +43,9 @@ type NetworkNodeSpeedtestView struct {
 
 type NetworkNodeSpeedtestHistoryView struct {
 	NodeView
+	ContextView
 	Speedtests []SpeedtestView
-	Chart      SpeedtestHistoryChartView
+	Chart      *SpeedtestHistoryChartView
 	Err        error
 }
 
@@ -125,9 +127,9 @@ func NewNetworkNodeSpeedtestView(
 }
 
 func NewNetworkNodeSpeedtestHistoryView(
+	ctx echo.Context,
 	node models.Node,
 	speedtests []models.Speedtest,
-	mobile bool,
 	err error,
 ) NetworkNodeSpeedtestHistoryView {
 	sts := make([]SpeedtestView, len(speedtests))
@@ -135,16 +137,24 @@ func NewNetworkNodeSpeedtestHistoryView(
 		sts[i] = NewSpeedtestView(node.ID, speedtests[i])
 	}
 
-	breakpoint := DesktopBreakpoint
-	if mobile {
-		breakpoint = MobileBreakpoint
+	ctxview := NewContextView(ctx)
+	chartSpeedtests := EligibleSpeedtestsForChartView(speedtests)
+	if len(chartSpeedtests) == 0 {
+		return NetworkNodeSpeedtestHistoryView{
+			NodeView:    NodeView(node),
+			ContextView: ctxview,
+			Speedtests:  sts,
+			Err:         err,
+		}
 	}
 
+	chart := NewSpeedtestHistoryChartView(chartSpeedtests, ctxview.Breakpoint)
 	return NetworkNodeSpeedtestHistoryView{
-		NodeView:   NodeView(node),
-		Chart:      NewSpeedtestHistoryChartView(speedtests, breakpoint),
-		Speedtests: sts,
-		Err:        err,
+		NodeView:    NodeView(node),
+		ContextView: ctxview,
+		Chart:       &chart,
+		Speedtests:  sts,
+		Err:         err,
 	}
 }
 

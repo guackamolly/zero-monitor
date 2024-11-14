@@ -14,6 +14,7 @@ type SpeedtestView struct {
 
 type SpeedtestHistoryChartView struct {
 	ChartView
+	Breakpoint
 }
 
 func NewSpeedtestView(
@@ -86,9 +87,9 @@ func NewSpeedtestHistoryChartView(
 		}),
 	}
 
-	width, height := BreakpointToChartSize(breakpoint)
 	return SpeedtestHistoryChartView{
-		NewCustomLineChartView(width, height, lines, xaxis, yaxis),
+		NewLineChartView(lines, xaxis, yaxis),
+		breakpoint,
 	}
 }
 
@@ -110,4 +111,31 @@ func (v SpeedtestPhaseView) IsDownloadPhase() bool {
 
 func (v SpeedtestPhaseView) IsUploadPhase() bool {
 	return v == SpeedtestPhaseView(models.SpeedtestUpload)
+}
+
+func (v SpeedtestHistoryChartView) SVG() string {
+	return v.ChartView.SVG(v.Breakpoint.ChartSize())
+}
+
+func EligibleSpeedtestsForChartView(speedtests []models.Speedtest) []models.Speedtest {
+	if len(speedtests) == 0 {
+		return speedtests
+	}
+
+	sts := []models.Speedtest{
+		speedtests[0],
+	}
+	for i := 1; i < len(speedtests); i++ {
+		if sts[i-1].TakenAt.Sub(speedtests[i].TakenAt) > 20*time.Minute {
+			break
+		}
+
+		sts = append(sts, speedtests[i])
+	}
+
+	if len(sts) < 3 {
+		return []models.Speedtest{}
+	}
+
+	return sts
 }

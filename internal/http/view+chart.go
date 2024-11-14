@@ -10,7 +10,7 @@ import (
 )
 
 type ChartView interface {
-	SVG() string
+	SVG(width, height int) string
 }
 
 type AxisView struct {
@@ -29,11 +29,9 @@ type LineView struct {
 }
 
 type LineChartView struct {
-	Lines  []LineView
-	X      AxisView
-	Y      AxisView
-	Width  int
-	Height int
+	Lines []LineView
+	X     AxisView
+	Y     AxisView
 }
 
 func (v LineView) build() chart.ContinuousSeries {
@@ -54,7 +52,7 @@ func (v LineView) build() chart.ContinuousSeries {
 	}
 }
 
-func (v LineChartView) build() chart.Chart {
+func (v LineChartView) build(width, height int) chart.Chart {
 	s := make([]chart.Series, len(v.Lines))
 	for i, l := range v.Lines {
 		s[i] = l.build()
@@ -84,8 +82,8 @@ func (v LineChartView) build() chart.Chart {
 			Name: v.Y.Legend,
 		},
 		YAxisSecondary: chart.HideYAxis(),
-		Width:          v.Width,
-		Height:         v.Height,
+		Width:          width,
+		Height:         height,
 	}
 
 	cht.Elements = []chart.Renderable{
@@ -97,9 +95,9 @@ func (v LineChartView) build() chart.Chart {
 	return cht
 }
 
-func (v LineChartView) SVG() string {
+func (v LineChartView) SVG(width, height int) string {
 	buffer := bytes.NewBuffer([]byte{})
-	err := v.build().Render(chart.SVG, buffer)
+	err := v.build(width, height).Render(chart.SVG, buffer)
 	if err != nil {
 		logging.LogWarning("failed to render chart as svg, %v", err)
 	}
@@ -136,21 +134,6 @@ func NewLineView(
 	}
 }
 
-func NewCustomLineChartView(
-	width, height int,
-	lines []LineView,
-	xaxis AxisView,
-	yaxis AxisView,
-) LineChartView {
-	return LineChartView{
-		Lines:  lines,
-		X:      xaxis,
-		Y:      yaxis,
-		Width:  width,
-		Height: height,
-	}
-}
-
 func NewLineChartView(
 	lines []LineView,
 	xaxis AxisView,
@@ -169,15 +152,4 @@ func TimeFormatter(v float64) string {
 
 func BitrateFormatter(v float64) string {
 	return models.BitRate(v).String()
-}
-
-func BreakpointToChartSize(bp Breakpoint) (int, int) {
-	switch bp {
-	case MobileBreakpoint:
-		return 300, 400
-	case TabletBreakpoint:
-		return 500, 400
-	default:
-		return 1200, 400
-	}
 }
