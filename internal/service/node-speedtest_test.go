@@ -1,6 +1,7 @@
 package service_test
 
 import (
+	"fmt"
 	"slices"
 	"testing"
 	"time"
@@ -26,7 +27,10 @@ func (r *TestSpeedtestStoreRepository) Save(nodeid string, speedtest models.Spee
 }
 
 func (r TestSpeedtestStoreRepository) History(nodeid string) ([]models.Speedtest, error) {
-	return r.speedtests, nil
+	speedtestsCopy := make([]models.Speedtest, len(r.speedtests))
+	copy(speedtestsCopy, r.speedtests)
+
+	return speedtestsCopy, nil
 }
 
 func (r TestSpeedtestStoreRepository) Lookup(id string) (models.Speedtest, bool, error) {
@@ -211,7 +215,86 @@ func TestHistoryReturnsStoredSpeedtestsAndStartedSpeedtestAfterItFinishes(t *tes
 
 	// 3. load history again
 	hs, _ := s.History(nodeid)
-	expected := append(storeSpeedtests, speedtest2)
+	expected := []models.Speedtest{speedtest2, speedtest}
+	if !slices.Equal(hs, expected) {
+		t.Errorf("expected %v but got %v", expected, hs)
+	}
+}
+
+func TestHistoryRespectResultsLimit(t *testing.T) {
+	limit := service.SpeedtestHistoryLimit
+	storeSpeedtests := []models.Speedtest{}
+	for i := 0; i < limit+1; i++ {
+		st := models.NewSpeedtest(fmt.Sprintf("<speedtest-id-%d>", i), "zero-monitor", "world", "ookla", 5)
+		storeSpeedtests = append(storeSpeedtests, st)
+	}
+	ps := NewTestPublishSubscriber()
+	sps := NewTestSpeedtestStoreRepository(storeSpeedtests...)
+	s := service.NewNodeSpeedtestService(ps, ps, sps)
+
+	nodeid := "node.id"
+	hs, _ := s.History(nodeid)
+	if len(hs) != limit {
+		t.Errorf("expected history to return %d results, but got %d", limit, len(hs))
+	}
+}
+
+func TestHistoryReturnsResultsSortedByTakenDateInAscendingOrder(t *testing.T) {
+	st1 := models.NewSpeedtest("<speedtest-id-1>", "zero-monitor", "world", "ookla", 5)
+	st2 := models.NewSpeedtest("<speedtest-id-2>", "zero-monitor", "world", "ookla", 5)
+	st3 := models.NewSpeedtest("<speedtest-id-3>", "zero-monitor", "world", "ookla", 5)
+	st2.TakenAt = st3.TakenAt.Add(1)
+	storeSpeedtests := []models.Speedtest{st1, st2, st3}
+
+	ps := NewTestPublishSubscriber()
+	sps := NewTestSpeedtestStoreRepository(storeSpeedtests...)
+	s := service.NewNodeSpeedtestService(ps, ps, sps)
+
+	nodeid := "node.id"
+	hs, _ := s.History(nodeid)
+	expected := []models.Speedtest{st2, st3, st1}
+	if !slices.Equal(hs, expected) {
+		t.Errorf("expected %v but got %v", expected, hs)
+	}
+}
+
+func TestAfterSpeedtestFinishesAndTheHistoryMapReachesLimitLastHistoryElementIsRemoved(t *testing.T) {
+	limit := service.SpeedtestHistoryLimit
+	storeSpeedtests := []models.Speedtest{}
+	for i := 0; i < limit; i++ {
+		st := models.NewSpeedtest(fmt.Sprintf("<speedtest-id-%d>", i), "zero-monitor", "world", "ookla", 5)
+		storeSpeedtests = append(storeSpeedtests, st)
+	}
+	speedtest := models.Speedtest{ID: "<speedtest-id-top>", Phase: models.SpeedtestFinish}
+
+	ps := NewTestPublishSubscriber(
+		event.NewNodeSpeedtestEventOutput(nil, speedtest, nil),
+	)
+	sps := NewTestSpeedtestStoreRepository(storeSpeedtests...)
+	s := service.NewNodeSpeedtestService(ps, ps, sps)
+	nodeid := "node.id"
+	// 1. load history
+	s.History(nodeid)
+
+	// 2. start speedtest
+	st, err := s.Start(nodeid)
+	if err != nil {
+		t.Fatalf("didn't expect Start() to fail, %v", err)
+	}
+	ch, ok := s.Updates(st.ID)
+	if !ok {
+		t.Fatal("didn't expect Updates() to fail")
+	}
+
+	forceUnbufferedChannelClose(ch)
+
+	// 3. load history again
+	hs, _ := s.History(nodeid)
+	expected := []models.Speedtest{speedtest}
+	for i := limit - 1; i >= 1; i-- {
+		expected = append(expected, storeSpeedtests[i])
+	}
+
 	if !slices.Equal(hs, expected) {
 		t.Errorf("expected %v but got %v", expected, hs)
 	}
