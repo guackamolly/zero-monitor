@@ -325,6 +325,10 @@ button {
     border-color: gray transparent transparent transparent;
 }
 
+.danger-bg {
+    background-color: var(--red);
+}
+
 .chart {
     display: flex;
     flex-direction: column;

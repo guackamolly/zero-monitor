@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/guackamolly/zero-monitor/internal/data/models"
+	"github.com/shirou/gopsutil/net"
 )
 
 func TestSpeedtestNextPhase(t *testing.T) {
@@ -246,6 +247,89 @@ func TestSpeedtestFinishedUpload(t *testing.T) {
 		t.Run(tC.desc, func(t *testing.T) {
 			if tC.input.FinishedUpload() != tC.output {
 				t.Errorf("expected %v, got %v", tC.output, tC.input.FinishedUpload())
+			}
+		})
+	}
+}
+
+func TestConnectionTCP(t *testing.T) {
+	testCases := []struct {
+		desc   string
+		input  models.Connection
+		output bool
+	}{
+		{
+			desc:   "returns true if connection kind is 1 (TCP)",
+			input:  models.NewConnection(1, "none", net.Addr{}, net.Addr{}),
+			output: true,
+		},
+		{
+			desc:   "returns false if connection kind is not 1 (TCP)",
+			input:  models.NewConnection(0, "none", net.Addr{}, net.Addr{}),
+			output: false,
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			if out := tC.input.TCP(); out != tC.output {
+				t.Errorf("expected %v, but got %v", tC.output, out)
+			}
+		})
+	}
+}
+
+func TestConnectionUDP(t *testing.T) {
+	testCases := []struct {
+		desc   string
+		input  models.Connection
+		output bool
+	}{
+		{
+			desc:   "returns true if connection kind is 2 (UDP)",
+			input:  models.NewConnection(2, "none", net.Addr{}, net.Addr{}),
+			output: true,
+		},
+		{
+			desc:   "returns false if connection kind is not 2 (UDP)",
+			input:  models.NewConnection(0, "none", net.Addr{}, net.Addr{}),
+			output: false,
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			if out := tC.input.UDP(); out != tC.output {
+				t.Errorf("expected %v, but got %v", tC.output, out)
+			}
+		})
+	}
+}
+
+func TestConnectionExposed(t *testing.T) {
+	testCases := []struct {
+		desc   string
+		input  models.Connection
+		output bool
+	}{
+		{
+			desc:   "returns true if connection local address IP is 0.0.0.0",
+			input:  models.NewConnection(2, "none", net.Addr{IP: "0.0.0.0"}, net.Addr{}),
+			output: true,
+		},
+		{
+			desc:   "returns true if connection local address IP is ::",
+			input:  models.NewConnection(2, "none", net.Addr{IP: "::"}, net.Addr{}),
+			output: true,
+		},
+		{
+			desc:   "returns false if connection local address IP is 127.0.0.1",
+			input:  models.NewConnection(2, "none", net.Addr{IP: "127.0.0.1"}, net.Addr{}),
+			output: false,
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			if out := tC.input.Exposed(); out != tC.output {
+				t.Errorf("expected %v, but got %v", tC.output, out)
 			}
 		})
 	}

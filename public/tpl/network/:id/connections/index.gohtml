@@ -65,6 +65,21 @@
                 <p>This page shows all open network (TCP, UDP) connections
                     for node <b>{{.Hostname}}</b>.
                 </p>
+                {{ if and (gt (len .ExposedTCPConnections) 0) (gt (len
+                .ExposedUDPConnections) 0) }}
+                <p>There are currently <b>{{len .ExposedTCPConnections}}</b> and
+                    <b>{{len .ExposedUDPConnections}}</b>
+                    TCP/UDP ports exposed on the local network.
+                </p>
+                {{ else if gt (len .ExposedTCPConnections) 0 }}
+                <p>There are currently <b>{{len .ExposedTCPConnections}}</b>
+                    TCP ports exposed on the local network.
+                </p>
+                {{ else if gt (len .ExposedUDPConnections) 0 }}
+                <p>There are currently <b>{{len .ExposedUDPConnections}}</b>
+                    UDP ports exposed on the local network.
+                </p>
+                {{ end }}
                 <div class="divider"></div>
                 {{ if .Err }}
                 {{template "error" .Err }}

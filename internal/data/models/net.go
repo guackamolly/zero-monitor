@@ -53,6 +53,26 @@ func (v IP) String() string {
 	return net.IP(v).String()
 }
 
+func (v Address) Network() bool {
+	return net.IP(v.IP).IsUnspecified()
+}
+
+func (v Address) String() string {
+	return fmt.Sprintf("%s:%d", v.IP, v.Port)
+}
+
+func (v Connection) TCP() bool {
+	return v.Kind == 1
+}
+
+func (v Connection) UDP() bool {
+	return v.Kind == 2
+}
+
+func (v Connection) Exposed() bool {
+	return v.LocalAddress.Network()
+}
+
 func (v ConnectionKind) String() string {
 	switch v {
 	case 1:
@@ -62,8 +82,4 @@ func (v ConnectionKind) String() string {
 	default:
 		return "UNKNOWN"
 	}
-}
-
-func (v Address) String() string {
-	return fmt.Sprintf("%s:%d", v.IP, v.Port)
 }

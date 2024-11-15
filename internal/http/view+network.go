@@ -20,8 +20,10 @@ type NetworkNodeInformationView struct {
 
 type NetworkNodeConnectionsView struct {
 	NodeView
-	Connections []models.Connection
-	Err         error
+	Connections           []models.Connection
+	ExposedTCPConnections []models.Connection
+	ExposedUDPConnections []models.Connection
+	Err                   error
 }
 
 type NetworkNodeProcessesView struct {
@@ -84,10 +86,30 @@ func NewNetworkNodeConnectionsView(
 	connections []models.Connection,
 	err error,
 ) NetworkNodeConnectionsView {
+	exposedtcp := []models.Connection{}
+	exposedudp := []models.Connection{}
+	for _, conn := range connections {
+		if !conn.Exposed() {
+			continue
+		}
+
+		if conn.TCP() {
+			exposedtcp = append(exposedtcp, conn)
+			continue
+		}
+
+		if conn.UDP() {
+			exposedudp = append(exposedudp, conn)
+			continue
+		}
+	}
+
 	return NetworkNodeConnectionsView{
-		NodeView:    NodeView(node),
-		Connections: connections,
-		Err:         err,
+		NodeView:              NodeView(node),
+		Connections:           connections,
+		ExposedTCPConnections: exposedtcp,
+		ExposedUDPConnections: exposedudp,
+		Err:                   err,
 	}
 }
 
