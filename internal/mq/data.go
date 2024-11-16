@@ -1,5 +1,11 @@
 package mq
 
+import (
+	"fmt"
+
+	"github.com/guackamolly/zero-monitor/internal/data/models"
+)
+
 type Msg struct {
 	Identity []byte
 	Topic    Topic
@@ -25,6 +31,44 @@ func (m Msg) WithData(data any) Msg {
 func (m Msg) WithError(err error) Msg {
 	m.Data = &OPError{Err: err.Error()}
 	return m
+}
+
+func (m Msg) Encrypt() (Msg, error) {
+	bs, err := models.Encode(m)
+	if err != nil {
+		return Msg{}, err
+	}
+
+	bs, nonce, err := EncryptCipher(m.Identity, bs)
+	if err != nil {
+		return Msg{}, err
+	}
+
+	return Msg{
+		Identity: m.Identity,
+		Topic:    m.Topic,
+		Data:     bs,
+		Metadata: nonce,
+	}, nil
+}
+
+func (m Msg) Decrypt() (Msg, error) {
+	bs, ok := m.Data.([]byte)
+	if !ok {
+		return Msg{}, fmt.Errorf("data is not a bitstream")
+	}
+
+	nonce, ok := m.Metadata.([]byte)
+	if !ok {
+		return Msg{}, fmt.Errorf("nonce is not a bitstream")
+	}
+
+	bs, err := DecryptCipher(m.Identity, bs, nonce)
+	if err != nil {
+		return Msg{}, err
+	}
+
+	return models.Decode[Msg](bs)
 }
 
 func Compose(t Topic, d ...any) Msg {
