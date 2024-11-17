@@ -4,15 +4,78 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
+	"crypto/rsa"
+	"crypto/x509"
+	"encoding/pem"
 	"fmt"
 	"io"
+	"os"
+	"path/filepath"
+
+	"github.com/guackamolly/zero-monitor/internal/config"
+	"github.com/guackamolly/zero-monitor/internal/logging"
 )
 
-// Global map of cipher blocks used to encrypt/decrypt sensitive
+const (
+	mqTransportPrivateKeyFileEnvKey = ""
+	mqTransportPublicKeyFileEnvKey  = ""
+)
+
+var (
+	mqTransportPrivateKeyFile = os.Getenv(mqTransportPrivateKeyFileEnvKey)
+	mqTransportPublicKeyFile  = os.Getenv(mqTransportPublicKeyFileEnvKey)
+)
+
+// Global map of blocks used to encrypt/decrypt sensitive
 // messages between pub/sub nodes.
 //
 // Key is the pub/sub identity
-var blocks = map[string]cipher.Block{}
+var cipherBlocks = map[string]cipher.Block{}
+
+// The public/private key block used to encrypt/decrypt cipher keys during
+// the key exchange between nodes.
+var pemBlock *pem.Block
+
+func init() {
+	peml := len(mqTransportPrivateKeyFile)
+	publ := len(mqTransportPublicKeyFile)
+
+	if peml > 0 && publ > 0 {
+		return
+	}
+
+	d, err := config.Dir()
+	if err != nil {
+		logging.LogWarning("couldn't lookup pem/pub key files to encrypt message queue messages. either communication with master node fail OR it won't be encrypted")
+		return
+	}
+
+	if peml == 0 {
+		mqTransportPrivateKeyFile = filepath.Join(d, "mq.pem")
+	}
+
+	if publ == 0 {
+		mqTransportPublicKeyFile = filepath.Join(d, "mq.pub")
+	}
+}
+
+// Loads the public/private key block to be used on encryption/decryption.
+func LoadAsymmetricBlock(
+	pub bool,
+) error {
+	p := mqTransportPrivateKeyFile
+	if pub {
+		p = mqTransportPublicKeyFile
+	}
+
+	f, err := os.ReadFile(p)
+	if err != nil {
+		return err
+	}
+
+	pemBlock, _ = pem.Decode(f)
+	return nil
+}
 
 // Registers a key and creates new cipher block.
 func RegisterCipherKey(
@@ -24,7 +87,7 @@ func RegisterCipherKey(
 		return err
 	}
 
-	blocks[string(identity)] = block
+	cipherBlocks[string(identity)] = block
 	return nil
 }
 
@@ -34,7 +97,7 @@ func EncryptCipher(
 	identity []byte,
 	data []byte,
 ) ([]byte, []byte, error) {
-	block, ok := blocks[string(identity)]
+	block, ok := cipherBlocks[string(identity)]
 	if !ok {
 		return nil, nil, fmt.Errorf("no encryption block associated with identity: %x", identity)
 	}
@@ -59,7 +122,7 @@ func DecryptCipher(
 	data []byte,
 	nonce []byte,
 ) (plain []byte, err error) {
-	block, ok := blocks[string(identity)]
+	block, ok := cipherBlocks[string(identity)]
 	if !ok {
 		return nil, fmt.Errorf("no encryption block associated with identity: %x", identity)
 	}
@@ -75,6 +138,32 @@ func DecryptCipher(
 		}
 	}()
 	return gcm.Open(nil, nonce, data, nil)
+}
+
+// Encrypts data using the public key block.
+// Block must have been loaded before by calling [LoadAsymmetricBlock(true)].
+func EncryptAsymmetric(
+	data []byte,
+) ([]byte, error) {
+	key, err := x509.ParsePKIXPublicKey(pemBlock.Bytes)
+	if err != nil {
+		return nil, err
+	}
+
+	return rsa.EncryptPKCS1v15(rand.Reader, key.(*rsa.PublicKey), data)
+}
+
+// Encrypts data using the private key block.
+// Block must have been loaded before by calling [LoadAsymmetricBlock(false)].
+func DecryptAsymmetric(
+	data []byte,
+) ([]byte, error) {
+	key, err := x509.ParsePKCS1PrivateKey(pemBlock.Bytes)
+	if err != nil {
+		return nil, err
+	}
+
+	return rsa.DecryptPKCS1v15(rand.Reader, key, data)
 }
 
 // Generates a new 256 bit cipher key.
