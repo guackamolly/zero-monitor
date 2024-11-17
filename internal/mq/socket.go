@@ -194,6 +194,11 @@ func (s Socket) publishJoinNetworkMsg(
 		return err
 	}
 
+	key, err = EncryptAsymmetric(key)
+	if err != nil {
+		return err
+	}
+
 	b, err := models.Encode(m)
 	if err != nil {
 		return err
@@ -217,6 +222,7 @@ func (s Socket) publishJoinNetworkMsg(
 func (s Socket) interceptJoinNetworkMsg(
 	m Msg,
 ) (Msg, error) {
+	var err error
 	key, ok := m.Metadata.([]byte)
 	if !ok {
 		return Msg{}, fmt.Errorf("key is not a bitstream")
@@ -227,7 +233,12 @@ func (s Socket) interceptJoinNetworkMsg(
 		return Msg{}, fmt.Errorf("data is not a bitstream")
 	}
 
-	err := RegisterCipherKey(m.Identity, key)
+	key, err = DecryptAsymmetric(key)
+	if err != nil {
+		return Msg{}, err
+	}
+
+	err = RegisterCipherKey(m.Identity, key)
 	if err != nil {
 		return Msg{}, err
 	}
