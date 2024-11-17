@@ -37,6 +37,7 @@ func main() {
 	ctx = mq.InjectSubscribeContainer(ctx, suc)
 
 	// 3. Initialize sub server.
+	mq.LoadAsymmetricBlock(false)
 	s := initializeSubServer(ctx)
 	defer s.Close()
 

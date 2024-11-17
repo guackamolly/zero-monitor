@@ -30,6 +30,7 @@ func main() {
 	}
 
 	// 3. Initialize pub server.
+	mq.LoadAsymmetricBlock(true)
 	s := mq.NewPubSocket(ctx)
 	defer s.Close()
 
