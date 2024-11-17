@@ -84,19 +84,30 @@ func Save(cfg Config) error {
 	return os.WriteFile(p, bs, 0666)
 }
 
-func configJsonPath() (string, error) {
+// Returns the path to the config directory used by the program.
+// If error is not nil, then an error occurred when creating the directory.
+func Dir() (string, error) {
 	d, err := os.UserConfigDir()
 	if err != nil {
 		return "", errors.Join(errors.New("couldn't lookup user config dir"), err)
 	}
 
-	p := filepath.Join(d, "zero-monitor", "config.json")
+	p := filepath.Join(d, "zero-monitor")
 	err = os.MkdirAll(filepath.Dir(p), 0700)
 	if err != nil {
 		return p, errors.Join(errors.New("couldn't stat config file dir"), err)
 	}
 
 	return p, nil
+}
+
+func configJsonPath() (string, error) {
+	d, err := Dir()
+	if err != nil {
+		return "", err
+	}
+
+	return filepath.Join(d, "config.json"), nil
 }
 
 func defaultConfig() Config {
