@@ -26,27 +26,33 @@ type Socket struct {
 	// Clients of the socket, identified by their machine ID and their socket identity
 	// This field only makes sense for sub sockets.
 	Clients map[string][]byte
+	// ZeroMQ identity that is bundled on message frames
+	Identity []byte
 }
 
 // Creates a new sub [zmq4-Socket] wrapper with a custom context.
 // The context must contain all the dependencies required by the socket.
 func NewSubSocket(ctx context.Context) Socket {
+	id := []byte(models.UUID())
 	return Socket{
-		Socket:       zmq4.NewRouter(ctx),
+		Socket:       zmq4.NewRouter(ctx, zmq4.WithID(id)),
 		ctx:          ctx,
 		framesLength: 2,
 		listeners:    map[Topic][]*messageListener{},
 		Clients:      map[string][]byte{},
+		Identity:     id,
 	}
 }
 
 // Creates a new sub [zmq4-Socket] wrapper with a custom context.
 // The context must contain all the dependencies required by the socket.
 func NewPubSocket(ctx context.Context) Socket {
+	id := []byte(models.UUID())
 	return Socket{
-		Socket:       zmq4.NewDealer(ctx, zmq4.WithAutomaticReconnect(true)),
+		Socket:       zmq4.NewDealer(ctx, zmq4.WithAutomaticReconnect(true), zmq4.WithID(id)),
 		ctx:          ctx,
 		framesLength: 1,
+		Identity:     id,
 	}
 }
 
@@ -82,7 +88,21 @@ func (s Socket) OnMsgReceived(t Topic, h func(m Msg)) func() {
 // Publishes a message from a pub socket to the sub socket and waits for a reply.
 // Receiver must be a pub socket.
 func (s Socket) PublishMsg(m Msg) error {
+	var err error
 	logging.LogInfo("publishing Msg with topic: %d", m.Topic)
+
+	m = m.WithIdentity(s.Identity)
+	if m.Topic == JoinNetwork {
+		return s.publishJoinNetworkMsg(m)
+	}
+
+	if m.Topic.Sensitive() {
+		m, err = m.Encrypt()
+	}
+
+	if err != nil {
+		return err
+	}
 
 	b, err := models.Encode(m)
 	if err != nil {
@@ -117,9 +137,19 @@ func (s Socket) ReceiveMsg() (Msg, error) {
 		return Msg{}, err
 	}
 
-	m = m.WithIdentity(zm.Frames[0])
-	s.onMsgReceived(m)
+	if m.Topic == JoinNetwork {
+		return s.interceptJoinNetworkMsg(m)
+	}
 
+	if m.Topic.Sensitive() {
+		m, err = m.Decrypt()
+	}
+
+	if err != nil {
+		return Msg{}, err
+	}
+
+	s.onMsgReceived(m)
 	return m, nil
 }
 
@@ -127,6 +157,7 @@ func (s Socket) ReceiveMsg() (Msg, error) {
 // Receiver must be a sub socket.
 func (s Socket) ReplyMsg(id []byte, m Msg) {
 	b, err := models.Encode(m)
+	fmt.Printf("identity reply: %x\n", id)
 	if err != nil {
 		log.Printf("failed to encode reply message, %v\n", err)
 	}
@@ -149,4 +180,63 @@ func (s Socket) onMsgReceived(
 	for _, l := range ls {
 		l.handler(msg)
 	}
+}
+
+func (s Socket) publishJoinNetworkMsg(
+	m Msg,
+) error {
+	key, err := GenerateCipherKey()
+	if err != nil {
+		return err
+	}
+
+	err = RegisterCipherKey(s.Identity, key)
+	if err != nil {
+		return err
+	}
+
+	b, err := models.Encode(m)
+	if err != nil {
+		return err
+	}
+
+	em := Msg{
+		Identity: s.Identity,
+		Topic:    m.Topic,
+		Data:     b,
+		Metadata: key,
+	}
+
+	b, err = models.Encode(em)
+	if err != nil {
+		return err
+	}
+
+	return s.Send(zmq4.NewMsg(b))
+}
+
+func (s Socket) interceptJoinNetworkMsg(
+	m Msg,
+) (Msg, error) {
+	key, ok := m.Metadata.([]byte)
+	if !ok {
+		return Msg{}, fmt.Errorf("key is not a bitstream")
+	}
+
+	bs, ok := m.Data.([]byte)
+	if !ok {
+		return Msg{}, fmt.Errorf("data is not a bitstream")
+	}
+
+	err := RegisterCipherKey(m.Identity, key)
+	if err != nil {
+		return Msg{}, err
+	}
+
+	m, err = models.Decode[Msg](bs)
+	if err != nil {
+		return Msg{}, err
+	}
+
+	return m, nil
 }
