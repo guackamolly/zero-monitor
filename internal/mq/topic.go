@@ -12,3 +12,12 @@ const (
 	KillNodeProcess
 	StartNodeSpeedtest
 )
+
+func (t Topic) Sensitive() bool {
+	switch t {
+	case JoinNetwork, NodeConnections, NodeProcesses, KillNodeProcess:
+		return true
+	default:
+		return false
+	}
+}
