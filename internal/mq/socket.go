@@ -157,7 +157,6 @@ func (s Socket) ReceiveMsg() (Msg, error) {
 // Receiver must be a sub socket.
 func (s Socket) ReplyMsg(id []byte, m Msg) {
 	b, err := models.Encode(m)
-	fmt.Printf("identity reply: %x\n", id)
 	if err != nil {
 		log.Printf("failed to encode reply message, %v\n", err)
 	}
