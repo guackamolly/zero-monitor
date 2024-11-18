@@ -44,6 +44,8 @@ func (s Socket) RegisterPublishers() {
 				err = handleNodeConnectionsRequest(s, m, pc.GetCurrentNodeConnections)
 			case NodeProcesses:
 				err = handleNodeProcessesRequest(s, m, pc.GetCurrentNodeProcesses)
+			case NodePackages:
+				err = handleNodePackagesRequest(s, m, pc.GetCurrentNodePackages)
 			case KillNodeProcess:
 				err = handleKillNodeProcessRequest(s, m, pc.KillNodeProcess)
 			case StartNodeSpeedtest:
@@ -120,6 +122,19 @@ func handleNodeProcessesRequest(
 	}
 
 	return s.PublishMsg(m.WithData(NodeProcessesResponse{Processes: procs}))
+}
+
+func handleNodePackagesRequest(
+	s Socket,
+	m Msg,
+	packages domain.GetCurrentNodePackages,
+) error {
+	pkgs, err := packages()
+	if err != nil {
+		return s.PublishMsg(m.WithError(err))
+	}
+
+	return s.PublishMsg(m.WithData(NodePackagesResponse{Packages: pkgs}))
 }
 
 func handleKillNodeProcessRequest(

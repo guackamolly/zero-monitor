@@ -30,6 +30,7 @@ var (
 		"network":                       serverPublicRoot + "tpl/network/*.gohtml",
 		"network/:id":                   serverPublicRoot + "tpl/network/:id/*.gohtml",
 		"network/:id/connections":       serverPublicRoot + "tpl/network/:id/connections/*.gohtml",
+		"network/:id/packages":          serverPublicRoot + "tpl/network/:id/packages/*.gohtml",
 		"network/:id/processes":         serverPublicRoot + "tpl/network/:id/processes/*.gohtml",
 		"network/:id/speedtest":         serverPublicRoot + "tpl/network/:id/speedtest/*.gohtml",
 		"network/:id/speedtest/history": serverPublicRoot + "tpl/network/:id/speedtest/history/*.gohtml",

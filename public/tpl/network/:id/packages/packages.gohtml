@@ -1,0 +1,22 @@
+{{ define "packages" }}
+<form method="post">
+    <table>
+        <thead>
+            <tr>
+                <th scope="col">Name</th>
+                <th scope="col">Description</th>
+                <th scope="col">Version</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{ range . }}
+            <tr>
+                <th scope="row">{{.Name}}</th>
+                <td>{{.Description}}</td>
+                <td>{{.Version}}</td>
+            </tr>
+            {{ end }}
+        </tbody>
+    </table>
+</form>
+{{ end }}

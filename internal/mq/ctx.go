@@ -26,6 +26,7 @@ type PublishContainer struct {
 	GetCurrentNode            domain.GetCurrentNode
 	GetCurrentNodeConnections domain.GetCurrentNodeConnections
 	GetCurrentNodeProcesses   domain.GetCurrentNodeProcesses
+	GetCurrentNodePackages    domain.GetCurrentNodePackages
 	StartNodeStatsPolling     domain.StartNodeStatsPolling
 	UpdateNodeStatsPolling    domain.UpdateNodeStatsPolling
 	KillNodeProcess           domain.KillNodeProcess

@@ -19,7 +19,7 @@ func TestTopicSensitive(t *testing.T) {
 		},
 		{
 			desc:   "everything else is not sensitive",
-			input:  []mq.Topic{mq.UpdateNodeStats, mq.UpdateNodeStatsPollDuration, mq.StartNodeSpeedtest},
+			input:  []mq.Topic{mq.UpdateNodeStats, mq.UpdateNodeStatsPollDuration, mq.StartNodeSpeedtest, mq.NodePackages},
 			output: false,
 		},
 	}

@@ -33,6 +33,16 @@ func (s NodeCommanderService) Connections(id string) ([]models.Connection, error
 	return out.Connections, nil
 }
 
+func (s NodeCommanderService) Packages(id string) ([]models.Package, error) {
+	ev := event.NewQueryNodePackagesEvent(id)
+	out, err := event.PublishAndSubscribeFirst[event.QueryNodePackagesEventOutput](ev, s.publisher, s.subscriber)
+	if err != nil {
+		return nil, err
+	}
+
+	return out.Packages, nil
+}
+
 func (s NodeCommanderService) Processes(id string) ([]models.Process, error) {
 	ev := event.NewQueryNodeProcessesEvent(id)
 	out, err := event.PublishAndSubscribeFirst[event.QueryNodeProcessesEventOutput](ev, s.publisher, s.subscriber)

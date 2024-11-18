@@ -31,6 +31,10 @@ type NodeProcessesResponse struct {
 	Processes []models.Process
 }
 
+type NodePackagesResponse struct {
+	Packages []models.Package
+}
+
 type KillNodeProcessRequest struct {
 	PID int32
 }
@@ -53,6 +57,7 @@ func init() {
 	gob.Register(UpdateNodeStatsRequest{})
 	gob.Register(UpdateNodeStatsPollDurationRequest{})
 	gob.Register(NodeConnectionsResponse{})
+	gob.Register(NodePackagesResponse{})
 	gob.Register(NodeProcessesResponse{})
 	gob.Register(KillNodeProcessRequest{})
 	gob.Register(NodeSpeedtestResponse{})

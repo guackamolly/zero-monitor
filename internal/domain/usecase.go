@@ -9,6 +9,7 @@ import (
 type GetCurrentNode func() models.Node
 type GetCurrentNodeConnections func() ([]models.Connection, error)
 type GetCurrentNodeProcesses func() ([]models.Process, error)
+type GetCurrentNodePackages func() ([]models.Package, error)
 type KillNodeProcess func(int32) error
 
 type StartNodeStatsPolling func(d time.Duration) chan (models.Node)

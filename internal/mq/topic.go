@@ -9,6 +9,7 @@ const (
 	UpdateNodeStatsPollDuration
 	NodeConnections
 	NodeProcesses
+	NodePackages
 	KillNodeProcess
 	StartNodeSpeedtest
 )

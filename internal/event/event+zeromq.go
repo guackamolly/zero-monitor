@@ -67,6 +67,13 @@ func (p ZeroMQEventPubSub) eventToMsg(e Event) (mq.Msg, error) {
 		}
 
 		return mq.Compose(mq.NodeProcesses).WithIdentity(sid).WithMetadata(e), nil
+	case QueryNodePackagesEvent:
+		sid, ok := p.Clients[te.NodeID]
+		if !ok {
+			return mq.Msg{}, fmt.Errorf("no pub client associated with id, %v", te.NodeID)
+		}
+
+		return mq.Compose(mq.NodePackages).WithIdentity(sid).WithMetadata(e), nil
 	case KillNodeProcessEvent:
 		sid, ok := p.Clients[te.NodeID]
 		if !ok {
@@ -93,6 +100,13 @@ func (p ZeroMQEventPubSub) msgToEventOutput(m mq.Msg) (EventOutput, error) {
 		return NewQueryNodeConnectionsEventOutput(
 			m.Metadata.(Event),
 			d.Connections,
+			err,
+		), nil
+	case mq.NodePackages:
+		d, err := typedMsgData[mq.NodePackagesResponse](m)
+		return NewQueryNodePackagesEventOutput(
+			m.Metadata.(Event),
+			d.Packages,
 			err,
 		), nil
 	case mq.NodeProcesses:
@@ -148,6 +162,7 @@ func errorMsgData(
 func init() {
 	gob.Register(BaseEvent{})
 	gob.Register(QueryNodeConnectionsEvent{})
+	gob.Register(QueryNodePackagesEvent{})
 	gob.Register(QueryNodeProcessesEvent{})
 	gob.Register(KillNodeProcessEvent{})
 	gob.Register(StartNodeSpeedtestEvent{})

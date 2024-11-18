@@ -71,6 +71,10 @@ func (s NodeReporterService) Connections() ([]models.Connection, error) {
 	return s.system.Conns()
 }
 
+func (s NodeReporterService) Packages() ([]models.Package, error) {
+	return s.system.Pkgs()
+}
+
 func (s NodeReporterService) Processes() ([]models.Process, error) {
 	return s.system.Procs()
 }

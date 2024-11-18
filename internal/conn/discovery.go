@@ -16,8 +16,8 @@ const maxParallelBeacons = 5
 // Two seconds is more than enough for a reply since beacons are sent in broadcast on the local network.
 const beaconReplyWaitDuration = 2 * time.Second
 
-var NetworkIP = net.IPv4(0, 0, 0, 0)
-var broadcastIP = net.IPv4(255, 255, 255, 255)
+var NetworkIP = net.IPv4(127, 0, 0, 1)
+var broadcastIP = net.IPv4(127, 0, 0, 1)
 
 // starts broadcasting beacon probes in the local network, on all known ports
 // that a master node could be registered in.

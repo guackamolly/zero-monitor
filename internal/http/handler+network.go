@@ -55,6 +55,31 @@ func networkIdConnectionsHandler(ectx echo.Context) error {
 	})
 }
 
+// GET /network/:id/packages
+func networkIdPackagesHandler(ectx echo.Context) error {
+	return withServiceContainer(ectx, func(sc *ServiceContainer) error {
+		return withPathNode(ectx, sc, func(n models.Node) error {
+			rerr, rok := FromRedirectWithError(ectx)
+
+			if !n.Online {
+				return ectx.Render(200, "network/:id/packages", NewNetworkNodePackagesView(n, []models.Package{}, rerr))
+			}
+
+			logging.LogInfo("fetching node packages")
+			packages, err := sc.NodeCommander.Packages(n.ID)
+			if err != nil {
+				logging.LogError("failed to fetch node packages, %v", packages)
+			}
+
+			if rok {
+				err = errors.Join(err, rerr)
+			}
+
+			return ectx.Render(200, "network/:id/packages", NewNetworkNodePackagesView(n, packages, err))
+		})
+	})
+}
+
 // GET /network/:id/processes
 func networkIdProcessesHandler(ectx echo.Context) error {
 	return withServiceContainer(ectx, func(sc *ServiceContainer) error {

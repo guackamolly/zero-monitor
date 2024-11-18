@@ -12,6 +12,7 @@ func RegisterHandlers(e *echo.Echo) {
 	e.GET(networkRoute, networkHandler)
 	e.GET(networkIdRoute, networkIdHandler)
 	e.GET(networkIdConnectionsRoute, networkIdConnectionsHandler)
+	e.GET(networkIdPackagesRoute, networkIdPackagesHandler)
 	e.GET(networkIdProcessesRoute, networkIdProcessesHandler)
 	e.POST(networkIdProcessesRoute, networkIdProcessesFormHandler)
 	e.GET(networkIdSpeedtestRoute, networkIdSpeedtestHandler)

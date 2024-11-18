@@ -6,6 +6,7 @@ import (
 
 	"github.com/guackamolly/zero-monitor/internal/data/models"
 	"github.com/guackamolly/zero-monitor/internal/logging"
+	"github.com/guackamolly/zero-monitor/pkg/deps"
 	"github.com/jaypipes/ghw"
 	"github.com/shirou/gopsutil/cpu"
 	"github.com/shirou/gopsutil/disk"
@@ -269,6 +270,10 @@ func (r GopsUtilSystemRepository) KillProc(pid int32) error {
 
 	delete(r.procs, pid)
 	return nil
+}
+
+func (r GopsUtilSystemRepository) Pkgs() ([]models.Package, error) {
+	return deps.List()
 }
 
 func (r GopsUtilSystemRepository) cacheProc(pproc *process.Process) models.Process {

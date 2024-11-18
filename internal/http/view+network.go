@@ -26,6 +26,12 @@ type NetworkNodeConnectionsView struct {
 	Err                   error
 }
 
+type NetworkNodePackagesView struct {
+	NodeView
+	Packages []models.Package
+	Err      error
+}
+
 type NetworkNodeProcessesView struct {
 	NodeView
 	Processes []models.Process
@@ -110,6 +116,18 @@ func NewNetworkNodeConnectionsView(
 		ExposedTCPConnections: exposedtcp,
 		ExposedUDPConnections: exposedudp,
 		Err:                   err,
+	}
+}
+
+func NewNetworkNodePackagesView(
+	node models.Node,
+	packages []models.Package,
+	err error,
+) NetworkNodePackagesView {
+	return NetworkNodePackagesView{
+		NodeView: NodeView(node),
+		Packages: packages,
+		Err:      err,
 	}
 }
 

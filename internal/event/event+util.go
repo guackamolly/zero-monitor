@@ -2,6 +2,7 @@ package event
 
 import (
 	"fmt"
+	"reflect"
 
 	"github.com/guackamolly/zero-monitor/internal/logging"
 )
@@ -28,6 +29,7 @@ func PublishAndSubscribeFirst[T any](ev Event, p EventPublisher, s EventSubscrib
 		return out, err
 	}
 
+	fmt.Printf("r: %v\n", reflect.TypeOf(r))
 	out, ok := r.(T)
 	if !ok {
 		return out, fmt.Errorf("failed to parse %v to connection slice", r)
