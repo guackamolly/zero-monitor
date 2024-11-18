@@ -5,6 +5,7 @@ package deps
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"os/exec"
 	"strings"
@@ -12,8 +13,38 @@ import (
 	"github.com/guackamolly/zero-monitor/internal/data/models"
 )
 
+var (
+	supportedPkgManagers = []string{"dpkg", "yum", "dnf", "pacman"}
+	systemPkgManager     string
+)
+
 func list() ([]models.Package, error) {
-	return listDpkg()
+	pm, err := packageManager()
+	if err != nil {
+		return nil, err
+	}
+
+	switch pm {
+	case "dpkg":
+		return listDpkg()
+	default:
+		return nil, fmt.Errorf("function not implemented yet for pm: %s", pm)
+	}
+
+}
+
+func packageManager() (string, error) {
+	if len(systemPkgManager) != 0 {
+		return systemPkgManager, nil
+	}
+
+	for _, pm := range supportedPkgManagers {
+		if _, err := exec.LookPath(pm); err == nil {
+			return pm, nil
+		}
+	}
+
+	return "", fmt.Errorf("system package manager is not recognized")
 }
 
 func listDpkg() ([]models.Package, error) {
