@@ -1,0 +1,32 @@
+name: Release
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - .version
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Build binaries to dist/
+        run: |
+          ./tools/build
+
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
+        with:
+          tag_name: ${{ steps.get_version.outputs.version }}
+          release_name: Release ${{ steps.get_version.outputs.version }}
+          draft: false
+          prerelease: true
+
+      - name: Upload Release Assets
+        uses: actions/upload-release-asset@v1
+        if: steps.create-release.conclusion == 'success'
+        with:
+          upload_url: ${{ steps.create-release.outputs.upload_url }}
+          asset_path: dist/*
