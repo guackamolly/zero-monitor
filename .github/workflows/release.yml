@@ -14,7 +14,8 @@ jobs:
 
       - name: Build binaries to dist/
         run: |
-          ./tools/build
+          ./tools/build master
+          ./tools/build node
 
       - name: Create GitHub Release
         uses: actions/create-release@v1
