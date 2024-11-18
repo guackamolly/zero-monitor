@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+root="$(dirname "$0")/.."
+version_file="$root/.version"
+
+if [[ ! "$(cat "$version_file")" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)(-[a-zA-Z0-9]+)?$ ]]; then
+    echo "Invalid semantic version"
+    exit 1
+fi
+
+major="${BASH_REMATCH[1]}"
+minor="${BASH_REMATCH[2]}"
+patch="${BASH_REMATCH[3]}"
+commit_id="$(git rev-parse HEAD)"
+
+version="$major.$minor.$patch-$commit_id"
+echo "$version" >"$version_file"
+echo "$version"
