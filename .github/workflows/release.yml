@@ -17,11 +17,15 @@ jobs:
           ./tools/build master
           ./tools/build node
 
+      - name: Prepare Version Tag
+        id: version_tag
+        run: "cat .version"
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          name: Release ${{ steps.get_version.outputs.version }}
-          tag_name: ${{ steps.get_version.outputs.version }}
+          name: Release ${{ steps.version_tag.outputs }}
+          tag_name: ${{ steps.version_tag.outputs }}
           files: dist/*
           draft: false
           prerelease: true
