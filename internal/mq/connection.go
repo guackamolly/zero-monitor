@@ -37,17 +37,13 @@ func ConnectPublish(s Socket) error {
 func ConnectSubscribe(s Socket) error {
 	ip := subHostIP()
 
-	if len(mqSubPort) > 0 {
-		return s.Listen(fmt.Sprintf("tcp://[%s]:%s", ip, mqSubPort))
+	// if port is unspecified, default to 0 so go internals
+	// choose a random available port
+	if len(mqSubPort) == 0 {
+		mqSubPort = "0"
 	}
 
-	conn, err := conn.FindAvailableTcpPort(ip)
-	if err != nil {
-		return fmt.Errorf("couldn't find a port available for TCP connections, %v", err)
-	}
-	conn.Close()
-
-	return s.Listen(fmt.Sprintf("tcp://%s", conn.Addr()))
+	return s.Listen(fmt.Sprintf("tcp://[%s]:%s", ip, mqSubPort))
 }
 
 func Close(s Socket) error {
