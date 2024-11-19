@@ -8,6 +8,7 @@ import (
 	"github.com/guackamolly/zero-monitor/internal/logging"
 	"github.com/guackamolly/zero-monitor/pkg/deps"
 	"github.com/jaypipes/ghw"
+	"github.com/jaypipes/ghw/pkg/option"
 	"github.com/shirou/gopsutil/cpu"
 	"github.com/shirou/gopsutil/disk"
 	"github.com/shirou/gopsutil/host"
@@ -15,6 +16,11 @@ import (
 	nett "github.com/shirou/gopsutil/net"
 	"github.com/shirou/gopsutil/process"
 )
+
+// todo: disable warnings only on release builds
+var ghwOptions = []*option.Option{
+	ghw.WithDisableWarnings(),
+}
 
 type GopsUtilSystemRepository struct {
 	TotalRx uint64
@@ -89,7 +95,7 @@ func (r GopsUtilSystemRepository) Info() (models.MachineInfo, error) {
 	}
 
 	dsks := []models.DiskInfo{}
-	block, err := ghw.Block()
+	block, err := ghw.Block(ghwOptions...)
 	if err != nil {
 		logging.LogWarning("couldn't fetch disks info, %v", err)
 		block = &ghw.BlockInfo{}
@@ -100,17 +106,25 @@ func (r GopsUtilSystemRepository) Info() (models.MachineInfo, error) {
 	}
 
 	gpus := []models.GPUInfo{}
-	gpu, err := ghw.GPU()
+	gpu, err := ghw.GPU(ghwOptions...)
 	if err != nil {
 		logging.LogWarning("couldn't fetch gpus info, %v", err)
 		gpu = &ghw.GPUInfo{}
 	}
 	for _, d := range gpu.GraphicsCards {
+		if d.DeviceInfo == nil {
+			continue
+		}
+
+		if d.DeviceInfo.Product == nil || d.DeviceInfo.Vendor == nil {
+			continue
+		}
+
 		info := models.NewGPUInfo(d.DeviceInfo.Product.Name, d.DeviceInfo.Vendor.Name)
 		gpus = append(gpus, info)
 	}
 
-	product, err := ghw.Product()
+	product, err := ghw.Product(ghwOptions...)
 	if err != nil {
 		logging.LogWarning("couldn't fetch product info, %v", err)
 		product = &ghw.ProductInfo{}
