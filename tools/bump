@@ -16,3 +16,9 @@ commit_id="$(git rev-parse HEAD)"
 version="$major.$minor.$patch-$commit_id"
 echo "$version" >"$version_file"
 echo "$version"
+
+if [ "$1" == "--push" ]; then
+    git add "$version_file"
+    git commit -m "chore: bump test version"
+    git push
+fi
