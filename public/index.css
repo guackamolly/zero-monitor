@@ -357,6 +357,7 @@ button {
     flex-direction: row;
     justify-content: center;
     gap: 1%;
+    width: 100%;
 }
 
 .node-stat-block {
