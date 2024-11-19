@@ -207,9 +207,14 @@ func TestDurationString(t *testing.T) {
 			output: "50 min",
 		},
 		{
-			desc:   "if value is more than an hour, String() should use internal time.Duration format",
+			desc:   "if value is more than an hour, String() should have h m s format",
 			input:  models.Duration(72 * time.Minute),
-			output: "1h12m0s",
+			output: "1h 12m 0s",
+		},
+		{
+			desc:   "if value is more than an hour, String() should have d h format",
+			input:  models.Duration(1500 * time.Minute),
+			output: "1d 1h",
 		},
 	}
 	for _, tC := range testCases {
