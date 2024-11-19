@@ -35,7 +35,8 @@ func main() {
 	ctx = mq.InjectSubscribeContainer(ctx, suc)
 
 	// 3. Initialize sub server.
-	mq.LoadAsymmetricBlock(false)
+	loadCrypto()
+
 	s := initializeSubServer(ctx)
 	defer s.Close()
 
@@ -71,6 +72,13 @@ func saveConfig(s *service.MasterConfigurationService) {
 	err := s.Save()
 	if err != nil {
 		log.Printf("failed to save config, %v", err)
+	}
+}
+
+func loadCrypto() {
+	err := mq.LoadAsymmetricBlock(false)
+	if err != nil {
+		logging.LogFatal("failed to load message queue private key, %v", err)
 	}
 }
 

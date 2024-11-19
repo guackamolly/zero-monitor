@@ -25,7 +25,7 @@ func main() {
 	logging.AddLogger(logging.NewConsoleLogger())
 
 	// 2. Initialize pub server.
-	mq.LoadAsymmetricBlock(true)
+	loadCrypto()
 	s := mq.NewPubSocket(ctx)
 	defer s.Close()
 
@@ -40,6 +40,13 @@ func main() {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
 	<-c
+}
+
+func loadCrypto() {
+	err := mq.LoadAsymmetricBlock(true)
+	if err != nil {
+		logging.LogFatal("failed to load message queue public key, %v", err)
+	}
 }
 
 func createPublishContainer() mq.PublishContainer {
