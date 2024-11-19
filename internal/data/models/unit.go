@@ -17,6 +17,8 @@ const (
 
 	m  = 1
 	km = 1000 * m
+
+	day = time.Hour * 24
 )
 
 type Percent float64
@@ -82,7 +84,12 @@ func (v Duration) String() string {
 		return fmt.Sprintf("%0.0f min", d.Minutes())
 	}
 
-	return d.String()
+	if d < day {
+		return fmt.Sprintf("%dh %dm %ds", int(d.Hours()), int(d.Minutes())%60, int(d.Seconds())%60)
+	}
+
+	days := int(d / day)
+	return fmt.Sprintf("%dd %dh", days, int(d.Hours())%24)
 }
 
 func (v IORate) String() string {
