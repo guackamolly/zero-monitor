@@ -12,6 +12,8 @@ server_virtual_host=/
 server_public_root=web/
 
 # Message queue configuration
+mq_sub_host=0.0.0.0
+mq_sub_port=36113
 
 ## If these variables aren't filled, pem/pub files are lookup on configuration directory
 mq_transport_pem_key=
