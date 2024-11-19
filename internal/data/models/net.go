@@ -31,6 +31,29 @@ func NewAddress(
 	}
 }
 
+func NewNetAddress(
+	addr net.Addr,
+) (Address, error) {
+	var ip net.IP
+	var port int
+
+	switch c := addr.(type) {
+	case *net.TCPAddr:
+		ip = c.IP
+		port = c.Port
+	case *net.UDPAddr:
+		ip = c.IP
+		port = c.Port
+	default:
+		return Address{}, fmt.Errorf("unsupported addr: %v", addr)
+	}
+
+	return Address{
+		IP:   []byte(ip),
+		Port: uint16(port),
+	}, nil
+}
+
 func NewConnection(
 	kind uint32,
 	state string,
