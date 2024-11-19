@@ -372,6 +372,7 @@ button {
     justify-content: space-between;
     border-bottom-style: solid;
     border-bottom-color: var(--border);
+    flex-wrap: wrap;
     width: 100%;
 }
 
