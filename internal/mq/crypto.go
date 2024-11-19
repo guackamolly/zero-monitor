@@ -17,8 +17,8 @@ import (
 )
 
 const (
-	mqTransportPrivateKeyFileEnvKey = ""
-	mqTransportPublicKeyFileEnvKey  = ""
+	mqTransportPrivateKeyFileEnvKey = "mq_transport_pem_key"
+	mqTransportPublicKeyFileEnvKey  = "mq_transport_pub_key"
 )
 
 var (
