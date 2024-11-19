@@ -42,7 +42,7 @@ func main() {
 	defer s.Close()
 
 	// 4. Initialize beacon server.
-	uconn := initializeBeaconServer(addrToConn(s.Addr()))
+	uconn := initializeBeaconServer(translateAddr(s.Addr()))
 	defer uconn.Close()
 
 	// 4. Initialize database.
@@ -81,16 +81,9 @@ func saveConfig(s *service.MasterConfigurationService) {
 }
 
 func initializeSubServer(ctx context.Context) mq.Socket {
-	// Find available TCP port.
-	tconn := findAvailableTcpPort()
-	taddr := tconn.Addr().(*net.TCPAddr)
-
-	// Initialize sub server.
-	tconn.Close()
-
 	s := mq.NewSubSocket(ctx)
 	s.RegisterSubscriptions()
-	err := mq.ConnectSubscribe(s, taddr.IP, taddr.Port)
+	err := mq.ConnectSubscribe(s)
 	if err != nil {
 		s.Close()
 		log.Fatalf("coudln't open zeromq sub socket, %v\n", err)
@@ -100,12 +93,15 @@ func initializeSubServer(ctx context.Context) mq.Socket {
 	return s
 }
 
-func initializeBeaconServer(subConn conn.Connection) *net.UDPConn {
-	// Find available UDP ports.
-	uconn := findAvailableUdpPort()
+func initializeBeaconServer(subAddr models.Address) *net.UDPConn {
+	// Find available UDP port.
+	uconn, err := conn.FindAvailableUdpPort(net.IP(subAddr.IP))
+	if err != nil {
+		log.Fatalf("couldn't find an UDP port available for incoming requests, %err\n", err)
+	}
 
 	// Initialize beacon server.
-	conn.StartBeaconServer(uconn, subConn)
+	conn.StartBeaconServer(uconn, subAddr)
 	log.Printf("started udp beacon server on addr: %s\n", uconn.LocalAddr())
 
 	return uconn
@@ -142,36 +138,13 @@ func initializeDatabase() dbb.Database {
 	return db
 }
 
-func addrToConn(addr net.Addr) conn.Connection {
-	switch c := addr.(type) {
-	case *net.TCPAddr:
-		return conn.Connection{Port: c.Port, IP: c.IP}
-	case *net.UDPAddr:
-		return conn.Connection{Port: c.Port, IP: c.IP}
-	}
-
-	logging.LogFatal("couldn't convert %v to conn.Connection", addr)
-	return conn.Connection{}
-}
-
-func findAvailableTcpPort() *net.TCPListener {
-	log.Println("finding a TCP port available for incoming requests...")
-	tconn, err := conn.FindAvailableTcpPort(conn.NetworkIP)
+func translateAddr(addr net.Addr) models.Address {
+	taddr, err := models.NewNetAddress(addr)
 	if err != nil {
-		log.Fatalf("couldn't find a TCP port available for incoming requests, %err\n", err)
+		logging.LogFatal("failed to understand addr %v, %v", addr, err)
 	}
 
-	return tconn
-}
-
-func findAvailableUdpPort() *net.UDPConn {
-	log.Println("finding an UDP port available for incoming requests...")
-	uconn, err := conn.FindAvailableUdpPort(conn.NetworkIP)
-	if err != nil {
-		log.Fatalf("couldn't find an UDP port available for incoming requests, %err\n", err)
-	}
-
-	return uconn
+	return taddr
 }
 
 func createServiceContainer(

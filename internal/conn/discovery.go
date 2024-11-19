@@ -14,16 +14,13 @@ const maxParallelBeacons = 5
 
 // A node must wait at most 2 seconds for a response from the master node.
 // Two seconds is more than enough for a reply since beacons are sent in broadcast on the local network.
-const beaconReplyWaitDuration = 2 * time.Second
-
-var NetworkIP = net.IPv4(127, 0, 0, 1)
-var broadcastIP = net.IPv4(127, 0, 0, 1)
+const beaconReplyWaitDuration = 15 * time.Second
 
 // starts broadcasting beacon probes in the local network, on all known ports
 // that a master node could be registered in.
-func StartBeaconBroadcast() (Connection, error) {
+func StartBeaconBroadcast() (models.Address, error) {
 	type result struct {
-		conn Connection
+		conn models.Address
 		err  error
 	}
 
@@ -46,6 +43,7 @@ func StartBeaconBroadcast() (Connection, error) {
 			go func() {
 				log.Printf("sending broadcast beacon on port %d\n", p)
 				conn, err := broadcastProbeBeacon(p)
+				fmt.Printf("err: %v\n", err)
 
 				if err != nil {
 					return
@@ -121,22 +119,22 @@ func FindAvailableUdpPort(
 }
 
 // sends a broadcast probe beacon and waits for a response
-func broadcastProbeBeacon(port uint16) (Connection, error) {
-	addr := net.UDPAddr{IP: broadcastIP, Port: int(port)}
+func broadcastProbeBeacon(port uint16) (models.Address, error) {
+	addr := net.UDPAddr{IP: net.IPv4(255, 255, 255, 255), Port: int(port)}
 	conn, err := net.DialUDP("udp", nil, &addr)
 	if err != nil {
-		return Connection{}, err
+		return models.Address{}, err
 	}
 
 	defer conn.Close()
 	bs, err := models.Encode(compose(probeKey))
 	if err != nil {
-		return Connection{}, err
+		return models.Address{}, err
 	}
 
 	_, err = conn.Write(bs)
 	if err != nil {
-		return Connection{}, err
+		return models.Address{}, err
 	}
 
 	// close to local address
@@ -145,7 +143,7 @@ func broadcastProbeBeacon(port uint16) (Connection, error) {
 	laddr := conn.LocalAddr()
 	conn, err = net.ListenUDP("udp", laddr.(*net.UDPAddr))
 	if err != nil {
-		return Connection{}, err
+		return models.Address{}, err
 	}
 	defer conn.Close()
 
@@ -154,27 +152,27 @@ func broadcastProbeBeacon(port uint16) (Connection, error) {
 	// then 10 seconds is more than enough more the master node to answer
 	err = conn.SetDeadline(time.Now().Add(10 * time.Second))
 	if err != nil {
-		return Connection{}, err
+		return models.Address{}, err
 	}
 
 	buf := make([]byte, 1024)
 	_, _, err = conn.ReadFromUDP(buf)
 	if err != nil {
-		return Connection{}, err
+		return models.Address{}, err
 	}
 
 	d, err := models.Decode[msg](buf)
 	if err != nil {
-		return Connection{}, err
+		return models.Address{}, err
 	}
 
 	if d.Key != helloKey {
-		return Connection{}, fmt.Errorf("received unknown response after sending probe beacon, %v", d)
+		return models.Address{}, fmt.Errorf("received unknown response after sending probe beacon, %v", d)
 	}
 
-	subConn, ok := d.Data.(Connection)
+	subConn, ok := d.Data.(models.Address)
 	if !ok {
-		return Connection{}, fmt.Errorf("couldn't parse data to Connection struct, %v", d.Data)
+		return models.Address{}, fmt.Errorf("couldn't parse data to Connection struct, %v", d.Data)
 	}
 
 	return subConn, nil

@@ -7,14 +7,9 @@ import (
 	"github.com/guackamolly/zero-monitor/internal/data/models"
 )
 
-type Connection struct {
-	Port int
-	IP   net.IP
-}
-
 // starts the master node beacon server, which listens for
 // UDP probe beacon requests on the local network.
-func StartBeaconServer(conn *net.UDPConn, subConn Connection) {
+func StartBeaconServer(conn *net.UDPConn, subAddr models.Address) {
 	go func() {
 		defer conn.Close()
 		for {
@@ -38,7 +33,7 @@ func StartBeaconServer(conn *net.UDPConn, subConn Connection) {
 			log.Printf("received probe beacon from %v\n", addr)
 
 			go func() {
-				b, err := models.Encode(compose(helloKey, subConn))
+				b, err := models.Encode(compose(helloKey, subAddr))
 				if err != nil {
 					log.Printf("failed to encode beacon reply data, %v", err)
 					return

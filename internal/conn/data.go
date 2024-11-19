@@ -4,6 +4,7 @@ import (
 	"encoding/gob"
 
 	"github.com/guackamolly/zero-monitor/internal"
+	"github.com/guackamolly/zero-monitor/internal/data/models"
 )
 
 type msg struct {
@@ -13,7 +14,7 @@ type msg struct {
 }
 
 func init() {
-	gob.Register(Connection{})
+	gob.Register(models.Address{})
 }
 
 func compose(key byte, data ...any) msg {
