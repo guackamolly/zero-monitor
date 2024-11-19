@@ -5,7 +5,6 @@ import (
 	"net"
 	"os"
 
-	"github.com/guackamolly/zero-monitor/internal/conn"
 	"github.com/guackamolly/zero-monitor/internal/logging"
 )
 
@@ -25,12 +24,7 @@ func ConnectPublish(s Socket) error {
 		return s.Dial(fmt.Sprintf("tcp://[%s]:%s", mqSubHost, mqSubPort))
 	}
 
-	conn, err := conn.StartBeaconBroadcast()
-	if err != nil {
-		return err
-	}
-
-	return s.Dial(fmt.Sprintf("tcp://[%s]:%d", conn.IP, conn.Port))
+	return fmt.Errorf("sub host and port haven't been provided")
 }
 
 // Connects a socket for subscribing messages from reporting nodes.

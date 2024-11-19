@@ -3,14 +3,12 @@ package main
 import (
 	"context"
 	"log"
-	"net"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
 	"github.com/guackamolly/zero-monitor/internal/config"
-	"github.com/guackamolly/zero-monitor/internal/conn"
 	dbb "github.com/guackamolly/zero-monitor/internal/data/db"
 	dbbolt "github.com/guackamolly/zero-monitor/internal/data/db/db-bolt"
 	"github.com/guackamolly/zero-monitor/internal/data/models"
@@ -40,10 +38,6 @@ func main() {
 	mq.LoadAsymmetricBlock(false)
 	s := initializeSubServer(ctx)
 	defer s.Close()
-
-	// 4. Initialize beacon server.
-	uconn := initializeBeaconServer(translateAddr(s.Addr()))
-	defer uconn.Close()
 
 	// 4. Initialize database.
 	db := initializeDatabase()
@@ -93,20 +87,6 @@ func initializeSubServer(ctx context.Context) mq.Socket {
 	return s
 }
 
-func initializeBeaconServer(subAddr models.Address) *net.UDPConn {
-	// Find available UDP port.
-	uconn, err := conn.FindAvailableUdpPort(net.IP(subAddr.IP))
-	if err != nil {
-		log.Fatalf("couldn't find an UDP port available for incoming requests, %err\n", err)
-	}
-
-	// Initialize beacon server.
-	conn.StartBeaconServer(uconn, subAddr)
-	log.Printf("started udp beacon server on addr: %s\n", uconn.LocalAddr())
-
-	return uconn
-}
-
 func initializeHttpServer(ctx context.Context) *echo.Echo {
 	// Initialize echo framework.
 	e := echo.New()
@@ -136,15 +116,6 @@ func initializeDatabase() dbb.Database {
 	}
 
 	return db
-}
-
-func translateAddr(addr net.Addr) models.Address {
-	taddr, err := models.NewNetAddress(addr)
-	if err != nil {
-		logging.LogFatal("failed to understand addr %v, %v", addr, err)
-	}
-
-	return taddr
 }
 
 func createServiceContainer(

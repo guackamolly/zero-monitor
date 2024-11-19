@@ -12,6 +12,8 @@ import (
 	"github.com/guackamolly/zero-monitor/internal/mq"
 	"github.com/guackamolly/zero-monitor/internal/service"
 	"github.com/showwin/speedtest-go/speedtest"
+
+	_ "github.com/joho/godotenv/autoload"
 )
 
 func main() {
