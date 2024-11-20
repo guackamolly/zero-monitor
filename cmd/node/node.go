@@ -13,6 +13,7 @@ import (
 	"github.com/guackamolly/zero-monitor/internal/service"
 	"github.com/showwin/speedtest-go/speedtest"
 
+	_ "github.com/guackamolly/zero-monitor/internal/build"
 	_ "github.com/joho/godotenv/autoload"
 )
 

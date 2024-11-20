@@ -20,6 +20,7 @@ import (
 	"github.com/guackamolly/zero-monitor/internal/service"
 	"github.com/labstack/echo/v4"
 
+	_ "github.com/guackamolly/zero-monitor/internal/build"
 	_ "github.com/joho/godotenv/autoload"
 )
 

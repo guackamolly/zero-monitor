@@ -14,6 +14,8 @@ dists=(
 )
 
 root="$(dirname "$0")/.."
+version="$(cat $root/.version)"
+build_pkg="github.com/guackamolly/zero-monitor/internal/build"
 
 target="$1"
 target_path="cmd/$target/$target.go"
@@ -33,7 +35,7 @@ for dist in ${dists[@]}; do
     os_arch=(${dist//\// })
     echo "> Building $dist"
 
-    env GOOS=${os_arch[0]} GOARCH=${os_arch[1]} go build -ldflags="-extldflags=-static -s -w" -o "$dist_path/${target}_${os_arch[0]}_${os_arch[1]}" "$target_path"
+    env GOOS=${os_arch[0]} GOARCH=${os_arch[1]} go build -ldflags="-X $build_pkg.version=$version -extldflags=-static -s -w" -o "$dist_path/${target}_${os_arch[0]}_${os_arch[1]}" "$target_path"
     if [[ ! $? -eq 0 ]]; then
         echo "Couldn't build for $dist."
     fi
