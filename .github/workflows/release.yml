@@ -19,13 +19,13 @@ jobs:
 
       - name: Prepare Version Tag
         id: version_tag
-        run: "cat .version >> $GITHUB_OUTPUT"
+        run: "echo version=$(cat .version) >> $GITHUB_OUTPUT"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          name: Release ${{ steps.version_tag.outputs }}
-          tag_name: ${{ steps.version_tag.outputs }}
+          name: Release ${{ steps.version_tag.outputs.version }}
+          tag_name: ${{ steps.version_tag.outputs.version }}
           files: dist/*
           draft: false
           prerelease: true
