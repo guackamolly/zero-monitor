@@ -101,7 +101,7 @@ func (r GopsUtilSystemRepository) Info() (models.MachineInfo, error) {
 		block = &ghw.BlockInfo{}
 	}
 	for _, d := range block.Disks {
-		info := models.NewDiskInfo(d.SizeBytes, d.Model, d.DriveType.String(), d.StorageController.String())
+		info := models.NewDiskInfo(d.SizeBytes, d.Name, d.Model, d.DriveType.String(), d.StorageController.String())
 		dsks = append(dsks, info)
 	}
 

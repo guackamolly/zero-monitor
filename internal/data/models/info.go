@@ -23,6 +23,7 @@ type RAMInfo struct {
 
 type DiskInfo struct {
 	Total Memory
+	Name  string
 	Model string
 	Type  string
 	Kind  string
@@ -74,12 +75,14 @@ func NewRAMInfo(
 
 func NewDiskInfo(
 	total uint64,
+	name string,
 	model string,
 	ttype string,
 	kind string,
 ) DiskInfo {
 	return DiskInfo{
 		Total: Memory(total),
+		Name:  name,
 		Model: model,
 		Type:  ttype,
 		Kind:  kind,

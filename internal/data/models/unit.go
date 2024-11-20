@@ -2,6 +2,7 @@ package models
 
 import (
 	"fmt"
+	"math"
 	"time"
 )
 
@@ -47,18 +48,18 @@ func (v Memory) String() string {
 	}
 
 	if v < mb {
-		return fmt.Sprintf("%d KB", v/kb)
+		return fmt.Sprintf("%0.0f KB", math.Round(float64(v)/kb))
 	}
 
 	if v < gb {
-		return fmt.Sprintf("%d MB", v/mb)
+		return fmt.Sprintf("%0.0f MB", math.Round(float64(v)/mb))
 	}
 
 	if v < tb {
-		return fmt.Sprintf("%d GB", v/gb)
+		return fmt.Sprintf("%0.0f GB", math.Round(float64(v)/gb))
 	}
 
-	return fmt.Sprintf("%d TB", v/tb)
+	return fmt.Sprintf("%0.0f TB", math.Round(float64(v)/tb))
 }
 
 func (v Duration) String() string {

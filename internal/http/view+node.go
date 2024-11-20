@@ -104,7 +104,7 @@ func (v NodeView) Disk(idx int) string {
 	}
 
 	dsk := v.Info.Disk[idx]
-	return fmt.Sprintf("%s %s - %s (%s)", dsk.Type, dsk.Kind, dsk.Model, dsk.Total)
+	return fmt.Sprintf("%s %s - %s (%s %s)", dsk.Type, dsk.Kind, dsk.Model, dsk.Name, dsk.Total)
 }
 
 func (v NodeView) GPU(idx int) string {
