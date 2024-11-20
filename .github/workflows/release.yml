@@ -19,7 +19,7 @@ jobs:
 
       - name: Prepare Version Tag
         id: version_tag
-        run: "cat .version"
+        run: "cat .version >> $GITHUB_OUTPUT"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
