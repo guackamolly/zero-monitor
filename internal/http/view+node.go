@@ -2,6 +2,7 @@ package http
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/guackamolly/zero-monitor/internal/data/models"
@@ -15,6 +16,20 @@ func (v NodeView) Hostname() string {
 
 func (v NodeView) OS() string {
 	return v.Info.OS.OS
+}
+
+func (v NodeView) OSType() string {
+	os := v.OS()
+	distro := v.Distribution()
+	if os != "linux" {
+		return os
+	}
+
+	if strings.HasPrefix(distro, "raspbian") {
+		return "raspbian"
+	}
+
+	return os
 }
 
 func (v NodeView) Distribution() string {

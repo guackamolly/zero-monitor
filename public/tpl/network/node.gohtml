@@ -3,6 +3,7 @@
     <legend>
         {{.Hostname}} {{ if not .Online }}<span
             class="offline">(offline)</span>{{ end }}
+        {{ template "os-icon" .OSType }}
         <a href="network/{{.ID}}">+</a>
     </legend>
     <div class="node-stat-block">
