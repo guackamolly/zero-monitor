@@ -9,6 +9,10 @@ import (
 
 func RegisterHandlers(e *echo.Echo) {
 	e.GET(rootRoute, rootHandler)
+
+	e.GET(dashboardRoute, dashboardHandler)
+	e.POST(dashboardRoute, dashboardFormHandler)
+
 	e.GET(networkRoute, networkHandler)
 	e.GET(networkIdRoute, networkIdHandler)
 	e.GET(networkIdConnectionsRoute, networkIdConnectionsHandler)

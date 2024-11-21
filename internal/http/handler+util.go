@@ -1,6 +1,7 @@
 package http
 
 import (
+	"net/url"
 	"strconv"
 	"strings"
 
@@ -75,4 +76,29 @@ func RenderString(ectx echo.Context, tpl string, v any) (string, error) {
 	}
 
 	return buf.String(), nil
+}
+
+// Composes an URL relative to the server host.
+func URL(ectx echo.Context, path string, query map[string]string) url.URL {
+	var qb strings.Builder
+
+	c := 0
+	for k, v := range query {
+		if c > 0 {
+			qb.WriteByte('&')
+		}
+
+		qb.WriteString(k)
+		qb.WriteByte('=')
+		qb.WriteString(v)
+
+		c++
+	}
+
+	return url.URL{
+		Scheme:   ectx.Scheme(),
+		Host:     ectx.Request().Host,
+		Path:     path,
+		RawQuery: qb.String(),
+	}
 }

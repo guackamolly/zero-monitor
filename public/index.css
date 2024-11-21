@@ -256,6 +256,10 @@ button {
     margin-bottom: 8px;
 }
 
+.min {
+    width: min-content;
+}
+
 .speedtest>span {
     display: flex;
     flex-direction: row;

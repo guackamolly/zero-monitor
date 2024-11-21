@@ -15,7 +15,12 @@ import (
 type TestEchoContext struct {
 	echo.Context
 	request     *http.Request
+	scheme      string
 	redirectUri string
+}
+
+func (ectx TestEchoContext) Scheme() string {
+	return ectx.scheme
 }
 
 func (ectx TestEchoContext) Request() *http.Request {
@@ -31,6 +36,7 @@ func (ectx *TestEchoContext) Redirect(code int, path string) error {
 func ContextWithRequest(req *http.Request) *TestEchoContext {
 	return &TestEchoContext{
 		request: req,
+		scheme:  "http",
 	}
 }
 
@@ -165,6 +171,66 @@ func TestExtractBreakpoint(t *testing.T) {
 			bp, ok := sut.ExtractBreakpoint(tC.input)
 			if tC.breakpoint != bp || tC.ok != ok {
 				t.Errorf("expected (%v, %v), but got (%v, %v)", tC.breakpoint, tC.ok, bp, ok)
+			}
+		})
+	}
+}
+
+func TestURL(t *testing.T) {
+	req := &http.Request{URL: NetURL("http://zero.monitor"), Host: "zero.monitor"}
+	ectx := ContextWithRequest(req)
+
+	testCases := []struct {
+		desc   string
+		path   string
+		query  map[string]string
+		output url.URL
+	}{
+		{
+			desc:   "does not include query parameters if query is nil",
+			path:   "foo",
+			query:  nil,
+			output: *NetURL("http://zero.monitor/foo"),
+		},
+		{
+			desc:   "include query parameters if query is not nil",
+			path:   "foo",
+			query:  map[string]string{"bar": "3"},
+			output: *NetURL("http://zero.monitor/foo?bar=3"),
+		},
+		{
+			desc:   "is capable of handling multiple query parameters",
+			path:   "foo",
+			query:  map[string]string{"bar": "3", "bool": "true", "literal": "'quote'"},
+			output: *NetURL("http://zero.monitor/foo?bar=3&bool=true&literal='quote'"),
+		},
+		{
+			desc:   "handles empty path",
+			path:   "",
+			output: *NetURL("http://zero.monitor"),
+		},
+		{
+			desc:   "handles empty path with query parameters",
+			path:   "",
+			query:  map[string]string{"bar": "3"},
+			output: *NetURL("http://zero.monitor?bar=3"),
+		},
+		{
+			desc:   "handles root path",
+			path:   "/",
+			output: *NetURL("http://zero.monitor/"),
+		},
+		{
+			desc:   "handles root path with query parameters",
+			path:   "/",
+			query:  map[string]string{"bar": "3"},
+			output: *NetURL("http://zero.monitor/?bar=3"),
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			if output := sut.URL(ectx, tC.path, tC.query); output.String() != tC.output.String() {
+				t.Errorf("expected %v, but got %v", tC.output.String(), output.String())
 			}
 		})
 	}
