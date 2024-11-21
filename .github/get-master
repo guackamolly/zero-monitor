@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+
+new_issue_url="https://github.com/guackamolly/zero-monitor/issues/new"
+install_dir="$HOME/.config/zero-monitor/"
+if [ ! -d "$install_dir" ]; then
+    mkdir -p "$install_dir"
+fi
+
+bin_path="$install_dir/master"
+
+fatal() {
+    printf "$1\n"
+    exit 1
+}
+
+# Query host OS and CPU architecture to precisely select binary to download.
+case "$(uname -s)" in
+Linux) os="linux" ;;
+Darwin) os="darwin" ;;
+*) fatal ""$(uname -s)" isn't supported right now, please raise an issue to get support on this OS.\n$new_issue_url" ;;
+esac
+
+case "$(uname -m)" in
+x86_64) arch="amd64" ;;
+i386) arch="386" ;;
+aarch64) arch="arm64" ;;
+arm64) arch="arm64" ;;
+armv7l) arch="arm" ;;
+*) fatal ""$(uname -m)" isn't supported right now, please raise an issue to get support on this architecture.\n$new_issue_url" ;;
+esac
+
+# Head latest release
+url="https://api.github.com/repos/guackamolly/zero-monitor/releases/latest"
+response=$(curl -s "$url")
+status="$(echo $response | jq .status)"
+if [ "$status" != "200" ]; then
+    fatal "Failed to head release, please raise an issue to alert maintainers about this bug.\n$new_issue_url"
+fi
+
+latest_release_version="$(echo $response | jq .tag_name)"
+if [ -z "$latest_release_version" ]; then
+    fatal "Failed to extract release version, please raise an issue to alert maintainers about this bug.\n$new_issue_url"
+fi
+
+# If current version is the same as the latest release version, no need to download it again.
+if [ "$latest_release_version" == "$(./$bin_path -version)" ]; then
+    exec $bin_path
+fi
+
+# Download the binary.
+download_url="$(echo $response | jq -r '.assets[] | select(.name == "master_'${os}'_'${arch}'") | .browser_download_url')"
+curl -L "$download_url" -o "$bin_dir"
+chmod +x "$bin_dir"
+
+# Run the binary.
+exec $bin_path
