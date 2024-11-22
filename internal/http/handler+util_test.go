@@ -184,47 +184,47 @@ func TestURL(t *testing.T) {
 		desc   string
 		path   string
 		query  map[string]string
-		output url.URL
+		output *url.URL
 	}{
 		{
 			desc:   "does not include query parameters if query is nil",
 			path:   "foo",
 			query:  nil,
-			output: *NetURL("http://zero.monitor/foo"),
+			output: NetURL("http://zero.monitor/foo"),
 		},
 		{
 			desc:   "include query parameters if query is not nil",
 			path:   "foo",
 			query:  map[string]string{"bar": "3"},
-			output: *NetURL("http://zero.monitor/foo?bar=3"),
+			output: NetURL("http://zero.monitor/foo?bar=3"),
 		},
 		{
 			desc:   "is capable of handling multiple query parameters",
 			path:   "foo",
 			query:  map[string]string{"bar": "3", "bool": "true", "literal": "'quote'"},
-			output: *NetURL("http://zero.monitor/foo?bar=3&bool=true&literal='quote'"),
+			output: NetURL("http://zero.monitor/foo?bar=3&bool=true&literal='quote'"),
 		},
 		{
 			desc:   "handles empty path",
 			path:   "",
-			output: *NetURL("http://zero.monitor"),
+			output: NetURL("http://zero.monitor"),
 		},
 		{
 			desc:   "handles empty path with query parameters",
 			path:   "",
 			query:  map[string]string{"bar": "3"},
-			output: *NetURL("http://zero.monitor?bar=3"),
+			output: NetURL("http://zero.monitor?bar=3"),
 		},
 		{
 			desc:   "handles root path",
 			path:   "/",
-			output: *NetURL("http://zero.monitor/"),
+			output: NetURL("http://zero.monitor/"),
 		},
 		{
 			desc:   "handles root path with query parameters",
 			path:   "/",
 			query:  map[string]string{"bar": "3"},
-			output: *NetURL("http://zero.monitor/?bar=3"),
+			output: NetURL("http://zero.monitor/?bar=3"),
 		},
 	}
 	for _, tC := range testCases {

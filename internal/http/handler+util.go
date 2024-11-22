@@ -79,7 +79,7 @@ func RenderString(ectx echo.Context, tpl string, v any) (string, error) {
 }
 
 // Composes an URL relative to the server host.
-func URL(ectx echo.Context, path string, query map[string]string) url.URL {
+func URL(ectx echo.Context, path string, query map[string]string) *url.URL {
 	var qb strings.Builder
 
 	c := 0
@@ -95,7 +95,7 @@ func URL(ectx echo.Context, path string, query map[string]string) url.URL {
 		c++
 	}
 
-	return url.URL{
+	return &url.URL{
 		Scheme:   ectx.Scheme(),
 		Host:     ectx.Request().Host,
 		Path:     path,
