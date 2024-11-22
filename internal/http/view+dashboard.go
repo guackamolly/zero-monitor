@@ -11,8 +11,8 @@ type DashboardView struct {
 }
 
 type DashboardNetworkInviteLinkView struct {
-	URL       string
-	ExpiresAt time.Time
+	Code models.JoinNetworkCode
+	URL  string
 }
 
 func (v DashboardView) WithInviteLink(
@@ -23,11 +23,11 @@ func (v DashboardView) WithInviteLink(
 }
 
 func (v DashboardView) ShowInviteLink() bool {
-	return v.InviteLink.URL != "" && v.InviteLink.ExpiresAt.After(time.Now())
+	return v.InviteLink.URL != "" && !v.InviteLink.Code.Expired()
 }
 
 func (v DashboardNetworkInviteLinkView) Expiry() string {
-	return models.Duration(time.Until(v.ExpiresAt)).String()
+	return models.Duration(time.Until(v.Code.ExpiresAt)).String()
 }
 
 func NewDashboardView() DashboardView {
@@ -36,10 +36,10 @@ func NewDashboardView() DashboardView {
 
 func NewDashNetworkInviteLinkView(
 	url string,
-	expiresAt time.Time,
+	code models.JoinNetworkCode,
 ) DashboardNetworkInviteLinkView {
 	return DashboardNetworkInviteLinkView{
-		URL:       url,
-		ExpiresAt: expiresAt,
+		Code: code,
+		URL:  url,
 	}
 }

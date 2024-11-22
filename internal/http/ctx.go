@@ -19,6 +19,7 @@ type ServiceContainer struct {
 	NodeCommander       *service.NodeCommanderService
 	NodeSpeedtest       *service.NodeSpeedtestService
 	MasterConfiguration *service.MasterConfigurationService
+	Network             *service.NetworkService
 }
 
 func InjectServiceContainer(

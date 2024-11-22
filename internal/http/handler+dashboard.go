@@ -1,9 +1,6 @@
 package http
 
 import (
-	"time"
-
-	"github.com/guackamolly/zero-monitor/internal/data/models"
 	"github.com/labstack/echo/v4"
 )
 
@@ -17,9 +14,11 @@ func dashboardHandler(ectx echo.Context) error {
 
 // POST /dashboard
 func dashboardFormHandler(ectx echo.Context) error {
-	url := URL(ectx, rootRoute, map[string]string{joinQueryParam: models.UUID()})
-	expiry := time.Now().Add(5 * time.Minute)
+	return withServiceContainer(ectx, func(sc *ServiceContainer) error {
+		code := sc.Network.Code()
+		url := URL(ectx, networkRoute, map[string]string{joinQueryParam: code.Code})
+		dashboardView = dashboardView.WithInviteLink(NewDashNetworkInviteLinkView(url.String(), code))
 
-	dashboardView = dashboardView.WithInviteLink(NewDashNetworkInviteLinkView(url.String(), expiry))
-	return ectx.Redirect(301, ectx.Request().URL.Path)
+		return ectx.Redirect(301, ectx.Request().URL.Path)
+	})
 }
