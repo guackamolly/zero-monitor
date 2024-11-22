@@ -1,24 +1,26 @@
-package models
+package models_test
 
 import (
 	"testing"
 	"time"
+
+	"github.com/guackamolly/zero-monitor/internal/data/models"
 )
 
 func TestJoinNetworkCodeExpiry(t *testing.T) {
 	testCases := []struct {
 		desc   string
-		input  JoinNetworkCode
+		input  models.JoinNetworkCode
 		output bool
 	}{
 		{
 			desc:   "returns false if time now is before expire time",
-			input:  JoinNetworkCode{Code: UUID(), ExpiresAt: time.Now().Add(time.Minute)},
+			input:  models.JoinNetworkCode{Code: models.UUID(), ExpiresAt: time.Now().Add(time.Minute)},
 			output: false,
 		},
 		{
 			desc:   "returns true if time now is after expire time",
-			input:  JoinNetworkCode{Code: UUID(), ExpiresAt: time.Now().Add(-time.Minute)},
+			input:  models.JoinNetworkCode{Code: models.UUID(), ExpiresAt: time.Now().Add(-time.Minute)},
 			output: true,
 		},
 	}
