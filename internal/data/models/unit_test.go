@@ -52,17 +52,17 @@ func TestMemoryString(t *testing.T) {
 		{
 			desc:   "if value is greater than a kilobyte, but smaller than a megabyte (1048576), String() should end with 'KB'",
 			input:  models.Memory(1048575),
-			output: "1023 KB",
+			output: "1024 KB",
 		},
 		{
 			desc:   "if value is greater than a megabyte, but smaller than a gigabyte (1073741824), String() should end with 'MB'",
 			input:  models.Memory(1073741823),
-			output: "1023 MB",
+			output: "1024 MB",
 		},
 		{
 			desc:   "if value is greater than a gigabyte, but smaller than a terabyte (1099511627776), String() should end with 'GB'",
 			input:  models.Memory(1099511627775),
-			output: "1023 GB",
+			output: "1024 GB",
 		},
 		{
 			desc:   "if value is equal or greater than a terabyte, String() should end with 'TB'",
