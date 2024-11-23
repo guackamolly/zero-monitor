@@ -82,13 +82,13 @@ func (r GopsUtilSystemRepository) Info() (models.MachineInfo, error) {
 		cpuinfo = cpus[0]
 	}
 
-	lip, err := localIP()
+	lip, err := PrivateIP()
 	if err != nil {
 		logging.LogWarning("couldn't fetch local ip, %v", err)
 		lip = []byte{}
 	}
 
-	pip, err := publicIP()
+	pip, err := PublicIP()
 	if err != nil {
 		logging.LogWarning("couldn't fetch public ip, %v", err)
 		pip = []byte{}
