@@ -12,8 +12,6 @@ import (
 )
 
 type TestPublishSubscriber struct {
-	event.EventPublisher
-	event.EventSubscriber
 	outputs []event.EventOutput
 }
 
@@ -74,6 +72,14 @@ func (ps TestPublishSubscriber) Subscribe(ev event.Event) (chan (event.EventOutp
 	}()
 
 	return ch, func() {}
+}
+
+func (ps TestPublishSubscriber) PublicKey() ([]byte, error) {
+	return nil, nil
+}
+
+func (ps TestPublishSubscriber) Address() models.Address {
+	return models.Address{}
 }
 
 func forceUnbufferedChannelClose[T any](ch chan (T)) {

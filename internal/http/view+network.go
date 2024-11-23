@@ -58,6 +58,16 @@ type NetworkNodeSpeedtestHistoryView struct {
 	Limit      int
 }
 
+type NetworkJoinView struct {
+	PublicKeyURL          string `json:"public_key_url"`
+	ConnectionEndpointURL string `json:"connection_url"`
+}
+
+type NetworkConnectionEndpointView struct {
+	Host string `json:"host"`
+	Port int    `json:"port"`
+}
+
 func NewNetworkView(
 	nodes []models.Node,
 	nodeStatsPollBurst time.Duration,
@@ -199,6 +209,26 @@ func NewNetworkNodeSpeedtestHistoryView(
 		Speedtests:  sts,
 		Limit:       limit,
 		Err:         err,
+	}
+}
+
+func NewNetworkJoinView(
+	publicKeyUrl string,
+	connectionEndpointUrl string,
+) NetworkJoinView {
+	return NetworkJoinView{
+		PublicKeyURL:          publicKeyUrl,
+		ConnectionEndpointURL: connectionEndpointUrl,
+	}
+}
+
+func NewNetworkConnectionEndpointView(
+	host string,
+	port int,
+) NetworkConnectionEndpointView {
+	return NetworkConnectionEndpointView{
+		Host: host,
+		Port: port,
 	}
 }
 

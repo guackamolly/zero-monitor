@@ -14,6 +14,9 @@ func RegisterHandlers(e *echo.Echo) {
 	e.POST(dashboardRoute, dashboardFormHandler)
 
 	e.GET(networkRoute, networkHandler)
+	e.GET(networkPublicKeyRoute, networkPublicKeyHandler)
+	e.GET(networkConnectionEndpointRoute, networkConnectionEndpointHandler)
+
 	e.GET(networkIdRoute, networkIdHandler)
 	e.GET(networkIdConnectionsRoute, networkIdConnectionsHandler)
 	e.GET(networkIdPackagesRoute, networkIdPackagesHandler)
@@ -24,6 +27,7 @@ func RegisterHandlers(e *echo.Echo) {
 	e.GET(networkIdSpeedtestHistoryRoute, networkIdSpeedtestHistoryHandler)
 	e.GET(networkIdSpeedtestHistoryChartRoute, networkIdSpeedtestHistoryChartHandler)
 	e.GET(networkIdSpeedtestIdRoute, networkIdSpeedtestIdHandler)
+
 	e.GET(settingsRoute, getSettingsHandler)
 	e.POST(settingsRoute, updateSettingsHandler)
 

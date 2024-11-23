@@ -3,6 +3,7 @@ package http
 import (
 	"errors"
 	"fmt"
+	"net"
 	"strconv"
 
 	"github.com/guackamolly/zero-monitor/internal/data/models"
@@ -17,6 +18,10 @@ func networkHandler(ectx echo.Context) error {
 		return networkWebsocketHandler(ectx)
 	}
 
+	if _, ok := extractQuery(ectx, joinQueryParam); ok {
+		return networkJoinHandler(ectx)
+	}
+
 	return withServiceContainer(ectx, func(sc *ServiceContainer) error {
 		view := NewNetworkView(
 			sc.NodeManager.Network(),
@@ -24,6 +29,63 @@ func networkHandler(ectx echo.Context) error {
 		)
 
 		return ectx.Render(200, "network", view)
+	})
+}
+
+// GET /network?join=...
+func networkJoinHandler(ectx echo.Context) error {
+	return withServiceContainer(ectx, func(sc *ServiceContainer) error {
+		return withJoinCode(ectx, sc, func(code string) error {
+			q := map[string]string{joinQueryParam: code}
+			v := NewNetworkJoinView(
+				URL(ectx, networkPublicKeyRoute, q).String(),
+				URL(ectx, networkConnectionEndpointRoute, q).String(),
+			)
+
+			return ectx.JSON(200, v)
+		})
+	})
+}
+
+// GET /network/public-key?join=...
+func networkPublicKeyHandler(ectx echo.Context) error {
+	return withServiceContainer(ectx, func(sc *ServiceContainer) error {
+		return withJoinCode(ectx, sc, func(code string) error {
+			key, err := sc.Network.PublicKey()
+			if err != nil {
+				return echo.ErrNotFound
+			}
+
+			return ectx.String(200, string(key))
+		})
+	})
+}
+
+// GET /network/connection-endpoint?join=...
+func networkConnectionEndpointHandler(ectx echo.Context) error {
+	return withServiceContainer(ectx, func(sc *ServiceContainer) error {
+		return withJoinCode(ectx, sc, func(code string) error {
+			var ip net.IP
+			var err error
+			addr := sc.Network.Address()
+
+			if IsReverseProxyRequest(ectx) {
+				return ectx.JSON(200, NewNetworkConnectionEndpointView(ExtractReverseProxyIP(ectx), int(addr.Port)))
+			}
+			if !IsLocalRequest(ectx) {
+				ip, err = sc.Networking.PublicIP()
+			} else if addr.Network() {
+				ip, err = sc.Networking.PrivateIP()
+			} else {
+				ip = net.IP(addr.IP)
+			}
+
+			if err != nil {
+				return echo.ErrInternalServerError
+			}
+
+			return ectx.JSON(200, NewNetworkConnectionEndpointView(ip.String(), int(addr.Port)))
+		})
 	})
 }
 

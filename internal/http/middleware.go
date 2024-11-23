@@ -21,6 +21,12 @@ func loggingMiddleware() echo.MiddlewareFunc {
 		return func(ectx echo.Context) error {
 			req := ectx.Request()
 
+			echo.ExtractIPDirect()
+
+			for k, v := range req.Header {
+				logging.LogInfo("key: %s | value: %v", k, v)
+			}
+
 			logging.LogInfo("Host: %s | Method: %s | Path: %s | Client IP: %s", req.Host, req.Method, req.URL.RequestURI(), ectx.RealIP())
 			return next(ectx)
 		}
@@ -65,6 +71,23 @@ func withSpeedtest(ectx echo.Context, sc *ServiceContainer, with func(models.Spe
 	}
 
 	return echo.ErrNotFound
+}
+
+func withJoinCode(ectx echo.Context, sc *ServiceContainer, with func(code string) error) error {
+	c := ectx.QueryParam(joinQueryParam)
+	if !sc.Network.Valid(c) {
+		return echo.ErrUnauthorized
+	}
+
+	return with(c)
+}
+
+func extractQuery(ectx echo.Context, param string) (string, bool) {
+	if !ectx.QueryParams().Has(param) {
+		return "", false
+	}
+
+	return ectx.QueryParam(param), true
 }
 
 func extractUserAgent(ectx echo.Context) UserAgent {

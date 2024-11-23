@@ -128,3 +128,12 @@ func IsReverseProxyRequest(ectx echo.Context) bool {
 
 	return false
 }
+
+func ExtractReverseProxyIP(ectx echo.Context) string {
+	xff, ok := ectx.Request().Header[echo.HeaderXForwardedFor]
+	if !ok || len(xff) < 2 {
+		return echo.ExtractIPDirect()(ectx.Request())
+	}
+
+	return xff[1]
+}

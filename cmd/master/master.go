@@ -148,13 +148,11 @@ func createServiceContainer(
 		nms.Network,
 		nms.Stream,
 	)
-	nets := service.NewNetworkService()
 
 	return http.ServiceContainer{
 		NodeManager:         nms,
 		NodeScheduler:       nss,
 		MasterConfiguration: mcs,
-		Network:             nets,
 	}
 }
 
@@ -198,6 +196,8 @@ func updateServiceContainer(
 
 	sc.NodeCommander = service.NewNodeCommanderService(zps, zps)
 	sc.NodeSpeedtest = service.NewNodeSpeedtestService(zps, zps, sps)
+	sc.Network = service.NewNetworkService(zps)
+	sc.Networking = service.NewNetworkingService()
 
 	return sc
 }
