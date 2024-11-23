@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/guackamolly/zero-monitor/internal/data/models"
 	"github.com/guackamolly/zero-monitor/internal/mq"
 )
 
@@ -49,6 +50,20 @@ func (p ZeroMQEventPubSub) Subscribe(e Event) (chan (EventOutput), CloseSubscrip
 	})
 
 	return ch, close
+}
+
+func (p ZeroMQEventPubSub) PublicKey() ([]byte, error) {
+	return mq.DerivePublicKey()
+}
+
+func (p ZeroMQEventPubSub) Address() models.Address {
+	addr, err := models.NewNetAddress(p.Addr())
+	if err != nil {
+		// TODO: there's no way this errors since zeromq uses tcp sockets, maybe think of a better way to create the address
+		panic("zeromq is not using a tcp socket")
+	}
+
+	return addr
 }
 
 func (p ZeroMQEventPubSub) eventToMsg(e Event) (mq.Msg, error) {

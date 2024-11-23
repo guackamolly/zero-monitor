@@ -5,6 +5,7 @@ import (
 	"net"
 	"os"
 
+	"github.com/guackamolly/zero-monitor/internal/data/repositories"
 	"github.com/guackamolly/zero-monitor/internal/logging"
 )
 
@@ -49,19 +50,11 @@ func subHostIP() net.IP {
 		return ip
 	}
 
-	iaddrs, err := net.InterfaceAddrs()
+	ip, err := repositories.PrivateIP()
 	if err != nil {
-		logging.LogWarning("couldn't lookup interface addresses. defaulting to any address, %v", err)
+		logging.LogWarning("couldn't find the private ip of the closest network interface card. defaulting to any address, %v", err)
 		return net.IPv4(0, 0, 0, 0)
 	}
 
-	for _, iaddr := range iaddrs {
-		c, ok := iaddr.(*net.IPNet)
-		if ok && c.IP.IsPrivate() {
-			return c.IP
-		}
-	}
-
-	logging.LogWarning("couldn't find the private ip of the closest network interface card. defaulting to any address, %v", err)
-	return net.IPv4(0, 0, 0, 0)
+	return net.IP(ip)
 }

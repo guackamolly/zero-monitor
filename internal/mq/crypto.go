@@ -34,7 +34,7 @@ var cipherBlocks = map[string]cipher.Block{}
 
 // The public/private key block used to encrypt/decrypt cipher keys during
 // the key exchange between nodes.
-var pemBlock *pem.Block
+var blk *pem.Block
 
 func init() {
 	peml := len(mqTransportPrivateKeyFile)
@@ -73,7 +73,7 @@ func LoadAsymmetricBlock(
 		return err
 	}
 
-	pemBlock, _ = pem.Decode(f)
+	blk, _ = pem.Decode(f)
 	return nil
 }
 
@@ -145,7 +145,7 @@ func DecryptCipher(
 func EncryptAsymmetric(
 	data []byte,
 ) ([]byte, error) {
-	key, err := x509.ParsePKIXPublicKey(pemBlock.Bytes)
+	key, err := x509.ParsePKIXPublicKey(blk.Bytes)
 	if err != nil {
 		return nil, err
 	}
@@ -158,7 +158,7 @@ func EncryptAsymmetric(
 func DecryptAsymmetric(
 	data []byte,
 ) ([]byte, error) {
-	key, err := x509.ParsePKCS1PrivateKey(pemBlock.Bytes)
+	key, err := x509.ParsePKCS1PrivateKey(blk.Bytes)
 	if err != nil {
 		return nil, err
 	}
@@ -174,4 +174,9 @@ func GenerateCipherKey() ([]byte, error) {
 	}
 
 	return key, nil
+}
+
+// TODO: derive from private key instead
+func DerivePublicKey() ([]byte, error) {
+	return os.ReadFile(mqTransportPublicKeyFile)
 }
