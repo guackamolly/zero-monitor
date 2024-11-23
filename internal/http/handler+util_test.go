@@ -235,3 +235,85 @@ func TestURL(t *testing.T) {
 		})
 	}
 }
+
+func TestIsLocalRequest(t *testing.T) {
+	e := echo.New()
+
+	testCases := []struct {
+		desc   string
+		input  echo.Context
+		output bool
+	}{
+		{
+			desc:   "returns true if ip is loopback (ipv4)",
+			input:  e.NewContext(&http.Request{Header: http.Header{echo.HeaderXRealIP: []string{"127.0.0.1"}}}, nil),
+			output: true,
+		},
+		{
+			desc:   "returns true if ip is loopback (ipv6)",
+			input:  e.NewContext(&http.Request{Header: http.Header{echo.HeaderXRealIP: []string{"::1"}}}, nil),
+			output: true,
+		},
+		{
+			desc:   "returns true if ip is private",
+			input:  e.NewContext(&http.Request{Header: http.Header{echo.HeaderXRealIP: []string{"192.168.1.3"}}}, nil),
+			output: true,
+		},
+		{
+			desc:   "returns false if ip is neither loopback or private",
+			input:  e.NewContext(&http.Request{Header: http.Header{echo.HeaderXRealIP: []string{"92.44.1.3"}}}, nil),
+			output: false,
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			if output := sut.IsLocalRequest(tC.input); output != tC.output {
+				t.Errorf("expected %v, but got %v", tC.output, output)
+			}
+		})
+	}
+}
+
+func TestIsReverseProxyRequest(t *testing.T) {
+	e := echo.New()
+
+	testCases := []struct {
+		desc   string
+		input  echo.Context
+		output bool
+	}{
+		{
+			desc:   "returns true if x-forwarded-for header is present",
+			input:  e.NewContext(&http.Request{Header: http.Header{echo.HeaderXForwardedFor: []string{"127.0.0.1"}}}, nil),
+			output: true,
+		},
+		{
+			desc:   "returns true if x-forwarded-proto header is present",
+			input:  e.NewContext(&http.Request{Header: http.Header{echo.HeaderXForwardedProto: []string{"http"}}}, nil),
+			output: true,
+		},
+		{
+			desc:   "returns true if x-forwarded-host header is present",
+			input:  e.NewContext(&http.Request{Header: http.Header{"X-Forwarded-Host": []string{"127.0.0.1"}}}, nil),
+			output: true,
+		},
+		{
+			desc:   "returns true if x-real-ip header is present",
+			input:  e.NewContext(&http.Request{Header: http.Header{echo.HeaderXRealIP: []string{"127.0.0.1"}}}, nil),
+			output: true,
+		},
+		{
+			desc:   "returns false otherwise",
+			input:  e.NewContext(&http.Request{Header: http.Header{}}, nil),
+			output: false,
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			println("lol")
+			if output := sut.IsReverseProxyRequest(tC.input); output != tC.output {
+				t.Errorf("expected %v, but got %v", tC.output, output)
+			}
+		})
+	}
+}

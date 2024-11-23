@@ -1,6 +1,7 @@
 package http
 
 import (
+	"net"
 	"net/url"
 	"strconv"
 	"strings"
@@ -9,6 +10,14 @@ import (
 	"github.com/guackamolly/zero-monitor/internal/logging"
 	"github.com/labstack/echo/v4"
 )
+
+// Common headers to lookup in [IsReverseProxyRequest].
+var checkReverseProxyHeaders = []string{
+	echo.HeaderXForwardedFor,
+	echo.HeaderXForwardedProto,
+	echo.HeaderXRealIP,
+	"X-Forwarded-Host",
+}
 
 // Serves as a global bucket for storing errors that occur in handlers.
 // Each error is associated to an UUID.
@@ -101,4 +110,21 @@ func URL(ectx echo.Context, path string, query map[string]string) *url.URL {
 		Path:     path,
 		RawQuery: qb.String(),
 	}
+}
+
+func IsLocalRequest(ectx echo.Context) bool {
+	ip := net.ParseIP(ectx.RealIP())
+
+	return ip.IsLoopback() || ip.IsPrivate()
+}
+
+func IsReverseProxyRequest(ectx echo.Context) bool {
+	h := ectx.Request().Header
+	for _, c := range checkReverseProxyHeaders {
+		if _, ok := h[c]; ok {
+			return true
+		}
+	}
+
+	return false
 }
