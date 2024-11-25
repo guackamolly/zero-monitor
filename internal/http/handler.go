@@ -61,6 +61,7 @@ func httpErrorHandler() func(err error, c echo.Context) {
 		}
 
 		// if no match, resort to fallback
+		c.Response().WriteHeader(he.Code)
 		c.File(fallback)
 	}
 }
