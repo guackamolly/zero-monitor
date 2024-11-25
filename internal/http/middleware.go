@@ -21,12 +21,6 @@ func loggingMiddleware() echo.MiddlewareFunc {
 		return func(ectx echo.Context) error {
 			req := ectx.Request()
 
-			echo.ExtractIPDirect()
-
-			for k, v := range req.Header {
-				logging.LogInfo("key: %s | value: %v", k, v)
-			}
-
 			logging.LogInfo("Host: %s | Method: %s | Path: %s | Client IP: %s", req.Host, req.Method, req.URL.RequestURI(), ectx.RealIP())
 			return next(ectx)
 		}
