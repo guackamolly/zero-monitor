@@ -4,6 +4,8 @@ One-click lightweight server monitor tool based on ZeroMQ protocol.
 
 ---
 
+![status badge](https://img.shields.io/badge/status-beta-green)
+
 Do you self-host software across diferent machines? Do you want to elevate your devices recoinnassance? Then zero-monitor might be the tool just for you.
 Think of a mini zabbix/prometheus, but is plug-n-play (download and run a native binary), takes no more than **15MB** of RAM and doesn't overtake the CPU from other, more important, programs.
 
