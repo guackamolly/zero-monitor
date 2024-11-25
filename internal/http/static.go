@@ -20,10 +20,7 @@ var (
 	}
 
 	dirs = map[string]string{
-		WithVirtualHost("/static"):  serverPublicRoot + "static/",
-		WithVirtualHost("/content"): serverPublicRoot + "content/",
-		WithVirtualHost("/about"):   serverPublicRoot + "about/",
-		WithVirtualHost("/contact"): serverPublicRoot + "contact/",
+		WithVirtualHost("/static"): serverPublicRoot + "static/",
 	}
 
 	templates = map[string]string{
