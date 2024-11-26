@@ -8,8 +8,6 @@ server_tls_key_fp=
 
 ## If deploying as a virtual host
 server_virtual_host=/
-## Relative or absolute path to the directory that contains the views to serve
-server_public_root=web/
 
 # Message queue configuration
 mq_sub_host=0.0.0.0
