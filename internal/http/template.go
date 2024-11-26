@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"html/template"
 	"io"
+	"io/fs"
 	"strings"
 
 	"github.com/guackamolly/zero-monitor/internal/logging"
@@ -51,10 +52,10 @@ func (t *Template) Render(w io.Writer, name string, data interface{}, c echo.Con
 	return tpl.ExecuteTemplate(w, part, data)
 }
 
-func RegisterTemplates(e *echo.Echo) error {
+func RegisterTemplates(e *echo.Echo, fs fs.FS) error {
 	tps := map[string]*template.Template{}
 	for k, v := range templates {
-		t, err := template.New(k).Funcs(funcMap).ParseGlob(v)
+		t, err := template.New(k).Funcs(funcMap).ParseFS(fs, v)
 		if err != nil {
 			logging.LogFatal("failed to parse template file, %v", err)
 		}

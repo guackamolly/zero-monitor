@@ -19,10 +19,12 @@ import (
 	"github.com/guackamolly/zero-monitor/internal/logging"
 	"github.com/guackamolly/zero-monitor/internal/mq"
 	"github.com/guackamolly/zero-monitor/internal/service"
+	"github.com/guackamolly/zero-monitor/public"
 	"github.com/labstack/echo/v4"
 
 	_ "github.com/guackamolly/zero-monitor/internal/build"
 	"github.com/joho/godotenv"
+	_ "github.com/joho/godotenv/autoload"
 )
 
 func main() {
@@ -63,7 +65,7 @@ func main() {
 }
 
 func loadEnv() {
-	if err := godotenv.Load(".env"); err == nil {
+	if err := godotenv.Load(); err == nil {
 		return
 	}
 
@@ -120,8 +122,8 @@ func initializeHttpServer(ctx context.Context) *echo.Echo {
 	// Register server dependencies.
 	http.RegisterHandlers(e)
 	http.RegisterMiddlewares(e, ctx)
-	http.RegisterStaticFiles(e)
-	http.RegisterTemplates(e)
+	http.RegisterStaticFiles(e, public.FS)
+	http.RegisterTemplates(e, public.FS)
 
 	// Start server.
 	go func() {
