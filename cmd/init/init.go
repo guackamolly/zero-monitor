@@ -41,6 +41,7 @@ type MasterEnv struct {
 	MessageQueuePort            int    `env:"mq_sub_port"`
 	MessageQueueTransportPubKey string `env:"mq_transport_pub_key"`
 	MessageQueueTransportPemKey string `env:"mq_transport_pem_key"`
+	BoltDBPath                  string `env:"bolt_db_path"`
 }
 
 var action = InitMaster
@@ -105,6 +106,9 @@ func initMaster() {
 	defer privFile.Close()
 	must0(pem.Encode(privFile, &privBlock))
 
+	boltDbFile := must(os.Create(filepath.Join(configPath, "master.db")))
+	defer boltDbFile.Close()
+
 	env := MasterEnv{
 		ServerHost:                  "0.0.0.0",
 		MessageQueueHost:            "0.0.0.0",
@@ -112,6 +116,7 @@ func initMaster() {
 		MessageQueuePort:            36113,
 		MessageQueueTransportPubKey: pubFile.Name(),
 		MessageQueueTransportPemKey: privFile.Name(),
+		BoltDBPath:                  boltDbFile.Name(),
 	}
 
 	envpath := fmt.Sprintf("%s/master.env", must(config.Dir()))
