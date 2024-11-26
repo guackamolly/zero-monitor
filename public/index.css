@@ -55,6 +55,15 @@ nav {
     gap: 8px;
 }
 
+pre code {
+    display: block;
+    white-space: pre-wrap;
+    overflow-x: auto;
+    padding: 8px;
+    border: 2px dashed var(--border);
+    background-color: var(--foreground);
+}
+
 main {
     display: flex;
     flex-direction: column;
