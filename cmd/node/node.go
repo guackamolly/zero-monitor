@@ -5,8 +5,10 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"syscall"
 
+	"github.com/guackamolly/zero-monitor/internal/config"
 	"github.com/guackamolly/zero-monitor/internal/data/repositories"
 	"github.com/guackamolly/zero-monitor/internal/logging"
 	"github.com/guackamolly/zero-monitor/internal/mq"
@@ -14,10 +16,13 @@ import (
 	"github.com/showwin/speedtest-go/speedtest"
 
 	_ "github.com/guackamolly/zero-monitor/internal/build"
-	_ "github.com/joho/godotenv/autoload"
+	"github.com/joho/godotenv"
 )
 
 func main() {
+	// 1. Load env
+	loadEnv()
+
 	// 1. Initialize DI & logging.
 	pc := createPublishContainer()
 	ctx := context.Background()
@@ -41,6 +46,18 @@ func main() {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
 	<-c
+}
+
+func loadEnv() {
+	if err := godotenv.Load(".env"); err == nil {
+		return
+	}
+
+	if d, err := config.Dir(); err == nil && godotenv.Load(filepath.Join(d, "node.env")) == nil {
+		return
+	}
+
+	log.Fatalf("couldn't load .env or $CFG_DIR/node.env!")
 }
 
 func loadCrypto() {

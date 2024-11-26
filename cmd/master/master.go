@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"syscall"
 	"time"
 
@@ -21,11 +22,12 @@ import (
 	"github.com/labstack/echo/v4"
 
 	_ "github.com/guackamolly/zero-monitor/internal/build"
-	_ "github.com/joho/godotenv/autoload"
+	"github.com/joho/godotenv"
 )
 
 func main() {
-	// 1. Load config
+	// 1. Load env and config
+	loadEnv()
 	logging.AddLogger(logging.NewConsoleLogger())
 	cfg := loadConfig()
 
@@ -58,6 +60,18 @@ func main() {
 
 	// 7. Try to save config
 	saveConfig(sc.MasterConfiguration)
+}
+
+func loadEnv() {
+	if err := godotenv.Load(".env"); err == nil {
+		return
+	}
+
+	if d, err := config.Dir(); err == nil && godotenv.Load(filepath.Join(d, "master.env")) == nil {
+		return
+	}
+
+	log.Fatalf("couldn't load .env or $CFG_DIR/master.env!")
 }
 
 func loadConfig() config.Config {
