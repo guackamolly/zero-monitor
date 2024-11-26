@@ -19,6 +19,8 @@ import (
 	"github.com/guackamolly/zero-monitor/internal/config"
 	_http "github.com/guackamolly/zero-monitor/internal/http"
 	"github.com/joho/godotenv"
+
+	_ "github.com/guackamolly/zero-monitor/internal/build"
 )
 
 const (
