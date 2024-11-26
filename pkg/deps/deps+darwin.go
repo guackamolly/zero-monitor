@@ -1,7 +1,9 @@
-//go:build linux
-// +build linux
+//go:build darwin
+// +build darwin
 
 package deps
+
+//TODO: UNTESTED! NEED TESTER FRIENDS WITH A MAC MACHINE :)
 
 import (
 	"bytes"
@@ -13,9 +15,8 @@ import (
 	"github.com/guackamolly/zero-monitor/internal/data/models"
 )
 
-// TODO: add support for yum, dnf and pacman
 var (
-	supportedPkgManagers = []string{"dpkg", "yum", "dnf", "pacman"}
+	supportedPkgManagers = []string{"brew"}
 	systemPkgManager     string
 )
 
@@ -26,12 +27,11 @@ func list() ([]models.Package, error) {
 	}
 
 	switch pm {
-	case "dpkg":
-		return listDpkg()
+	case "brew":
+		return listBrew()
 	default:
-		return nil, fmt.Errorf("function not implemented yet for pm: %s", pm)
+		return nil, fmt.Errorf("unsupported package manager: %s", pm)
 	}
-
 }
 
 func packageManager() (string, error) {
@@ -48,8 +48,9 @@ func packageManager() (string, error) {
 	return "", fmt.Errorf("system package manager is not recognized")
 }
 
-func listDpkg() ([]models.Package, error) {
-	cmd := exec.Command("dpkg", "-l")
+func listBrew() ([]models.Package, error) {
+	// Use brew list to get installed packages
+	cmd := exec.Command("brew", "list", "--formula") // List installed formulas
 
 	bs, err := cmd.Output()
 	if err != nil {
@@ -68,20 +69,21 @@ func listDpkg() ([]models.Package, error) {
 			return nil, err
 		}
 
-		if !strings.HasPrefix(l, "ii ") {
+		// Extract name and version from brew list output format
+		parts := strings.Fields(tr(l, "\t", " ")) // Handle potential tabs
+		if len(parts) < 2 {
 			continue
 		}
 
-		parts := strings.Fields(l)
-		if len(parts) < 3 {
-			continue
-		}
-
-		name := parts[1]
-		version := parts[2]
-		description := strings.Join(parts[4:], " ")
-		pkgs = append(pkgs, models.NewPackage(name, description, version))
+		name := parts[0]
+		version := parts[1]
+		pkgs = append(pkgs, models.NewPackage(name, "", version)) // Description not available from brew list
 	}
 
 	return pkgs, nil
+}
+
+// Helper function to handle potential tabs in brew output (optional)
+func tr(s string, old, new string) string {
+	return strings.Replace(s, old, new, -1)
 }
