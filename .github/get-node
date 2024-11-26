@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# Exit immediately if a command fails and is not controlled.
+set -e
+
 # Save program arguments to later pass on init binary.
 args="$@"
 
@@ -8,7 +11,7 @@ new_issue_url="https://github.com/guackamolly/zero-monitor/issues/new"
 latest_release_url="https://api.github.com/repos/guackamolly/zero-monitor/releases/latest"
 
 # Installation directory and program paths.
-install_dir="$HOME/.config/zero-monitor/"
+install_dir="$HOME/.config/zero-monitor"
 bin_path="$install_dir/node"
 init_bin_path="$install_dir/init"
 
@@ -23,15 +26,19 @@ fatal() {
 
 exec_bin() {
     if [[ -z "$args" ]]; then
-        ./"$init_bin_path" "$args"
+        "$init_bin_path" "$args"
     fi
 
     exec "$bin_path" "$args"
 }
 
 download() {
-    curl -L "$1" -o "$install_dir"
-    chmod +x "$install_dir"
+    url="$1"
+    bin_name="$(echo ${url##*/} | cut -d '_' -f1)"
+
+    printf "Downloading $bin_name ...\n"
+    curl -s -L "$url" -o "$install_dir/$bin_name"
+    chmod +x "$install_dir/$bin_name"
 }
 
 # Query host OS and CPU architecture to precisely select binary to download.
@@ -53,7 +60,7 @@ esac
 # Head latest release
 response=$(curl -s "$latest_release_url")
 status="$(echo $response | jq .status)"
-if [ "$status" != "200" ]; then
+if [[ "$status" == "404" ]]; then
     fatal "Failed to head release, please raise an issue to alert maintainers about this bug.\n$new_issue_url"
 fi
 
@@ -63,13 +70,13 @@ if [ -z "$latest_release_version" ]; then
 fi
 
 # If local target binary version is different than the latest release version, download it again.
-if [ "$latest_release_version" != "$(./$bin_path -version)" ]; then
+if ! [[ -f "$bin_path" && "$latest_release_version" != "$($bin_path -version)" ]]; then
     download "$(echo $response | jq -r '.assets[] | select(.name == "node_'${os}'_'${arch}'") | .browser_download_url')"
 fi
 
 # If local init binary version is different than the latest release version, download it again.
-if [ "$latest_release_version" != "$(./$init_bin_path -version)" ]; then
-    download "$(echo $response | jq -r '.assets[] | select(.name == "init'${os}'_'${arch}'") | .browser_download_url')"
+if ! [[ -f "$init_bin_path " && "$latest_release_version" != "$($init_bin_path -version)" ]]; then
+    download "$(echo $response | jq -r '.assets[] | select(.name == "init_'${os}'_'${arch}'") | .browser_download_url')"
 fi
 
 # Run the binary.
