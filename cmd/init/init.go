@@ -106,8 +106,10 @@ func initMaster() {
 	must0(pem.Encode(privFile, &privBlock))
 
 	env := MasterEnv{
-		ServerHost:                  "localhost",
-		MessageQueueHost:            "localhost",
+		ServerHost:                  "0.0.0.0",
+		MessageQueueHost:            "0.0.0.0",
+		ServerPort:                  8080,
+		MessageQueuePort:            36113,
 		MessageQueueTransportPubKey: pubFile.Name(),
 		MessageQueueTransportPemKey: privFile.Name(),
 	}
