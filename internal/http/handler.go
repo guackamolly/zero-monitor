@@ -1,8 +1,6 @@
 package http
 
 import (
-	"fmt"
-
 	"github.com/guackamolly/zero-monitor/internal/logging"
 	"github.com/labstack/echo/v4"
 )
@@ -35,7 +33,7 @@ func RegisterHandlers(e *echo.Echo) {
 }
 
 func rootHandler(ectx echo.Context) error {
-	return fmt.Errorf("not implemented yet")
+	return ectx.File(root)
 }
 
 func httpErrorHandler() func(err error, c echo.Context) {

@@ -40,6 +40,8 @@ var (
 )
 
 func RegisterStaticFiles(e *echo.Echo, fs fs.FS) error {
+	e.Filesystem = fs
+
 	for k, v := range files {
 		e.FileFS(k, v, fs)
 	}
