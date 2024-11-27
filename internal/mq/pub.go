@@ -37,7 +37,9 @@ func (s Socket) RegisterPublishers() {
 			logging.LogInfo("(pub) handling topic: %d", topic)
 			switch topic {
 			case JoinNetwork:
-				err = handleJoinNetworkResponse(s, m, pc.StartNodeStatsPolling)
+				err = handleJoinNetworkResponse(s, m, pc.StartNodeStatsPolling, pc.GetCurrentNode)
+			case AuthenticateNetwork:
+				err = handleAuthenticateNetworkResponse(s, m, pc.GetCurrentNode)
 			case UpdateNodeStatsPollDuration:
 				err = handleUpdateStatsPollDurationRequest(m, pc.UpdateNodeStatsPolling)
 			case NodeConnections:
@@ -66,7 +68,12 @@ func handleJoinNetworkResponse(
 	s Socket,
 	m Msg,
 	start domain.StartNodeStatsPolling,
+	currentNode domain.GetCurrentNode,
 ) error {
+	if _, ok := m.Data.(RequiresAuthenticationResponse); ok {
+		return handleRequiresAuthenticationResponse(s, currentNode)
+	}
+
 	resp, ok := m.Data.(JoinNetworkResponse)
 	if !ok {
 		return handleUnknownMessage(m)
@@ -83,6 +90,31 @@ func handleJoinNetworkResponse(
 	}()
 
 	return nil
+}
+
+func handleAuthenticateNetworkResponse(
+	s Socket,
+	m Msg,
+	currentNode domain.GetCurrentNode,
+) error {
+	if _, ok := m.Data.(AuthenticateNetworkResponse); !ok {
+		logging.LogFatal("failed to authenticate within nodes network")
+	}
+
+	return s.PublishMsg(Compose(JoinNetwork, JoinNetworkRequest{currentNode()}))
+}
+
+func handleRequiresAuthenticationResponse(
+	s Socket,
+	currentNode domain.GetCurrentNode,
+) error {
+	// disallow handshaking more than once, otherwise both master and node will enter in a race condition like state
+	if handshaked {
+		logging.LogFatal("invalid state: already authenticated but master replied with <requires authentication>")
+	}
+
+	handshaked = true
+	return s.PublishMsg(Compose(AuthenticateNetwork, AuthenticateNetworkRequest{InviteCode: InviteCode(), Node: currentNode()}))
 }
 
 func handleUpdateStatsPollDurationRequest(

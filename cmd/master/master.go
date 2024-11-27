@@ -160,9 +160,11 @@ func createServiceContainer(
 func createSubContainer(sc http.ServiceContainer) mq.SubscribeContainer {
 	cfg := sc.MasterConfiguration.Current()
 	return mq.SubscribeContainer{
-		JoinNodesNetwork:            sc.NodeManager.Join,
-		UpdateNodesNetwork:          sc.NodeManager.Update,
-		GetNodeStatsPollingDuration: cfg.NodeStatsPolling.Duration,
+		JoinNodesNetwork:                   sc.NodeManager.Join,
+		UpdateNodesNetwork:                 sc.NodeManager.Update,
+		GetNodeStatsPollingDuration:        cfg.NodeStatsPolling.Duration,
+		AuthenticateNodesNetwork:           sc.NodeManager.Authenticate,
+		RequiresNodesNetworkAuthentication: func(n models.Node) bool { return !sc.NodeManager.IsAuthenticated(n) },
 		GetNodeStatsPollingDurationUpdates: func() chan (time.Duration) {
 			ch := make(chan (time.Duration))
 			sp := cfg.NodeStatsPolling.Duration()

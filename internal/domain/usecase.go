@@ -18,6 +18,8 @@ type GetNodeStatsPollingDuration func() time.Duration
 type GetNodeStatsPollingDurationUpdates func() chan (time.Duration)
 
 type JoinNodesNetwork func(models.Node) error
+type AuthenticateNodesNetwork func(node models.Node, code string) error
+type RequiresNodesNetworkAuthentication func(models.Node) bool
 type UpdateNodesNetwork func(models.Node) error
 
 type StartNodeSpeedtest func() (chan (models.Speedtest), error)

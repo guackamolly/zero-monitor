@@ -5,6 +5,7 @@ type Topic byte
 
 const (
 	JoinNetwork Topic = iota + 1
+	AuthenticateNetwork
 	UpdateNodeStats
 	UpdateNodeStatsPollDuration
 	NodeConnections
@@ -16,7 +17,7 @@ const (
 
 func (t Topic) Sensitive() bool {
 	switch t {
-	case JoinNetwork, NodeConnections, NodeProcesses, KillNodeProcess:
+	case JoinNetwork, AuthenticateNetwork, NodeConnections, NodeProcesses, KillNodeProcess:
 		return true
 	default:
 		return false

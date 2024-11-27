@@ -16,6 +16,8 @@ const (
 // Container for all dependencies required in a subscription context.
 type SubscribeContainer struct {
 	JoinNodesNetwork                   domain.JoinNodesNetwork
+	AuthenticateNodesNetwork           domain.AuthenticateNodesNetwork
+	RequiresNodesNetworkAuthentication domain.RequiresNodesNetworkAuthentication
 	UpdateNodesNetwork                 domain.UpdateNodesNetwork
 	GetNodeStatsPollingDuration        domain.GetNodeStatsPollingDuration
 	GetNodeStatsPollingDurationUpdates domain.GetNodeStatsPollingDurationUpdates

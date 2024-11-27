@@ -12,6 +12,7 @@ type NodeManagerService struct {
 	streams []chan ([]models.Node)
 	network []models.Node
 	lock    *sync.RWMutex
+	code    *models.JoinNetworkCode
 }
 
 // Creates a service for managing network nodes. Allows passing
@@ -28,23 +29,21 @@ func NewNodeManagerService(nodes ...models.Node) *NodeManagerService {
 
 // Joins master node.
 func (s *NodeManagerService) Join(node models.Node) error {
-	if i := s.nodeIdx(node); i >= 0 {
-		return fmt.Errorf("node %s has already joined, ignorning request", node.ID)
+	if !s.IsAuthenticated(node) {
+		return fmt.Errorf("node %s hasn't authenticated yet", node.ID)
 	}
 
-	s.network = append(s.network, node)
 	s.updateStream()
 	return nil
 }
 
 // Updates the state of a node.
 func (s *NodeManagerService) Update(node models.Node) error {
-	var i int
-	if i = s.nodeIdx(node); i < 0 {
-		return fmt.Errorf("node %s hasn't joined yet, ignorning request", node.ID)
+	if !s.IsAuthenticated(node) {
+		return fmt.Errorf("node %s hasn't authenticated yet", node.ID)
 	}
 
-	s.network[i] = node
+	s.network[s.nodeIdx(node)] = node
 	s.updateStream()
 	return nil
 }
@@ -93,6 +92,43 @@ func (s *NodeManagerService) Release(stream chan ([]models.Node)) {
 	s.lock.Unlock()
 
 	close(stream)
+}
+
+func (s *NodeManagerService) Code() models.JoinNetworkCode {
+	if s.code != nil && !s.code.Expired() {
+		return *s.code
+	}
+
+	code := models.NewJoinNetworkCode()
+	s.code = &code
+
+	return code
+}
+
+func (s *NodeManagerService) Valid(code string) bool {
+	if s.code == nil || s.code.Expired() {
+		return false
+	}
+
+	return s.code.Code == code
+}
+
+func (s *NodeManagerService) Authenticate(node models.Node, code string) error {
+	if s.IsAuthenticated(node) {
+		return fmt.Errorf("already authenticated")
+	}
+
+	if !s.Valid(code) {
+		return fmt.Errorf("invalid code")
+
+	}
+
+	s.network = append(s.network, node)
+	return nil
+}
+
+func (s *NodeManagerService) IsAuthenticated(node models.Node) bool {
+	return s.nodeIdx(node) >= 0
 }
 
 func (s NodeManagerService) nodeIdx(node models.Node) int {

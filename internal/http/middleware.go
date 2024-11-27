@@ -69,7 +69,7 @@ func withSpeedtest(ectx echo.Context, sc *ServiceContainer, with func(models.Spe
 
 func withJoinCode(ectx echo.Context, sc *ServiceContainer, with func(code string) error) error {
 	c := ectx.QueryParam(joinQueryParam)
-	if !sc.Network.Valid(c) {
+	if !sc.NodeManager.Valid(c) {
 		return echo.ErrUnauthorized
 	}
 

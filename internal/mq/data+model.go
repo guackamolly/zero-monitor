@@ -15,6 +15,14 @@ type JoinNetworkResponse struct {
 	StatsPoll time.Duration
 }
 
+type AuthenticateNetworkRequest struct {
+	Node       models.Node
+	InviteCode string
+}
+
+type AuthenticateNetworkResponse struct{}
+type RequiresAuthenticationResponse struct{}
+
 type UpdateNodeStatsRequest struct {
 	Node models.Node
 }
@@ -54,6 +62,9 @@ func (e *OPError) Error() string {
 func init() {
 	gob.Register(JoinNetworkRequest{})
 	gob.Register(JoinNetworkResponse{})
+	gob.Register(RequiresAuthenticationResponse{})
+	gob.Register(AuthenticateNetworkRequest{})
+	gob.Register(AuthenticateNetworkResponse{})
 	gob.Register(UpdateNodeStatsRequest{})
 	gob.Register(UpdateNodeStatsPollDurationRequest{})
 	gob.Register(NodeConnectionsResponse{})

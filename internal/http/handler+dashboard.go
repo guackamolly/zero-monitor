@@ -15,7 +15,7 @@ func dashboardHandler(ectx echo.Context) error {
 // POST /dashboard
 func dashboardFormHandler(ectx echo.Context) error {
 	return withServiceContainer(ectx, func(sc *ServiceContainer) error {
-		code := sc.Network.Code()
+		code := sc.NodeManager.Code()
 		url := URL(ectx, networkRoute, map[string]string{joinQueryParam: code.Code})
 		dashboardView = dashboardView.WithInviteLink(NewDashNetworkInviteLinkView(url.String(), code))
 

@@ -49,7 +49,10 @@ func handle(
 	logging.LogInfo("(sub) handling topic: %d", m.Topic)
 	switch m.Topic {
 	case JoinNetwork:
-		handleJoinNetworkRequest(s, m, sc.JoinNodesNetwork, sc.GetNodeStatsPollingDuration)
+		handleJoinNetworkRequest(s, m, sc.JoinNodesNetwork, sc.RequiresNodesNetworkAuthentication, sc.GetNodeStatsPollingDuration)
+		return
+	case AuthenticateNetwork:
+		handleAuthenticateNetworkRequest(s, m, sc.AuthenticateNodesNetwork)
 		return
 	case UpdateNodeStats:
 		handleUpdateNodeStatsRequest(m, sc.UpdateNodesNetwork)
@@ -64,6 +67,7 @@ func handleJoinNetworkRequest(
 	s Socket,
 	m Msg,
 	join domain.JoinNodesNetwork,
+	requiresAuthentication domain.RequiresNodesNetworkAuthentication,
 	nodeStatsPollingDuration domain.GetNodeStatsPollingDuration,
 ) {
 	logging.LogInfo("handling join network request")
@@ -74,6 +78,11 @@ func handleJoinNetworkRequest(
 		return
 	}
 
+	if requiresAuthentication(req.Node) {
+		s.ReplyMsg(m.Identity, Compose(JoinNetwork, RequiresAuthenticationResponse{}))
+		return
+	}
+
 	s.Clients[req.Node.ID] = m.Identity
 	err := join(req.Node)
 	if err != nil {
@@ -81,6 +90,27 @@ func handleJoinNetworkRequest(
 	}
 
 	s.ReplyMsg(m.Identity, Compose(JoinNetwork, JoinNetworkResponse{StatsPoll: nodeStatsPollingDuration()}))
+}
+
+func handleAuthenticateNetworkRequest(
+	s Socket,
+	m Msg,
+	authenticate domain.AuthenticateNodesNetwork,
+) {
+	log.Println("handling authenticate network request...")
+	req, ok := m.Data.(AuthenticateNetworkRequest)
+	if !ok {
+		logging.LogError("couldn't cast data to authenticate network request, got: %v", m.Data)
+		return
+	}
+
+	err := authenticate(req.Node, req.InviteCode)
+	if err != nil {
+		s.ReplyMsg(m.Identity, Compose(AuthenticateNetwork).WithError(err))
+		return
+	}
+
+	s.ReplyMsg(m.Identity, Compose(AuthenticateNetwork, AuthenticateNetworkResponse{}))
 }
 
 func handleUpdateNodeStatsRequest(
