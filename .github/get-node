@@ -60,7 +60,7 @@ esac
 # Head latest release
 response=$(curl -s "$latest_release_url")
 status="$(echo $response | jq .status)"
-if [[ "$status" == "404" ]]; then
+if [[ "$status" == '"404"' ]]; then
     fatal "Failed to head release, please raise an issue to alert maintainers about this bug.\n$new_issue_url"
 fi
 
