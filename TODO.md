@@ -16,7 +16,3 @@ Looking to contribute to the project but you don't know how to start? The todo's
 - Make Linux/macOS initialization scripts POSIX compliant (remove bash, use shell) 
 - Cover comment //TODOs
 - Fix init not printing build version
-
-implement node-master handshake
-implement node-master handshake from stdin
-implement init node bootstrap from stdin invite url

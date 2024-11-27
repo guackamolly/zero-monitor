@@ -19,13 +19,11 @@ import (
 	"github.com/guackamolly/zero-monitor/internal/config"
 	_http "github.com/guackamolly/zero-monitor/internal/http"
 	"github.com/joho/godotenv"
-
-	_ "github.com/guackamolly/zero-monitor/internal/build"
 )
 
 const (
-	InitMaster Action = iota
-	InitNodeFromInviteLink
+	BootstrapMaster Action = iota
+	BootstrapNode
 )
 
 type Action int
@@ -34,6 +32,7 @@ type NodeEnv struct {
 	MessageQueueHost            string `env:"mq_sub_host"`
 	MessageQueuePort            int    `env:"mq_sub_port"`
 	MessageQueueTransportPubKey string `env:"mq_transport_pub_key"`
+	MessageQueueInviteCode      string `env:"mq_invite_code"`
 }
 
 type MasterEnv struct {
@@ -46,19 +45,24 @@ type MasterEnv struct {
 	BoltDBPath                  string `env:"bolt_db_path"`
 }
 
-var action = InitMaster
+var action = BootstrapMaster
 
 var inviteLink *url.URL
 
 func init() {
-	flag.Func("invite-link", "configures the environment for starting a node from a master invite link", func(s string) error {
+	flag.Func("node", "configures the environment for starting a node", func(s string) error {
+		if len(s) == 0 {
+			println("Waiting for invite link... (press enter to resume)")
+			fmt.Scanln(&s)
+		}
+
 		url, err := url.Parse(s)
 		if err != nil {
 			return err
 		}
 
 		inviteLink = url
-		action = InitNodeFromInviteLink
+		action = BootstrapNode
 		return nil
 	})
 
@@ -67,14 +71,14 @@ func init() {
 
 func main() {
 	switch action {
-	case InitMaster:
-		initMaster()
-	case InitNodeFromInviteLink:
-		initNodeFromInviteLink()
+	case BootstrapMaster:
+		bootstrapMaster()
+	case BootstrapNode:
+		bootstrapNode()
 	}
 }
 
-func initMaster() {
+func bootstrapMaster() {
 	println("Bootstrapping master configuration")
 	configPath := must(config.Dir())
 
@@ -129,15 +133,16 @@ func initMaster() {
 	println("> Generated .env on: %s", envpath)
 }
 
-func initNodeFromInviteLink() {
-	println("Bootstrapping node configuration from invite link: %s", inviteLink)
+func bootstrapNode() {
+	println("Bootstrapping node configuration using invite link: %s", inviteLink)
 	configPath := must(config.Dir())
+	inviteCode := inviteLink.Query().Get("join")
 
 	v := downloadUnmarshal[_http.NetworkJoinView](inviteLink.String())
 	pubKey := string(download(v.PublicKeyURL))
 	endpoint := downloadUnmarshal[_http.NetworkConnectionEndpointView](v.ConnectionEndpointURL)
 
-	pubFile := must(os.Create(filepath.Join(configPath, "master.pub")))
+	pubFile := must(os.Create(filepath.Join(configPath, "node.pub")))
 	defer pubFile.Close()
 	io.WriteString(pubFile, pubKey)
 
@@ -145,11 +150,13 @@ func initNodeFromInviteLink() {
 		MessageQueueHost:            endpoint.Host,
 		MessageQueuePort:            endpoint.Port,
 		MessageQueueTransportPubKey: pubFile.Name(),
+		MessageQueueInviteCode:      inviteCode,
 	}
 
 	envpath := fmt.Sprintf("%s/node.env", configPath)
 	writeEnv(env, envpath)
 
+	println("> Extracted invite code: %s", inviteCode)
 	println("> Saved public key on: %s", pubFile.Name())
 	println("> Generated .env on: %s", envpath)
 }
