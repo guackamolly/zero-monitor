@@ -35,3 +35,4 @@ Node expects the .env file to be present in the working directory under the name
 |`mq_sub_host`|Specifies the IP/host name of **master** ZeroMQ connection|`azure-proxy`|-|
 |`mq_sub_port`|Specifies the port of **master** ZeroMQ connection |`36113`|-|
 |`mq_transport_pub_key`|Specifies the path of the `RSA 2048 PKCS 1` public key used for encrypting the communication during the key-exchange of node-master|`~/.config/zero-monitor/mq.pub`|`${CFG_DIR}/mq.pub`|
+|`mq_invite_code`|Specifies the invite code generated on the master dashboard, to join the network|`8aea958d-22da-4f8f-9521-2645f4ec497a`|-|

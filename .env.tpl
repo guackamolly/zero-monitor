@@ -17,5 +17,8 @@ mq_sub_port=36113
 mq_transport_pem_key=
 mq_transport_pub_key=
 
+## Invite code to join a network
+mq_invite_code=
+
 # Database configuration
 bolt_db_path=master.db
