@@ -4,7 +4,7 @@
 set -e
 
 # Save program arguments to later pass on init binary.
-args="$@"
+init_args="$@"
 
 # Common urls.
 new_issue_url="https://github.com/guackamolly/zero-monitor/issues/new"
@@ -25,11 +25,11 @@ fatal() {
 }
 
 exec_bin() {
-    if [[ -z "$args" ]]; then
-        "$init_bin_path" "$args"
+    if [ ! -z "$init_args" ]; then
+        "$init_bin_path" $init_args
     fi
 
-    exec "$bin_path" "$args"
+    exec "$bin_path"
 }
 
 download() {
@@ -67,6 +67,11 @@ fi
 latest_release_version="$(echo $response | jq .tag_name)"
 if [ -z "$latest_release_version" ]; then
     fatal "Failed to extract release version, please raise an issue to alert maintainers about this bug.\n$new_issue_url"
+fi
+
+# If local init binary does not exist and no arguments have been passed, then bootstrap node.
+if [[ ! -f "$init_bin_path" && -z "$init_args" ]]; then
+    init_args="--node="
 fi
 
 # If local target binary version is different than the latest release version, download it again.
