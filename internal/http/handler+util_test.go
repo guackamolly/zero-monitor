@@ -310,7 +310,6 @@ func TestIsReverseProxyRequest(t *testing.T) {
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
-			println("lol")
 			if output := sut.IsReverseProxyRequest(tC.input); output != tC.output {
 				t.Errorf("expected %v, but got %v", tC.output, output)
 			}

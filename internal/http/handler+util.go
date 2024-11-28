@@ -89,6 +89,12 @@ func RenderString(ectx echo.Context, tpl string, v any) (string, error) {
 
 // Composes an URL relative to the server host.
 func URL(ectx echo.Context, path string, query map[string]string) *url.URL {
+	host := ectx.Request().Host
+	return RawURL(ectx, host, path, query)
+}
+
+// Composes a raw url. Host must be in the address format (<host>:<port>).
+func RawURL(ectx echo.Context, host string, path string, query map[string]string) *url.URL {
 	var qb strings.Builder
 
 	c := 0
@@ -106,7 +112,7 @@ func URL(ectx echo.Context, path string, query map[string]string) *url.URL {
 
 	return &url.URL{
 		Scheme:   ectx.Scheme(),
-		Host:     ectx.Request().Host,
+		Host:     host,
 		Path:     path,
 		RawQuery: qb.String(),
 	}
@@ -129,6 +135,12 @@ func IsReverseProxyRequest(ectx echo.Context) bool {
 	return false
 }
 
+// Checks if the server is bind to an unspecified address (e.g., 0.0.0.0)
+func IsBindToUnspecified(ectx echo.Context) bool {
+	addr := extractServerAddr(ectx)
+	return addr.IP.IsUnspecified()
+}
+
 func ExtractReverseProxyIP(ectx echo.Context) string {
 	xff, ok := ectx.Request().Header[echo.HeaderXForwardedFor]
 	if !ok || len(xff) < 2 {
@@ -136,4 +148,25 @@ func ExtractReverseProxyIP(ectx echo.Context) string {
 	}
 
 	return xff[1]
+}
+
+func ExtractPort(ectx echo.Context) string {
+	_, port, _ := net.SplitHostPort(ectx.Request().Host)
+	return port
+}
+
+func extractServerAddr(ectx echo.Context) *net.TCPAddr {
+	var addr net.Addr
+
+	if ectx.IsTLS() {
+		addr = ectx.Echo().TLSListenerAddr()
+	} else {
+		addr = ectx.Echo().ListenerAddr()
+	}
+
+	if c, ok := addr.(*net.TCPAddr); ok {
+		return c
+	}
+
+	panic("extractServerAddr: unexpected unreachable statement")
 }
