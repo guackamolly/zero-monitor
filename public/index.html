@@ -52,7 +52,7 @@
             </div>
 
             <nav>
-                <a href="network">Dashboard</a>
+                <a href="dashboard">Dashboard</a>
                 <a href="network">Network</a>
                 <a href="settings">Settings</a>
             </nav>
@@ -64,12 +64,14 @@
                     Hooray! If you're seeing this page it means <b>master</b> is
                     up and running.
                 </p>
-                <p>Connect one or more nodes by pasting the following
-                    code-snippet in the server to monitor shell:
+                <p>Start by generating a temporary invite link to connect one or
+                    more nodes (<a href="dashboard">dashboard</a>).
+                    Then, copy the following
+                    code-snippet and paste in the server to monitor shell:
                 </p>
                 <div class="divider"></div>
                 <h2>Linux/macOS</h2>
-                <pre><code>wget -qO- https://raw.githubusercontent.com/guackamolly/zero-monitor/refs/heads/master/.github/get-node| bash</code></pre>
+                <pre><code>bash <(wget -qO- https://raw.githubusercontent.com/guackamolly/zero-monitor/refs/heads/master/.github/get-node) --node=</code></pre>
             </section>
         </main>
     </body>

@@ -54,18 +54,26 @@ Besides monitoring, you can also take advantage of these built-in features:
 The simplest way to get started is by using the one-click deploy scripts provided by the tool:
 
 ```bash
-wget -qO- https://raw.githubusercontent.com/guackamolly/zero-monitor/refs/heads/master/.github/get-master | bash
+bash <(wget -qO- https://raw.githubusercontent.com/guackamolly/zero-monitor/refs/heads/master/.github/get-master)
 ```
 
 Running this command will download `master` + `init` binaries specifically for your OS + Architecture, generate a ready to use `.env` file and finally deploy `master`.
 
 ```bash
-wget -qO- https://raw.githubusercontent.com/guackamolly/zero-monitor/refs/heads/master/.github/get-node | bash
+bash <(wget -qO- https://raw.githubusercontent.com/guackamolly/zero-monitor/refs/heads/master/.github/get-node)
 ```
 
 Running this command will download `node` + `init` binaries specifically for your OS + Architecture, generate a ready to use `.env` file and finally deploy `node`.
 
 ---
+
+After successfully running master, you will need to generate an invite link so nodes can join the network:
+
+1. Open dashboard (e.g., http://[::]/dashboard)
+2. Click the share button
+3. Open homepage (e.g., http://[::])
+4. Copy the command to start a new node
+5. Paste the command in a shell of the server/device to monitor 
 
 Alternatively, you can download any of the master/node pre-compiled binaries from the [releases](https://github.com/guackamolly/zero-monitor/releases) page or build them from source (see [build](tools/build)).
 
