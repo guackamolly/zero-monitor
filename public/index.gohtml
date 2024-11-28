@@ -1,3 +1,4 @@
+{{ define "homepage" }}
 <!DOCTYPE html>
 <html>
     <head>
@@ -71,8 +72,13 @@
                 </p>
                 <div class="divider"></div>
                 <h2>Linux/macOS</h2>
+                {{ if .ShowInviteLink }}
+                <pre><code>bash <(wget -qO- https://raw.githubusercontent.com/guackamolly/zero-monitor/refs/heads/master/.github/get-node) --node={{.InviteLink}}</code></pre>
+                {{ else }}
                 <pre><code>bash <(wget -qO- https://raw.githubusercontent.com/guackamolly/zero-monitor/refs/heads/master/.github/get-node) --node=</code></pre>
+                {{ end }}
             </section>
         </main>
     </body>
 </html>
+{{ end }}

@@ -33,7 +33,7 @@ func RegisterHandlers(e *echo.Echo) {
 }
 
 func rootHandler(ectx echo.Context) error {
-	return ectx.File(root)
+	return ectx.Render(200, "homepage", dashboardView)
 }
 
 func httpErrorHandler() func(err error, c echo.Context) {

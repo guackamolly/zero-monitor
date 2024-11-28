@@ -30,6 +30,10 @@ func (v DashboardNetworkInviteLinkView) Expiry() string {
 	return models.Duration(time.Until(v.Code.ExpiresAt)).String()
 }
 
+func (v DashboardNetworkInviteLinkView) String() string {
+	return v.URL
+}
+
 func NewDashboardView() DashboardView {
 	return DashboardView{}
 }

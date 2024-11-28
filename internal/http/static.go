@@ -8,7 +8,6 @@ import (
 
 var (
 	files = map[string]string{
-		WithVirtualHost("/index.html"):    "index.html",
 		WithVirtualHost("/index.css"):     "index.css",
 		WithVirtualHost("/manifest.json"): "manifest.json",
 	}
@@ -18,6 +17,7 @@ var (
 	}
 
 	templates = map[string]string{
+		"homepage":                      "index.gohtml",
 		"dashboard":                     "tpl/dashboard/*.gohtml",
 		"network":                       "tpl/network/*.gohtml",
 		"network/:id":                   "tpl/network/id/*.gohtml",
@@ -35,8 +35,7 @@ var (
 		500: "500/index.html",
 	}
 
-	root     = files[WithVirtualHost("/index.html")]
-	fallback = root
+	fallback = httpErrors[500]
 )
 
 func RegisterStaticFiles(e *echo.Echo, fs fs.FS) error {
