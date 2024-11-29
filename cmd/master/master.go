@@ -21,13 +21,18 @@ import (
 	"github.com/guackamolly/zero-monitor/public"
 	"github.com/labstack/echo/v4"
 
-	_ "github.com/guackamolly/zero-monitor/internal/build"
+	build "github.com/guackamolly/zero-monitor/internal/build"
+	flags "github.com/guackamolly/zero-monitor/internal/build/flags"
 	_ "github.com/guackamolly/zero-monitor/internal/env"
 )
 
 func main() {
-	// 1. Load config
+	if build.Release() && !flags.Verbose() {
+		logging.DisableDebugLogs()
+	}
 	logging.AddLogger(logging.NewConsoleLogger())
+
+	// 1. Load config
 	cfg := loadConfig()
 
 	// 2. Initialize DI.

@@ -13,17 +13,21 @@ import (
 	"github.com/guackamolly/zero-monitor/internal/service"
 	"github.com/showwin/speedtest-go/speedtest"
 
-	_ "github.com/guackamolly/zero-monitor/internal/build"
+	build "github.com/guackamolly/zero-monitor/internal/build"
+	flags "github.com/guackamolly/zero-monitor/internal/build/flags"
 	_ "github.com/guackamolly/zero-monitor/internal/env"
 )
 
 func main() {
-	// 1. Initialize DI & logging.
+	if build.Release() && !flags.Verbose() {
+		logging.DisableDebugLogs()
+	}
+	logging.AddLogger(logging.NewConsoleLogger())
+
+	// 1. Initialize DI.
 	pc := createPublishContainer()
 	ctx := context.Background()
 	ctx = mq.InjectPublishContainer(ctx, pc)
-
-	logging.AddLogger(logging.NewConsoleLogger())
 
 	// 2. Initialize pub server.
 	loadCrypto()

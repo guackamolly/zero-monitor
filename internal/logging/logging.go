@@ -1,6 +1,7 @@
 package logging
 
 var loggers = []Logger{}
+var includeDebugLogs = true
 
 func LogInfo(fmt string, s ...any) {
 	for _, l := range loggers {
@@ -27,8 +28,12 @@ func LogFatal(fmt string, s ...any) {
 }
 
 func LogDebug(fmt string, s ...any) {
+	if !includeDebugLogs {
+		return
+	}
+
 	for _, l := range loggers {
-		log(l.Info, fmt, s...)
+		log(l.Debug, fmt, s...)
 	}
 }
 
@@ -46,4 +51,8 @@ type Logger interface {
 
 func AddLogger(logger Logger) {
 	loggers = append(loggers, logger)
+}
+
+func DisableDebugLogs() {
+	includeDebugLogs = false
 }
