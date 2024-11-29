@@ -101,9 +101,6 @@ func initializeHttpServer(ctx context.Context) *echo.Echo {
 	// Initialize echo framework.
 	e := echo.New()
 
-	// Initialize logging.
-	logging.AddLogger(logging.NewEchoLogger(e.Logger))
-
 	// Register server dependencies.
 	http.RegisterHandlers(e)
 	http.RegisterMiddlewares(e, ctx)

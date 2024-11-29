@@ -89,7 +89,7 @@ func (s Socket) OnMsgReceived(t Topic, h func(m Msg)) func() {
 // Receiver must be a pub socket.
 func (s Socket) PublishMsg(m Msg) error {
 	var err error
-	logging.LogInfo("publishing Msg with topic: %d", m.Topic)
+	logging.LogDebug("publishing Msg with topic: %d", m.Topic)
 
 	m = m.WithIdentity(s.Identity)
 	if m.Topic == JoinNetwork {
@@ -175,7 +175,7 @@ func (s Socket) onMsgReceived(
 		return
 	}
 
-	logging.LogInfo("calling %d handlers", len(ls))
+	logging.LogDebug("calling %d handlers", len(ls))
 	for _, l := range ls {
 		l.handler(msg)
 	}

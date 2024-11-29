@@ -53,7 +53,7 @@ func (s *NodeReporterService) Start(pollDuration time.Duration) chan (models.Nod
 				stream <- s.node
 			}
 
-			logging.LogInfo("sleeping for %s until polling new node stats", pollDuration)
+			logging.LogDebug("sleeping for %s until polling new node stats", pollDuration)
 			time.Sleep(pollDuration)
 		}
 	}()

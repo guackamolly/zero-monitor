@@ -28,7 +28,7 @@ func NewNodeSchedulerService(
 	// schedule goroutine that reacts to network changes and updates config
 	go func() {
 		for s := range networkStream() {
-			logging.LogInfo("nodes network changed, updating trusted network")
+			logging.LogDebug("nodes network changed, updating trusted network")
 			updateTrustedNetwork(s)
 		}
 	}()
@@ -37,14 +37,14 @@ func NewNodeSchedulerService(
 	go func() {
 		for {
 			autoSaveDuration := cfg().AutoSavePeriod.Duration()
-			logging.LogInfo("sleeping for %s before saving config file", autoSaveDuration)
+			logging.LogDebug("sleeping for %s before saving config file", autoSaveDuration)
 			time.Sleep(autoSaveDuration)
 
-			logging.LogInfo("trying to save config file")
+			logging.LogDebug("trying to save config file")
 			err := saveCfg()
 
 			if err != nil {
-				logging.LogError("coudln't save config file, %v", err)
+				logging.LogError("couldn't save config file, %v", err)
 			}
 		}
 	}()
@@ -70,7 +70,7 @@ func NewNodeSchedulerService(
 				}
 			}
 
-			logging.LogInfo("sleeping for %s before checking for missing nodes", lastSeenTimeout)
+			logging.LogDebug("sleeping for %s before checking for missing nodes", lastSeenTimeout)
 			time.Sleep(lastSeenTimeout)
 		}
 	}()

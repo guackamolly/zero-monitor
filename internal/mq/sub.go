@@ -17,7 +17,7 @@ func (s Socket) RegisterSubscriptions() {
 
 	go func() {
 		for {
-			logging.LogInfo("waiting for messages...")
+			logging.LogDebug("waiting for messages...")
 			m, err := s.ReceiveMsg()
 			if err != nil {
 				logging.LogError("failed to receive message from pub socket, %v", err)
@@ -32,7 +32,7 @@ func (s Socket) RegisterSubscriptions() {
 		spu := sc.GetNodeStatsPollingDurationUpdates()
 
 		for sp := range spu {
-			logging.LogInfo("broadcasting stats polling duration update")
+			logging.LogDebug("broadcasting stats polling duration update")
 			err := broadcastStatsPollingDurationUpdate(s, sp)
 			if err != nil {
 				logging.LogError("failed to broadcast stats polling duration update, %v", err)
@@ -46,7 +46,7 @@ func handle(
 	m Msg,
 	sc *SubscribeContainer,
 ) {
-	logging.LogInfo("(sub) handling topic: %d", m.Topic)
+	logging.LogDebug("(sub) handling topic: %d", m.Topic)
 	switch m.Topic {
 	case JoinNetwork:
 		handleJoinNetworkRequest(s, m, sc.JoinNodesNetwork, sc.RequiresNodesNetworkAuthentication, sc.GetNodeStatsPollingDuration)
@@ -70,7 +70,7 @@ func handleJoinNetworkRequest(
 	requiresAuthentication domain.RequiresNodesNetworkAuthentication,
 	nodeStatsPollingDuration domain.GetNodeStatsPollingDuration,
 ) {
-	logging.LogInfo("handling join network request")
+	logging.LogDebug("handling join network request")
 	req, ok := m.Data.(JoinNetworkRequest)
 	if !ok {
 		err := fmt.Errorf("couldn't cast data to join network request, got: %v", m.Data)
@@ -135,7 +135,7 @@ func broadcastStatsPollingDurationUpdate(
 	d time.Duration,
 ) error {
 	if len(s.Clients) == 0 {
-		logging.LogInfo("skipping stats polling duration update broadcast, no registered pub sockets")
+		logging.LogWarning("skipping stats polling duration update broadcast, no registered pub sockets")
 		return nil
 	}
 

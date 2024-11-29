@@ -24,6 +24,10 @@ func (l consoleLogger) Fatal(fmt string, s ...any) {
 	console.Fatalln("(fatal): " + f)
 }
 
+func (l consoleLogger) Debug(fmt string, s ...any) {
+	console.Println("(debug): " + l.format(fmt, s...))
+}
+
 func (l consoleLogger) format(fmts string, s ...any) string {
 	return fmt.Sprintf(fmts, s...)
 }

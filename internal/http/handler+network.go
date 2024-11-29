@@ -106,7 +106,7 @@ func networkIdConnectionsHandler(ectx echo.Context) error {
 				return ectx.Render(200, "network/:id/connections", NewNetworkNodeConnectionsView(n, []models.Connection{}, nil))
 			}
 
-			logging.LogInfo("fetching node connections")
+			logging.LogDebug("fetching node connections")
 			conns, err := sc.NodeCommander.Connections(n.ID)
 			if err != nil {
 				logging.LogError("failed to fetch node connections, %v", conns)
@@ -127,7 +127,7 @@ func networkIdPackagesHandler(ectx echo.Context) error {
 				return ectx.Render(200, "network/:id/packages", NewNetworkNodePackagesView(n, []models.Package{}, rerr))
 			}
 
-			logging.LogInfo("fetching node packages")
+			logging.LogDebug("fetching node packages")
 			packages, err := sc.NodeCommander.Packages(n.ID)
 			if err != nil {
 				logging.LogError("failed to fetch node packages, %v", packages)
@@ -152,7 +152,7 @@ func networkIdProcessesHandler(ectx echo.Context) error {
 				return ectx.Render(200, "network/:id/processes", NewNetworkNodeProcessesView(n, []models.Process{}, rerr))
 			}
 
-			logging.LogInfo("fetching node processes")
+			logging.LogDebug("fetching node processes")
 			procs, err := sc.NodeCommander.Processes(n.ID)
 			if err != nil {
 				logging.LogError("failed to fetch node processes, %v", procs)
@@ -182,7 +182,7 @@ func networkIdProcessesFormHandler(ectx echo.Context) error {
 				return RedirectWithError(ectx, fmt.Errorf("process with PID %s couldn't be found", killPid))
 			}
 
-			logging.LogInfo("killing node process")
+			logging.LogDebug("killing node process")
 			err = sc.NodeCommander.KillProcess(n.ID, int32(pid))
 			if err != nil {
 				logging.LogError("failed to kill node process, %v", err)
@@ -215,7 +215,7 @@ func networkIdSpeedtestFormHandler(ectx echo.Context) error {
 				return ectx.Redirect(301, ectx.Request().URL.Path)
 			}
 
-			logging.LogInfo("starting speedtest")
+			logging.LogDebug("starting speedtest")
 			st, err := sc.NodeSpeedtest.Start(n.ID)
 			if err != nil {
 				logging.LogError("failed to start speedtest, %v", err)

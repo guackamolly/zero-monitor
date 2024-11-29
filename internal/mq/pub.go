@@ -34,7 +34,7 @@ func (s Socket) RegisterPublishers() {
 			}
 			topic := m.Topic
 
-			logging.LogInfo("(pub) handling topic: %d", topic)
+			logging.LogDebug("(pub) handling topic: %d", topic)
 			switch topic {
 			case JoinNetwork:
 				err = handleJoinNetworkResponse(s, m, pc.StartNodeStatsPolling, pc.GetCurrentNode)

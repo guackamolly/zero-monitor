@@ -26,6 +26,12 @@ func LogFatal(fmt string, s ...any) {
 	}
 }
 
+func LogDebug(fmt string, s ...any) {
+	for _, l := range loggers {
+		log(l.Info, fmt, s...)
+	}
+}
+
 func log(cb func(string, ...any), fmt string, s ...any) {
 	cb(fmt, s...)
 }
@@ -35,6 +41,7 @@ type Logger interface {
 	Warning(fmt string, s ...any)
 	Error(fmt string, s ...any)
 	Fatal(fmt string, s ...any)
+	Debug(fmt string, s ...any)
 }
 
 func AddLogger(logger Logger) {
