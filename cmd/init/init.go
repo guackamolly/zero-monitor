@@ -16,6 +16,7 @@ import (
 	"path/filepath"
 	"reflect"
 
+	build "github.com/guackamolly/zero-monitor/internal/build"
 	"github.com/guackamolly/zero-monitor/internal/config"
 	_http "github.com/guackamolly/zero-monitor/internal/http"
 	"github.com/joho/godotenv"
@@ -50,6 +51,13 @@ var action = BootstrapMaster
 var inviteLink *url.URL
 
 func init() {
+	flag.BoolFunc("version", "prints build version", func(s string) error {
+		println(build.Version())
+
+		os.Exit(0)
+		return nil
+	})
+
 	flag.Func("node", "configures the environment for starting a node", func(s string) error {
 		if len(s) == 0 {
 			println("Waiting for invite link... (press enter to resume)")
