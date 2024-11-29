@@ -1,21 +1,19 @@
 package internal
 
-import (
-	"flag"
-	"os"
-)
-
 // Holds the program version value. This value is linked at build-time with the -X flag.
 // See [tools/build].
 var version string
 
-func init() {
-	flag.BoolFunc("version", "Prints build version", func(s string) error {
-		println(version)
+// If the program is running on release mode. This value is linked at build-time with the -X flag.
+// See [tools/build].
+var release string = "false"
 
-		os.Exit(0)
-		return nil
-	})
+// Indicates the version that the program is running.
+func Version() string {
+	return version
+}
 
-	flag.Parse()
+// Indicates if the program is running on release mode.
+func Release() bool {
+	return release == "true"
 }
