@@ -1,8 +1,5 @@
 @ECHO OFF & setlocal enabledelayedexpansion
 
-rem Save program arguments to later pass on init binary.
-set init_args=%*
-
 rem Common urls.
 set new_issue_url=https://github.com/guackamolly/zero-monitor/issues/new
 set latest_release_url=https://api.github.com/repos/guackamolly/zero-monitor/releases/latest
@@ -12,7 +9,6 @@ rem Installation directory and program paths.
 set install_dir=%APPDATA%\zero-monitor
 set temp_input_dir=%TEMP%\.zero-monitor
 set bin_path=%install_dir%\master.exe
-set init_bin_path=%install_dir%\init.exe
 set jq_bin_path=%install_dir%\jq.exe
 
 
@@ -62,13 +58,6 @@ if %latest_release_version% EQU "" (
   goto :fatal
 )
 
-rem If local init binary does not exist and no arguments have been passed, then bootstrap master.
-if not exist "%init_bin_path%" (
-  if "%init_args%" EQU "" (
-    set init_args="master"
-  )
-)
-
 rem If local target binary version is different than the latest release version, download it again.
 "%bin_path%" "-version">%temp_input_dir%\bin_version
 set /P bin_version=<%temp_input_dir%\bin_version
@@ -77,12 +66,6 @@ if %latest_release_version% NEQ "%bin_version%" (
   call:jq -r ".assets[] | select(.name == \"master_%os%_%arch%\") | .browser_download_url" %temp_input_dir%\latest-release>%temp_input_dir%\download_url
   set /P download_url=<%temp_input_dir%\download_url
   call :download !download_url! master.exe
-)
-
-if %latest_release_version% NEQ "%bin_version%" (
-  call:jq -r ".assets[] | select(.name == \"init_%os%_%arch%\") | .browser_download_url" %temp_input_dir%\latest-release>%temp_input_dir%\download_url
-  set /P download_url=<%temp_input_dir%\download_url
-  call :download !download_url! init.exe
 )
 
 rem Run the binary.
@@ -101,9 +84,6 @@ REM %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   exit /b 0
 
 :exec_bin
-  if "%init_args%" NEQ "" (
-    "%init_bin_path%" %init_args%
-  )
   call "%bin_path%"
   exit /b 0
 

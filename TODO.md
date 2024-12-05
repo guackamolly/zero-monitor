@@ -11,8 +11,5 @@ Looking to contribute to the project but you don't know how to start? The todo's
 - Organize common template code (e.g., `error.gohtml`, websocket initialization, meta tags)
 - Optimize network view template render
 - Speedtests is not saved if client breaks Websocket connection (unbuffered channel not being consumed)
-- Remove depending on environment variables (100% portability)
-- Add initialization scripts for Windows
 - Make Linux/macOS initialization scripts POSIX compliant (remove bash, use shell) 
 - Cover comment //TODOs
-- Fix init not printing build version
