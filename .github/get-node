@@ -1,8 +1,5 @@
 #!/usr/bin/env bash
 
-# Save program arguments to later pass on init binary.
-init_args="$@"
-
 # Common urls.
 new_issue_url="https://github.com/guackamolly/zero-monitor/issues/new"
 latest_release_url="https://api.github.com/repos/guackamolly/zero-monitor/releases/latest"
@@ -11,7 +8,6 @@ jq_release_url="https://github.com/jqlang/jq/releases/download/jq-1.7.1"
 # Installation directory and program paths.
 install_dir="$HOME/.config/zero-monitor"
 bin_path="$install_dir/node"
-init_bin_path="$install_dir/init"
 jq_bin_path="$install_dir/jq"
 
 if [ ! -d "$install_dir" ]; then
@@ -28,10 +24,6 @@ jq() {
 }
 
 exec_bin() {
-    if [ ! -z "$init_args" ]; then
-        "$init_bin_path" $init_args
-    fi
-
     exec "$bin_path"
 }
 
@@ -79,19 +71,9 @@ if [ -z "$latest_release_version" ]; then
     fatal "Failed to extract release version, please raise an issue to alert maintainers about this bug.\n$new_issue_url"
 fi
 
-# If local init binary does not exist and no arguments have been passed, then bootstrap node.
-if [[ ! -f "$init_bin_path" && -z "$init_args" ]]; then
-    init_args="--node="
-fi
-
 # If local target binary version is different than the latest release version, download it again.
 if ! [[ -f "$bin_path" && "$latest_release_version" != "$($bin_path -version)" ]]; then
     download "$(echo $response | jq -r '.assets[] | select(.name == "node_'${os}'_'${arch}'") | .browser_download_url')"
-fi
-
-# If local init binary version is different than the latest release version, download it again.
-if ! [[ -f "$init_bin_path " && "$latest_release_version" != "$($init_bin_path -version)" ]]; then
-    download "$(echo $response | jq -r '.assets[] | select(.name == "init_'${os}'_'${arch}'") | .browser_download_url')"
 fi
 
 # Run the binary.

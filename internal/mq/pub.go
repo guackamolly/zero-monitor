@@ -8,7 +8,8 @@ import (
 	"github.com/guackamolly/zero-monitor/internal/logging"
 )
 
-func (s Socket) RegisterPublishers() {
+// Invite code is required if it's the first connection with master server.
+func (s Socket) RegisterPublishers(inviteCode string) {
 	pc := ExtractPublishContainer(s.ctx)
 	if pc == nil {
 		log.Fatalln("publish container hasn't been injected")
@@ -37,7 +38,7 @@ func (s Socket) RegisterPublishers() {
 			logging.LogDebug("(pub) handling topic: %d", topic)
 			switch topic {
 			case JoinNetwork:
-				err = handleJoinNetworkResponse(s, m, pc.StartNodeStatsPolling, pc.GetCurrentNode)
+				err = handleJoinNetworkResponse(s, m, pc.StartNodeStatsPolling, pc.GetCurrentNode, inviteCode)
 			case AuthenticateNetwork:
 				err = handleAuthenticateNetworkResponse(s, m, pc.GetCurrentNode)
 			case UpdateNodeStatsPollDuration:
@@ -69,9 +70,10 @@ func handleJoinNetworkResponse(
 	m Msg,
 	start domain.StartNodeStatsPolling,
 	currentNode domain.GetCurrentNode,
+	inviteCode string,
 ) error {
 	if _, ok := m.Data.(RequiresAuthenticationResponse); ok {
-		return handleRequiresAuthenticationResponse(s, currentNode)
+		return handleRequiresAuthenticationResponse(s, currentNode, inviteCode)
 	}
 
 	resp, ok := m.Data.(JoinNetworkResponse)
@@ -107,14 +109,20 @@ func handleAuthenticateNetworkResponse(
 func handleRequiresAuthenticationResponse(
 	s Socket,
 	currentNode domain.GetCurrentNode,
+	inviteCode string,
 ) error {
 	// disallow handshaking more than once, otherwise both master and node will enter in a race condition like state
 	if handshaked {
 		logging.LogFatal("invalid state: already authenticated but master replied with <requires authentication>")
 	}
 
+	if len(inviteCode) == 0 {
+		println("Waiting for invite code... (press enter to resume)")
+		fmt.Scanln(&inviteCode)
+	}
+
 	handshaked = true
-	return s.PublishMsg(Compose(AuthenticateNetwork, AuthenticateNetworkRequest{InviteCode: InviteCode(), Node: currentNode()}))
+	return s.PublishMsg(Compose(AuthenticateNetwork, AuthenticateNetworkRequest{InviteCode: inviteCode, Node: currentNode()}))
 }
 
 func handleUpdateStatsPollDurationRequest(

@@ -168,31 +168,3 @@ func TestEncryptAndDecryptCipher(t *testing.T) {
 		t.Errorf("expected decrypt to return %v, but got %v", data, plain)
 	}
 }
-
-func TestEncryptAndDecryptAsymmetric(t *testing.T) {
-	data := []byte("zero-monitor")
-
-	err := mq.LoadAsymmetricBlock(true)
-	if err != nil {
-		t.Fatalf("didn't expect load public key block to fail, %v", err)
-	}
-
-	encrypted, err := mq.EncryptAsymmetric(data)
-	if err != nil {
-		t.Fatalf("didn't expect encrypt asymmetric to fail, %v", err)
-	}
-
-	err = mq.LoadAsymmetricBlock(false)
-	if err != nil {
-		t.Fatalf("didn't expect load private key block to fail, %v", err)
-	}
-
-	decrypted, err := mq.DecryptAsymmetric(encrypted)
-	if err != nil {
-		t.Fatalf("didn't expect decrypt asymmetric to fail, %v", err)
-	}
-
-	if !slices.Equal(decrypted, data) {
-		t.Errorf("expected decrypt to return %v, but got %v", data, decrypted)
-	}
-}

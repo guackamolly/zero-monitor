@@ -8,7 +8,7 @@ set jq_release_url=https://github.com/jqlang/jq/releases/download/jq-1.7.1
 rem Installation directory and program paths.
 set install_dir=%APPDATA%\zero-monitor
 set temp_input_dir=%TEMP%\.zero-monitor
-set bin_path=%install_dir%\node.exe
+set bin_path=%install_dir%\master.exe
 set jq_bin_path=%install_dir%\jq.exe
 
 
@@ -63,9 +63,9 @@ rem If local target binary version is different than the latest release version,
 set /P bin_version=<%temp_input_dir%\bin_version
 
 if %latest_release_version% NEQ "%bin_version%" (
-  call:jq -r ".assets[] | select(.name == \"node_%os%_%arch%\") | .browser_download_url" %temp_input_dir%\latest-release>%temp_input_dir%\download_url
+  call:jq -r ".assets[] | select(.name == \"master_%os%_%arch%\") | .browser_download_url" %temp_input_dir%\latest-release>%temp_input_dir%\download_url
   set /P download_url=<%temp_input_dir%\download_url
-  call :download !download_url! node.exe
+  call :download !download_url! master.exe
 )
 
 rem Run the binary.

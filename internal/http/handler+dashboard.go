@@ -22,7 +22,7 @@ func dashboardFormHandler(ectx echo.Context) error {
 			return ectx.Redirect(301, ectx.Request().URL.Path)
 		}
 
-		host := ServerAddress()
+		host := ServerAddress(ectx)
 		if IsReverseProxyRequest(ectx) {
 			host = net.JoinHostPort(ExtractReverseProxyIP(ectx), ExtractPort(ectx))
 		} else if IsBindToUnspecified(ectx) {
@@ -32,7 +32,8 @@ func dashboardFormHandler(ectx echo.Context) error {
 				return echo.ErrInternalServerError
 			}
 
-			host = net.JoinHostPort(ip.String(), serverPort)
+			_, port, _ := net.SplitHostPort(host)
+			host = net.JoinHostPort(ip.String(), port)
 		}
 
 		code := sc.NodeManager.Code()

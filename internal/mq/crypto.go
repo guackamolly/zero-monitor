@@ -10,20 +10,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path/filepath"
-
-	"github.com/guackamolly/zero-monitor/internal/config"
-	"github.com/guackamolly/zero-monitor/internal/logging"
-)
-
-const (
-	mqTransportPrivateKeyFileEnvKey = "mq_transport_pem_key"
-	mqTransportPublicKeyFileEnvKey  = "mq_transport_pub_key"
-)
-
-var (
-	mqTransportPrivateKeyFile = os.Getenv(mqTransportPrivateKeyFileEnvKey)
-	mqTransportPublicKeyFile  = os.Getenv(mqTransportPublicKeyFileEnvKey)
 )
 
 // Global map of blocks used to encrypt/decrypt sensitive
@@ -36,39 +22,11 @@ var cipherBlocks = map[string]cipher.Block{}
 // the key exchange between nodes.
 var blk *pem.Block
 
-func init() {
-	peml := len(mqTransportPrivateKeyFile)
-	publ := len(mqTransportPublicKeyFile)
-
-	if peml > 0 && publ > 0 {
-		return
-	}
-
-	d, err := config.Dir()
-	if err != nil {
-		logging.LogWarning("couldn't lookup pem/pub key files to encrypt message queue messages. either communication with master node fail OR it won't be encrypted")
-		return
-	}
-
-	if peml == 0 {
-		mqTransportPrivateKeyFile = filepath.Join(d, "mq.pem")
-	}
-
-	if publ == 0 {
-		mqTransportPublicKeyFile = filepath.Join(d, "mq.pub")
-	}
-}
-
 // Loads the public/private key block to be used on encryption/decryption.
 func LoadAsymmetricBlock(
-	pub bool,
+	keyfilepath string,
 ) error {
-	p := mqTransportPrivateKeyFile
-	if pub {
-		p = mqTransportPublicKeyFile
-	}
-
-	f, err := os.ReadFile(p)
+	f, err := os.ReadFile(keyfilepath)
 	if err != nil {
 		return err
 	}
@@ -178,5 +136,25 @@ func GenerateCipherKey() ([]byte, error) {
 
 // TODO: derive from private key instead
 func DerivePublicKey() ([]byte, error) {
-	return os.ReadFile(mqTransportPublicKeyFile)
+	key, err := x509.ParsePKCS1PrivateKey(blk.Bytes)
+	if err != nil {
+		return nil, err
+	}
+
+	// Extract the public key from the private key
+	publicKey := &key.PublicKey
+
+	// Marshal the public key into DER format
+	publicKeyBytes, err := x509.MarshalPKIXPublicKey(publicKey)
+	if err != nil {
+		return nil, err
+	}
+
+	// Encode the public key into a PEM block
+	publicKeyBlock := pem.EncodeToMemory(&pem.Block{
+		Type:  "RSA PUBLIC KEY",
+		Bytes: publicKeyBytes,
+	})
+
+	return publicKeyBlock, nil
 }

@@ -57,13 +57,13 @@ The simplest way to get started is by using the one-click deploy scripts provide
 bash <(wget -qO- https://raw.githubusercontent.com/guackamolly/zero-monitor/refs/heads/master/.github/get-master)
 ```
 
-Running this command will download `master` + `init` binaries specifically for your OS + Architecture, generate a ready to use `.env` file and finally deploy `master`.
+Running this command will download `master` binary specifically for your OS + Architecture and then run it.
 
 ```bash
 bash <(wget -qO- https://raw.githubusercontent.com/guackamolly/zero-monitor/refs/heads/master/.github/get-node)
 ```
 
-Running this command will download `node` + `init` binaries specifically for your OS + Architecture, generate a ready to use `.env` file and finally deploy `node`.
+Running this command will download `node` binary specifically for your OS + Architecture and then run it.
 
 ---
 

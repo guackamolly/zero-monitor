@@ -72,11 +72,10 @@
                 </p>
                 <div class="divider"></div>
                 <h2>Linux/macOS</h2>
-                {{ if .ShowInviteLink }}
-                <pre><code>bash <(wget -qO- https://raw.githubusercontent.com/guackamolly/zero-monitor/refs/heads/master/.github/get-node) --node={{.InviteLink}}</code></pre>
-                {{ else }}
-                <pre><code>bash <(wget -qO- https://raw.githubusercontent.com/guackamolly/zero-monitor/refs/heads/master/.github/get-node) --node=</code></pre>
-                {{ end }}
+                <pre><code>bash <(wget -qO- https://raw.githubusercontent.com/guackamolly/zero-monitor/refs/heads/master/.github/get-node)</code></pre>
+
+                <h2>Windows</h2>
+                <pre><code>curl -s -o %TEMP%\get-node.bat https://raw.githubusercontent.com/guackamolly/zero-monitor/refs/heads/master/.github/get-node.bat<br>"%TEMP%\get-node.bat"</code></pre>
             </section>
         </main>
     </body>

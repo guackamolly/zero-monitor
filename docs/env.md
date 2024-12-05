@@ -14,6 +14,7 @@ Master expects the .env file to be present in the working directory under the na
 |`mq_sub_port`|Specifies the port to bind the ZeroMQ listener connection|`36113`|-|
 |`mq_transport_pem_key`|Specifies the path of the `RSA 2048 PKCS 1` private key used for decrypting the communication during the key-exchange of node-master|`~/.config/zero-monitor/mq.pem`|`${CFG_DIR}/mq.pem`|
 |`mq_transport_pub_key`|Specifies the path of the `RSA 2048 PKCS 1` public key used for encrypting the communication during the key-exchange of node-master|`~/.config/zero-monitor/mq.pub`|`${CFG_DIR}/mq.pub`|
+|`bolt_db_path`|Specifies the path of the Bolt in-memory database used to store speedtests results|`~/.config/zero-monitor/master.db`|`${WORKING_DIR}/master.db`|
 
 ---
 
@@ -21,7 +22,6 @@ Additionally you can set these variables to customize your experience while usin
 
 |Environment Variable|Description|Example Value|Default Value|
 |--------------------|-----------|-------------|-------------|
-|`bolt_db_path`|Specifies the path of the Bolt in-memory database used to store speedtests results|`~/.config/zero-monitor/master.db`|`${WORKING_DIR}/master.db`|
 |`server_tls_crt_fp`|Specifies the path of the signed certificate to encrypt web-server communication (HTTPS)|`~/.config/zero-monitor/master.crt`|-|
 |`server_tls_crt_key`|Specifies the path of the signed certificate private key to encrypt web-server communication (HTTPS)|`~/.config/zero-monitor/master.crt.key`|-|
 |`server_virtual_host`|If you want to deploy the web server as a virtual path|`/zero-monitor`|-|

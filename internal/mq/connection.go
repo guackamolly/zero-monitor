@@ -3,50 +3,27 @@ package mq
 import (
 	"fmt"
 	"net"
-	"os"
 
 	"github.com/guackamolly/zero-monitor/internal/data/repositories"
 	"github.com/guackamolly/zero-monitor/internal/logging"
 )
 
-const (
-	mqSubHostEnvKey = "mq_sub_host"
-	mqSubPortEnvKey = "mq_sub_port"
-)
-
-var (
-	mqSubHost = os.Getenv(mqSubHostEnvKey)
-	mqSubPort = os.Getenv(mqSubPortEnvKey)
-)
-
 // Connects a socket for publishing messages to master node.
-func ConnectPublish(s Socket) error {
-	if len(mqSubHost) > 0 && len(mqSubPort) > 0 {
-		return s.Dial(fmt.Sprintf("tcp://[%s]:%s", mqSubHost, mqSubPort))
-	}
-
-	return fmt.Errorf("sub host and port haven't been provided")
+func ConnectPublish(s Socket, host string, port string) error {
+	return s.Dial(fmt.Sprintf("tcp://[%s]:%s", host, port))
 }
 
 // Connects a socket for subscribing messages from reporting nodes.
-func ConnectSubscribe(s Socket) error {
-	ip := subHostIP()
-
-	// if port is unspecified, default to 0 so go internals
-	// choose a random available port
-	if len(mqSubPort) == 0 {
-		mqSubPort = "0"
-	}
-
-	return s.Listen(fmt.Sprintf("tcp://[%s]:%s", ip, mqSubPort))
+func ConnectSubscribe(s Socket, host string, port string) error {
+	return s.Listen(fmt.Sprintf("tcp://[%s]:%s", lookupHost(host), port))
 }
 
 func Close(s Socket) error {
 	return s.Close()
 }
 
-func subHostIP() net.IP {
-	if ip := net.ParseIP(mqSubHost); ip != nil {
+func lookupHost(host string) net.IP {
+	if ip := net.ParseIP(host); ip != nil {
 		return ip
 	}
 

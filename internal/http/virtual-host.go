@@ -2,17 +2,14 @@ package http
 
 import (
 	"fmt"
-	"os"
 	"strings"
 )
 
-const (
-	serverVirtualHostEnvKey = "server_virtual_host"
-)
+var serverVirtualHost string
 
-var (
-	serverVirtualHost = os.Getenv(serverVirtualHostEnvKey)
-)
+func SetVirtualHost(host string) {
+	serverVirtualHost = host
+}
 
 func WithVirtualHost(path string) string {
 	if !strings.HasPrefix(serverVirtualHost, "/") {
