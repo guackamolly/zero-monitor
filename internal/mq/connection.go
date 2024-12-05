@@ -15,7 +15,7 @@ func ConnectPublish(s Socket, host string, port string) error {
 
 // Connects a socket for subscribing messages from reporting nodes.
 func ConnectSubscribe(s Socket, host string, port string) error {
-	return s.Dial(fmt.Sprintf("tcp://[%s]:%s", lookupHost(host), port))
+	return s.Listen(fmt.Sprintf("tcp://[%s]:%s", lookupHost(host), port))
 }
 
 func Close(s Socket) error {
