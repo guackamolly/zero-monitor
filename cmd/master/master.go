@@ -73,6 +73,7 @@ func loadEnv() env.MasterEnv {
 		return env
 	}
 
+	logging.LogDebug("couldn't lookup .env, bootstrapping configuration values...")
 	return bootstrap.Master()
 }
 
