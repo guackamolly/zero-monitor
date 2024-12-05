@@ -82,8 +82,8 @@ func Save[T MasterEnv | NodeEnv](
 func loadEnv(
 	filename string,
 ) error {
-	if err := godotenv.Load(); err != nil {
-		return err
+	if err := godotenv.Load(); err == nil {
+		return nil
 	}
 
 	d, err := config.Dir()
