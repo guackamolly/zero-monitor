@@ -13,7 +13,7 @@ server_virtual_host=/
 mq_sub_host=0.0.0.0
 mq_sub_port=36113
 
-## If these variables aren't filled, pem/pub files are lookup on configuration directory
+## Supply public/private keys for encrypting message queue
 mq_transport_pem_key=
 mq_transport_pub_key=
 
