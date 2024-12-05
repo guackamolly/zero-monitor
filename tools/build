@@ -35,7 +35,7 @@ for dist in ${dists[@]}; do
     os_arch=(${dist//\// })
     echo "> Building $dist"
 
-    env GOOS=${os_arch[0]} GOARCH=${os_arch[1]} go build -ldflags="-X $build_pkg.version=$version -X $build_pkg.release=true -extldflags=-static -s -w" -o "$dist_path/${target}_${os_arch[0]}_${os_arch[1]}" "$target_path"
+    env GOOS=${os_arch[0]} GOARCH=${os_arch[1]} CGO_ENABLED=0 go build -ldflags="-X $build_pkg.version=$version -X $build_pkg.release=true -extldflags=-static -s -w" -o "$dist_path/${target}_${os_arch[0]}_${os_arch[1]}" "$target_path"
     if [[ ! $? -eq 0 ]]; then
         echo "Couldn't build for $dist."
     fi
