@@ -1,6 +1,7 @@
 package http
 
 import (
+	"fmt"
 	"net"
 	"net/url"
 	"strconv"
@@ -116,6 +117,11 @@ func RawURL(ectx echo.Context, host string, path string, query map[string]string
 		Path:     path,
 		RawQuery: qb.String(),
 	}
+}
+
+func ServerAddress(ectx echo.Context) string {
+	addr := extractServerAddr(ectx)
+	return fmt.Sprintf("[%s]:%d", addr.IP, addr.Port)
 }
 
 func IsLocalRequest(ectx echo.Context) bool {

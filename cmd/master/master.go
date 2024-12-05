@@ -8,11 +8,13 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/guackamolly/zero-monitor/internal/bootstrap"
 	"github.com/guackamolly/zero-monitor/internal/config"
 	dbb "github.com/guackamolly/zero-monitor/internal/data/db"
 	dbbolt "github.com/guackamolly/zero-monitor/internal/data/db/db-bolt"
 	"github.com/guackamolly/zero-monitor/internal/data/models"
 	"github.com/guackamolly/zero-monitor/internal/data/repositories"
+	"github.com/guackamolly/zero-monitor/internal/env"
 	"github.com/guackamolly/zero-monitor/internal/event"
 	"github.com/guackamolly/zero-monitor/internal/http"
 	"github.com/guackamolly/zero-monitor/internal/logging"
@@ -23,7 +25,6 @@ import (
 
 	build "github.com/guackamolly/zero-monitor/internal/build"
 	flags "github.com/guackamolly/zero-monitor/internal/build/flags"
-	_ "github.com/guackamolly/zero-monitor/internal/env"
 )
 
 func main() {
@@ -32,7 +33,8 @@ func main() {
 	}
 	logging.AddLogger(logging.NewConsoleLogger())
 
-	// 1. Load config
+	// 1. Load env + config
+	env := loadEnv()
 	cfg := loadConfig()
 
 	// 2. Initialize DI.
@@ -42,19 +44,19 @@ func main() {
 	ctx = mq.InjectSubscribeContainer(ctx, suc)
 
 	// 3. Initialize sub server.
-	loadCrypto()
+	loadCrypto(env.MessageQueueTransportPemKey)
 
-	s := initializeSubServer(ctx)
+	s := initializeSubServer(ctx, env.MessageQueueHost, env.MessageQueuePort)
 	defer s.Close()
 
 	// 4. Initialize database.
-	db := initializeDatabase()
+	db := initializeDatabase(env.BoltDBPath)
 	defer db.Close()
 
 	// 5. Initialize http server.
 	sc = updateServiceContainer(sc, &s, db)
 	ctx = http.InjectServiceContainer(ctx, sc)
-	e := initializeHttpServer(ctx)
+	e := initializeHttpServer(ctx, env.ServerHost, env.ServerPort, env.ServerTLSCert, env.ServerTLSKey, env.ServerVirtualHost)
 	defer e.Close()
 
 	// 6. Await termination...
@@ -64,6 +66,14 @@ func main() {
 
 	// 7. Try to save config
 	saveConfig(sc.MasterConfiguration)
+}
+
+func loadEnv() env.MasterEnv {
+	if env, err := env.Master(); err == nil {
+		return env
+	}
+
+	return bootstrap.Master()
 }
 
 func loadConfig() config.Config {
@@ -82,17 +92,18 @@ func saveConfig(s *service.MasterConfigurationService) {
 	}
 }
 
-func loadCrypto() {
-	err := mq.LoadAsymmetricBlock(false)
+func loadCrypto(keyfilepath string) {
+	err := mq.LoadAsymmetricBlock(keyfilepath)
 	if err != nil {
-		logging.LogFatal("failed to load message queue private key, %v", err)
+		logging.LogError("failed to load message queue private key, %v", err)
+		logging.LogWarning("message queue sensitive data will not be encrypted!")
 	}
 }
 
-func initializeSubServer(ctx context.Context) mq.Socket {
+func initializeSubServer(ctx context.Context, host, port string) mq.Socket {
 	s := mq.NewSubSocket(ctx)
 	s.RegisterSubscriptions()
-	err := mq.ConnectSubscribe(s)
+	err := mq.ConnectSubscribe(s, host, port)
 	if err != nil {
 		s.Close()
 		log.Fatalf("coudln't open zeromq sub socket, %v\n", err)
@@ -102,7 +113,11 @@ func initializeSubServer(ctx context.Context) mq.Socket {
 	return s
 }
 
-func initializeHttpServer(ctx context.Context) *echo.Echo {
+func initializeHttpServer(
+	ctx context.Context,
+	host, port, certfilepath, keyfilepath string,
+	virtualhost string,
+) *echo.Echo {
 	// Initialize echo framework.
 	e := echo.New()
 
@@ -111,17 +126,22 @@ func initializeHttpServer(ctx context.Context) *echo.Echo {
 	http.RegisterMiddlewares(e, ctx)
 	http.RegisterStaticFiles(e, public.FS)
 	http.RegisterTemplates(e, public.FS)
+	http.SetVirtualHost(virtualhost)
 
 	// Start server.
 	go func() {
-		logging.LogFatal("server exit %v", http.Start(e))
+		if len(certfilepath) > 0 && len(keyfilepath) > 0 {
+			logging.LogFatal("server exit %v", http.StartTLS(e, host, port, certfilepath, keyfilepath))
+		}
+
+		logging.LogFatal("server exit %v", http.Start(e, host, port))
 	}()
 
 	return e
 }
 
-func initializeDatabase() dbb.Database {
-	db := dbbolt.NewBoltDatabase(dbbolt.Path())
+func initializeDatabase(dbpath string) dbb.Database {
+	db := dbbolt.NewBoltDatabase(dbpath)
 	err := db.Open()
 	if err != nil {
 		logging.LogFatal("couldn't initialize database, %v", db)

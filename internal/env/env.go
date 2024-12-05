@@ -12,9 +12,11 @@ import (
 type MasterEnv struct {
 	ServerHost                  string `env:"server_host"`
 	ServerPort                  string `env:"server_port"`
+	ServerTLSCert               string `env:"server_tls_crt_fp"`
+	ServerTLSKey                string `env:"server_tls_key_fp"`
+	ServerVirtualHost           string `env:"server_virtual_host"`
 	MessageQueueHost            string `env:"mq_sub_host"`
 	MessageQueuePort            string `env:"mq_sub_port"`
-	MessageQueueTransportPubKey string `env:"mq_transport_pub_key"`
 	MessageQueueTransportPemKey string `env:"mq_transport_pem_key"`
 	BoltDBPath                  string `env:"bolt_db_path"`
 }

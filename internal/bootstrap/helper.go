@@ -6,24 +6,9 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"reflect"
-
-	"github.com/joho/godotenv"
 )
 
 // helper functions
-func writeEnv(env any, path string) {
-	v := reflect.ValueOf(env)
-	t := v.Type()
-	m := map[string]string{}
-	for i := 0; i < t.NumField(); i++ {
-		f := t.Field(i)
-		m[f.Tag.Get("env")] = fmt.Sprintf("%v", v.Field(i))
-	}
-
-	godotenv.Write(m, path)
-}
-
 func download(url string) []byte {
 	println("> GET %s", url)
 
