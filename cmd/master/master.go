@@ -2,12 +2,15 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
+	"net"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
+	"github.com/guackamolly/zero-monitor/internal/banner"
 	"github.com/guackamolly/zero-monitor/internal/bootstrap"
 	"github.com/guackamolly/zero-monitor/internal/config"
 	dbb "github.com/guackamolly/zero-monitor/internal/data/db"
@@ -22,6 +25,7 @@ import (
 	"github.com/guackamolly/zero-monitor/internal/service"
 	"github.com/guackamolly/zero-monitor/public"
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/gommon/color"
 
 	build "github.com/guackamolly/zero-monitor/internal/build"
 	flags "github.com/guackamolly/zero-monitor/internal/build/flags"
@@ -32,6 +36,7 @@ func main() {
 		logging.DisableDebugLogs()
 	}
 	logging.AddLogger(logging.NewConsoleLogger())
+	banner.Print()
 
 	// 1. Load env + config
 	env := loadEnv()
@@ -109,7 +114,8 @@ func initializeSubServer(ctx context.Context, host, port string) mq.Socket {
 		s.Close()
 		log.Fatalf("coudln't open zeromq sub socket, %v\n", err)
 	}
-	log.Printf("started zeromq sub socket on addr: %s\n", s.Addr())
+
+	logging.LogInfo("⇨ ZeroMQ server started on %s", color.Green(fmt.Sprintf("tcp://%s", s.Addr())))
 
 	return s
 }
@@ -121,6 +127,8 @@ func initializeHttpServer(
 ) *echo.Echo {
 	// Initialize echo framework.
 	e := echo.New()
+	e.HidePort = true
+	e.HideBanner = true
 
 	// Register server dependencies.
 	http.RegisterHandlers(e)
@@ -129,13 +137,39 @@ func initializeHttpServer(
 	http.RegisterTemplates(e, public.FS)
 	http.SetVirtualHost(virtualhost)
 
+	https := len(certfilepath) > 0 && len(keyfilepath) > 0
+
 	// Start server.
 	go func() {
-		if len(certfilepath) > 0 && len(keyfilepath) > 0 {
+		if https {
 			logging.LogFatal("server exit %v", http.StartTLS(e, host, port, certfilepath, keyfilepath))
 		}
 
 		logging.LogFatal("server exit %v", http.Start(e, host, port))
+	}()
+
+	go func() {
+		for {
+			var addr net.Addr
+			if https {
+				addr = e.TLSListenerAddr()
+			} else {
+				addr = e.ListenerAddr()
+			}
+
+			if addr == nil {
+				time.Sleep(200 * time.Millisecond)
+				continue
+			}
+
+			if https {
+				logging.LogInfo("⇨ https server started on %s", color.Green(fmt.Sprintf("https://%s", addr)))
+			} else {
+				logging.LogInfo("⇨ http server started on %s", color.Green(fmt.Sprintf("http://%s", addr)))
+			}
+
+			return
+		}
 	}()
 
 	return e

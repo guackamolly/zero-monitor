@@ -7,6 +7,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/guackamolly/zero-monitor/internal/banner"
 	"github.com/guackamolly/zero-monitor/internal/bootstrap"
 	"github.com/guackamolly/zero-monitor/internal/data/repositories"
 	"github.com/guackamolly/zero-monitor/internal/env"
@@ -24,6 +25,7 @@ func main() {
 		logging.DisableDebugLogs()
 	}
 	logging.AddLogger(logging.NewConsoleLogger())
+	banner.Print()
 
 	// 1. Load env
 	env := loadEnv()
