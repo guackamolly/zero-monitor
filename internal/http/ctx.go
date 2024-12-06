@@ -22,6 +22,7 @@ type ServiceContainer struct {
 	Network             *service.NetworkService
 	Networking          *service.NetworkingService
 	Authentication      *service.AuthenticationService
+	Authorization       *service.AuthorizationService
 }
 
 func InjectServiceContainer(

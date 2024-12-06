@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/guackamolly/zero-monitor/internal/data/models"
 	"github.com/guackamolly/zero-monitor/internal/data/repositories"
 	"github.com/guackamolly/zero-monitor/internal/logging"
 )
@@ -15,7 +14,7 @@ import (
 type AuthenticationService struct {
 	authRepo repositories.AuthenticationRepository
 	userRepo repositories.UserRepository
-	tokens   map[string]models.User
+	tokens   *TokenBucket
 
 	cacheNeedsAdminRegistration *bool
 }
@@ -23,11 +22,12 @@ type AuthenticationService struct {
 func NewAuthenticationService(
 	authRepo repositories.AuthenticationRepository,
 	userRepo repositories.UserRepository,
+	tokenks *TokenBucket,
 ) *AuthenticationService {
 	s := &AuthenticationService{
 		authRepo: authRepo,
 		userRepo: userRepo,
-		tokens:   map[string]models.User{},
+		tokens:   tokenks,
 	}
 
 	return s
@@ -36,32 +36,31 @@ func NewAuthenticationService(
 func (s *AuthenticationService) Authenticate(
 	username string,
 	password string,
-) (string, error) {
+) (Token, error) {
 	u, err := s.authRepo.SignIn(username, password)
 	if err != nil {
-		return "", err
+		return Token{}, err
 	}
 
-	return s.tokenize(u), nil
+	return s.tokens.New(u), nil
 }
 
 func (s *AuthenticationService) RegisterAdmin(
 	username string,
 	password string,
-) (string, error) {
+) (Token, error) {
 	if !s.NeedsAdminRegistration() {
-		return "", fmt.Errorf("one admin account is already registered")
+		return Token{}, fmt.Errorf("one admin account is already registered")
 	}
 
 	password = s.hash(password)
 	u, err := s.authRepo.RegisterAdmin(username, password)
 	if err != nil {
-		return "", err
+		return Token{}, err
 	}
 
 	*s.cacheNeedsAdminRegistration = false
-
-	return s.tokenize(u), nil
+	return s.tokens.New(u), nil
 }
 
 func (s *AuthenticationService) NeedsAdminRegistration() bool {
@@ -84,22 +83,6 @@ func (s *AuthenticationService) NeedsAdminRegistration() bool {
 
 	logging.LogWarning("couldn't guess if admin is registered or not. allowing admin registration")
 	return true
-}
-
-func (s *AuthenticationService) tokenize(
-	user models.User,
-) string {
-	// clear existing token before adding a new one
-	for t, u := range s.tokens {
-		if u == user {
-			delete(s.tokens, t)
-		}
-	}
-
-	token := models.UUID()
-	s.tokens[token] = user
-
-	return token
 }
 
 func (s *AuthenticationService) hash(pt string) string {

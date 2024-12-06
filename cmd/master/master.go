@@ -261,11 +261,14 @@ func updateServiceContainer(
 	authRepo := repositories.NewDatabaseAuthenticationRepository(crt.(dbb.CredentialsTable), ust.(dbb.UserTable))
 	userRepo := repositories.NewDatabaseUserRepository(ust.(dbb.UserTable))
 
+	tokens := service.TokenBucket{}
+
 	sc.NodeCommander = service.NewNodeCommanderService(zps, zps)
 	sc.NodeSpeedtest = service.NewNodeSpeedtestService(zps, zps, sps)
 	sc.Network = service.NewNetworkService(zps)
 	sc.Networking = service.NewNetworkingService()
-	sc.Authentication = service.NewAuthenticationService(authRepo, userRepo)
+	sc.Authentication = service.NewAuthenticationService(authRepo, userRepo, &tokens)
+	sc.Authorization = service.NewAuthorizationService(&tokens)
 
 	return sc
 }
