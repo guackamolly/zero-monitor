@@ -2,6 +2,7 @@ package http
 
 import (
 	"context"
+	"net/http"
 
 	"github.com/guackamolly/zero-monitor/internal/data/models"
 	"github.com/guackamolly/zero-monitor/internal/logging"
@@ -34,6 +35,26 @@ func contextMiddleware(ctx context.Context) echo.MiddlewareFunc {
 
 			return next(ectx)
 		}
+	}
+}
+
+// Use this middleware to guard routes that can only be accessed by admin users.
+var adminRouteMiddleware = func(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(ectx echo.Context) error {
+		return withServiceContainer(ectx, func(sc *ServiceContainer) error {
+			var cookie *http.Cookie
+			var err error
+
+			if cookie, err = ectx.Cookie(tokenCookie); err != nil || cookie == nil {
+				return echo.ErrUnauthorized
+			}
+
+			if !sc.Authorization.HasAdminRights(cookie.Value) {
+				return echo.ErrUnauthorized
+			}
+
+			return next(ectx)
+		})
 	}
 }
 
