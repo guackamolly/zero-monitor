@@ -9,4 +9,6 @@ import (
 // Register here all entities that will be persisted in a bolt database.
 func init() {
 	gob.Register(db.SpeedtestEntity{})
+	gob.Register(db.UserEntity{})
+	gob.Register(db.CredentialsEntity{})
 }
