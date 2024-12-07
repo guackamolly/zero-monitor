@@ -40,6 +40,12 @@ func RegisterHandlers(e *echo.Echo) {
 	e.GET(settingsRoute, getSettingsHandler, adminRouteMiddleware)
 	e.POST(settingsRoute, updateSettingsHandler, adminRouteMiddleware)
 
+	// user (public if no admin has been registered yet)
+	e.GET(userRoute, userHandler)
+	e.POST(userRoute, userFormHandler)
+	e.GET(userNewRoute, userNewHandler)
+	e.POST(userNewRoute, userNewFormHandler)
+
 	e.HTTPErrorHandler = httpErrorHandler()
 }
 

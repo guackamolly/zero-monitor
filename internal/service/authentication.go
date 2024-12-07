@@ -4,11 +4,15 @@ import (
 	"crypto/sha512"
 	"encoding/hex"
 	"fmt"
+	"regexp"
 	"time"
 
 	"github.com/guackamolly/zero-monitor/internal/data/repositories"
 	"github.com/guackamolly/zero-monitor/internal/logging"
 )
+
+var usernameRegex = regexp.MustCompile(`^[a-zA-Z0-9-_.@]{3,25}$`)
+var passwordRegex = regexp.MustCompile(`^[^\s]{5,20}$`)
 
 // Service for managing authentication requests.
 type AuthenticationService struct {
@@ -37,7 +41,11 @@ func (s *AuthenticationService) Authenticate(
 	username string,
 	password string,
 ) (Token, error) {
-	u, err := s.authRepo.SignIn(username, password)
+	if err := s.validateCredentials(username, password); err != nil {
+		return Token{}, err
+	}
+
+	u, err := s.authRepo.SignIn(username, s.hash(password))
 	if err != nil {
 		return Token{}, err
 	}
@@ -51,6 +59,10 @@ func (s *AuthenticationService) RegisterAdmin(
 ) (Token, error) {
 	if !s.NeedsAdminRegistration() {
 		return Token{}, fmt.Errorf("one admin account is already registered")
+	}
+
+	if err := s.validateCredentials(username, password); err != nil {
+		return Token{}, err
 	}
 
 	password = s.hash(password)
@@ -91,4 +103,19 @@ func (s *AuthenticationService) hash(pt string) string {
 	bs := hash.Sum(nil)
 
 	return hex.EncodeToString(bs)
+}
+
+func (s *AuthenticationService) validateCredentials(
+	username string,
+	password string,
+) error {
+	if !usernameRegex.MatchString(username) {
+		return fmt.Errorf("username does not match pattern")
+	}
+
+	if !passwordRegex.MatchString(password) {
+		return fmt.Errorf("password does not match pattern")
+	}
+
+	return nil
 }

@@ -269,6 +269,10 @@ button {
     width: min-content;
 }
 
+.fit {
+    width: fit-content;
+}
+
 .speedtest>span {
     display: flex;
     flex-direction: row;
