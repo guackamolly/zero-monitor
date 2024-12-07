@@ -6,28 +6,45 @@ import (
 )
 
 func RegisterHandlers(e *echo.Echo) {
+	// / (public)
 	e.GET(rootRoute, rootHandler)
 
-	e.GET(dashboardRoute, dashboardHandler)
-	e.POST(dashboardRoute, dashboardFormHandler)
+	// /dashboard (admin only)
+	e.GET(dashboardRoute, dashboardHandler, adminRouteMiddleware)
+	e.POST(dashboardRoute, dashboardFormHandler, adminRouteMiddleware)
 
+	// /network (public)
 	e.GET(networkRoute, networkHandler)
 	e.GET(networkPublicKeyRoute, networkPublicKeyHandler)
 	e.GET(networkConnectionEndpointRoute, networkConnectionEndpointHandler)
 
+	// /network/:id/connections | packages (public)
 	e.GET(networkIdRoute, networkIdHandler)
 	e.GET(networkIdConnectionsRoute, networkIdConnectionsHandler)
 	e.GET(networkIdPackagesRoute, networkIdPackagesHandler)
-	e.GET(networkIdProcessesRoute, networkIdProcessesHandler)
-	e.POST(networkIdProcessesRoute, networkIdProcessesFormHandler)
+
+	// /network/:id/processes (admin only)
+	e.GET(networkIdProcessesRoute, networkIdProcessesHandler, adminRouteMiddleware)
+	e.POST(networkIdProcessesRoute, networkIdProcessesFormHandler, adminRouteMiddleware)
+
+	// /network/:id/speedtest (POST admin only)
 	e.GET(networkIdSpeedtestRoute, networkIdSpeedtestHandler)
-	e.POST(networkIdSpeedtestRoute, networkIdSpeedtestFormHandler)
+	e.POST(networkIdSpeedtestRoute, networkIdSpeedtestFormHandler, adminRouteMiddleware)
+
+	// /network/:id/processes (public)
 	e.GET(networkIdSpeedtestHistoryRoute, networkIdSpeedtestHistoryHandler)
 	e.GET(networkIdSpeedtestHistoryChartRoute, networkIdSpeedtestHistoryChartHandler)
 	e.GET(networkIdSpeedtestIdRoute, networkIdSpeedtestIdHandler)
 
-	e.GET(settingsRoute, getSettingsHandler)
-	e.POST(settingsRoute, updateSettingsHandler)
+	// /settings (admin only)
+	e.GET(settingsRoute, getSettingsHandler, adminRouteMiddleware)
+	e.POST(settingsRoute, updateSettingsHandler, adminRouteMiddleware)
+
+	// user (public if no admin has been registered yet)
+	e.GET(userRoute, userHandler)
+	e.POST(userRoute, userFormHandler)
+	e.GET(userNewRoute, userNewHandler)
+	e.POST(userNewRoute, userNewFormHandler)
 
 	e.HTTPErrorHandler = httpErrorHandler()
 }

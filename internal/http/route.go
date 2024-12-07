@@ -15,4 +15,6 @@ var (
 	networkIdSpeedtestIdRoute           = WithVirtualHost("/network/:id/speedtest/:id2")
 	networkPublicKeyRoute               = WithVirtualHost("/network/public-key")
 	networkConnectionEndpointRoute      = WithVirtualHost("/network/connection-endpoint")
+	userRoute                           = WithVirtualHost("/user")
+	userNewRoute                        = WithVirtualHost("/user/new")
 )

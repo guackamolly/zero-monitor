@@ -2,7 +2,9 @@ package db
 
 // All database tables managed by the master node.
 const (
-	TableSpeedtest = "node.speedtests"
+	TableSpeedtest   = "node.speedtests"
+	TableCredentials = "auth.credentials"
+	TableUser        = "auth.user"
 )
 
 type Table interface {

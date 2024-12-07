@@ -28,6 +28,8 @@ var (
 		"network/:id/speedtest/history": "tpl/network/id/speedtest/history/*.gohtml",
 		"network/:id/speedtest/:id":     "tpl/network/id/speedtest/id/*.gohtml",
 		"settings":                      "tpl/settings/*.gohtml",
+		"user":                          "tpl/user/*.gohtml",
+		"user/new":                      "tpl/user/new/*.gohtml",
 	}
 
 	httpErrors = map[int]string{

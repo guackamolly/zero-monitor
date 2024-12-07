@@ -27,9 +27,11 @@ func (bdb *BoltDatabase) Open() error {
 	}
 
 	stt := NewBoltCrudTable[db.SpeedtestEntity](db.TableSpeedtest, bbdb)
+	crt := NewBoltCrudTable[db.CredentialsEntity](db.TableCredentials, bbdb)
+	ust := NewBoltCrudTable[db.UserEntity](db.TableUser, bbdb)
 
 	bdb.DB = bbdb
-	bdb.tables = []db.Table{stt}
+	bdb.tables = []db.Table{stt, crt, ust}
 
 	return nil
 }

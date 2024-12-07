@@ -64,6 +64,8 @@ func main() {
 	e := initializeHttpServer(ctx, env.ServerHost, env.ServerPort, env.ServerTLSCert, env.ServerTLSKey, env.ServerVirtualHost)
 	defer e.Close()
 
+	go logIfAdminNeedsRegistration(sc.Authentication)
+
 	// 6. Await termination...
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
@@ -249,15 +251,34 @@ func updateServiceContainer(
 ) http.ServiceContainer {
 	zps := event.NewZeroMQEventPubSub(s)
 	stt, ok := db.Table(dbb.TableSpeedtest)
+	crt, _ := db.Table(dbb.TableCredentials)
+	ust, _ := db.Table(dbb.TableUser)
+
 	if !ok {
 		logging.LogFatal("table %s hasn't been initialized", dbb.TableSpeedtest)
 	}
 	sps := repositories.NewDatabaseSpeedtestStoreRepository(stt.(dbb.SpeedtestTable))
+	authRepo := repositories.NewDatabaseAuthenticationRepository(crt.(dbb.CredentialsTable), ust.(dbb.UserTable))
+	userRepo := repositories.NewDatabaseUserRepository(ust.(dbb.UserTable))
+
+	tokens := service.TokenBucket{}
 
 	sc.NodeCommander = service.NewNodeCommanderService(zps, zps)
 	sc.NodeSpeedtest = service.NewNodeSpeedtestService(zps, zps, sps)
 	sc.Network = service.NewNetworkService(zps)
 	sc.Networking = service.NewNetworkingService()
+	sc.Authentication = service.NewAuthenticationService(authRepo, userRepo, &tokens)
+	sc.Authorization = service.NewAuthorizationService(&tokens)
 
 	return sc
+}
+
+func logIfAdminNeedsRegistration(
+	as *service.AuthenticationService,
+) {
+	if !as.NeedsAdminRegistration() {
+		return
+	}
+
+	logging.LogWarning("no admin account has been registered yet! register one now at /dashboard")
 }
