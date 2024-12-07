@@ -44,7 +44,8 @@
                 'speedtest-download': false,
             };
 
-            const socket = new WebSocket(`ws://${window.location.host}${window.location.pathname}`);
+            const protocol = window.location.protocol.includes("https") ? "wss" : "ws";
+            const socket = new WebSocket(`${protocol}://${window.location.host}${window.location.pathname}`);
             socket.onopen = () => {
                 console.log('WebSocket connection opened');
             };

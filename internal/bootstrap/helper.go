@@ -13,6 +13,7 @@ import (
 func download(url string) []byte {
 	println("> GET %s", url)
 
+	// todo: revert
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
