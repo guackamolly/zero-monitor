@@ -1,6 +1,7 @@
 package bootstrap
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -12,7 +13,12 @@ import (
 func download(url string) []byte {
 	println("> GET %s", url)
 
-	resp := must(http.Get(url))
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+	client := &http.Client{Transport: tr}
+
+	resp := must(client.Get(url))
 	if sc := resp.StatusCode; sc != 200 {
 		panic(fmt.Sprintf("sc: %d", resp.StatusCode))
 	}
