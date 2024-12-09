@@ -48,6 +48,9 @@ func handle(
 ) {
 	logging.LogDebug("(sub) handling topic: %d", m.Topic)
 	switch m.Topic {
+	case HelloNetwork:
+		handleHelloNetworkRequest(s, m)
+		return
 	case JoinNetwork:
 		handleJoinNetworkRequest(s, m, sc.JoinNodesNetwork, sc.RequiresNodesNetworkAuthentication, sc.GetNodeStatsPollingDuration)
 		return
@@ -61,6 +64,16 @@ func handle(
 		logging.LogWarning("failed to understand message with topic %d", m.Topic)
 		return
 	}
+}
+
+func handleHelloNetworkRequest(
+	s Socket,
+	m Msg,
+) {
+	logging.LogDebug("handling hello network request")
+	logging.LogInfo("%x wants to participate in the network", m.Identity)
+
+	s.ReplyMsg(m.Identity, Compose(HelloNetwork))
 }
 
 func handleJoinNetworkRequest(

@@ -15,13 +15,12 @@ func (s Socket) RegisterPublishers(inviteCode string) {
 		log.Fatalln("publish container hasn't been injected")
 	}
 
-	// Join network.
+	// Signal network presence.
 	go func() {
-		n := pc.GetCurrentNode()
-		err := s.PublishMsg(Compose(JoinNetwork, JoinNetworkRequest{Node: n}))
+		err := s.PublishMsg(Compose(HelloNetwork))
 		if err != nil {
-			// TODO: handle join network error gracefully.
-			logging.LogFatal("couldn't join network, %v", err)
+			// TODO: handle hello network error gracefully.
+			logging.LogFatal("couldn't reach master, %v", err)
 		}
 	}()
 
@@ -37,6 +36,8 @@ func (s Socket) RegisterPublishers(inviteCode string) {
 
 			logging.LogDebug("(pub) handling topic: %d", topic)
 			switch topic {
+			case HelloNetwork:
+				err = handleHelloNetworkResponse(s, m, pc.GetCurrentNode)
 			case JoinNetwork:
 				err = handleJoinNetworkResponse(s, m, pc.StartNodeStatsPolling, pc.GetCurrentNode, inviteCode)
 			case AuthenticateNetwork:
@@ -63,6 +64,20 @@ func (s Socket) RegisterPublishers(inviteCode string) {
 			}
 		}
 	}()
+}
+
+func handleHelloNetworkResponse(
+	s Socket,
+	m Msg,
+	currentNode domain.GetCurrentNode,
+) error {
+	if m.Data != nil {
+		logging.LogFatal("not allowed to participate in the network, %v", m.Data)
+		return nil
+	}
+
+	n := currentNode()
+	return s.PublishMsg(Compose(JoinNetwork, JoinNetworkRequest{Node: n}))
 }
 
 func handleJoinNetworkResponse(

@@ -92,8 +92,8 @@ func (s Socket) PublishMsg(m Msg) error {
 	logging.LogDebug("publishing Msg with topic: %d", m.Topic)
 
 	m = m.WithIdentity(s.Identity)
-	if m.Topic == JoinNetwork {
-		return s.publishJoinNetworkMsg(m)
+	if m.Topic == HelloNetwork {
+		return s.publishHelloNetworkMsg(m)
 	}
 
 	if m.Topic.Sensitive() {
@@ -137,8 +137,8 @@ func (s Socket) ReceiveMsg() (Msg, error) {
 		return Msg{}, err
 	}
 
-	if m.Topic == JoinNetwork {
-		return s.interceptJoinNetworkMsg(m)
+	if m.Topic == HelloNetwork {
+		return s.interceptHelloNetworkMsg(m)
 	}
 
 	if m.Topic.Sensitive() {
@@ -181,7 +181,7 @@ func (s Socket) onMsgReceived(
 	}
 }
 
-func (s Socket) publishJoinNetworkMsg(
+func (s Socket) publishHelloNetworkMsg(
 	m Msg,
 ) error {
 	key, err := GenerateCipherKey()
@@ -219,7 +219,7 @@ func (s Socket) publishJoinNetworkMsg(
 	return s.Send(zmq4.NewMsg(b))
 }
 
-func (s Socket) interceptJoinNetworkMsg(
+func (s Socket) interceptHelloNetworkMsg(
 	m Msg,
 ) (Msg, error) {
 	var err error
