@@ -14,5 +14,4 @@ Looking to contribute to the project but you don't know how to start? The todo's
 - Make Linux/macOS initialization scripts POSIX compliant (remove bash, use shell) 
 - Cover comment //TODOs
 - Present man in the middle attacks on Pub connections
-- Use correct min and max bit rate for speedtest charts
 - Correct server host used for invite link
