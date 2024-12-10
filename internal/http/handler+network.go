@@ -65,13 +65,14 @@ func networkPublicKeyHandler(ectx echo.Context) error {
 func networkConnectionEndpointHandler(ectx echo.Context) error {
 	return withServiceContainer(ectx, func(sc *ServiceContainer) error {
 		return withJoinCode(ectx, sc, func(code string) error {
-			var ip net.IP
-			var err error
 			addr := sc.Network.Address()
 
-			if IsReverseProxyRequest(ectx) {
-				return ectx.JSON(200, NewNetworkConnectionEndpointView(ExtractReverseProxyIP(ectx), int(addr.Port)))
+			if !IsLocalRequest(ectx) {
+				return ectx.JSON(200, NewNetworkConnectionEndpointView(ExtractHost(ectx), int(addr.Port)))
 			}
+
+			var ip net.IP
+			var err error
 			if !IsLocalRequest(ectx) {
 				ip, err = sc.Networking.PublicIP()
 			} else if addr.Network() {
