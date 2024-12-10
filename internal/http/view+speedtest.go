@@ -61,9 +61,33 @@ func NewSpeedtestHistoryChartView(
 		"",
 	)
 
+	min := speedtests[0].DownloadSpeed
+	max := speedtests[0].UploadSpeed
+
+	for _, st := range speedtests {
+		if st.DownloadSpeed < min {
+			min = st.DownloadSpeed
+		}
+
+		if st.UploadSpeed < min {
+			min = st.UploadSpeed
+		}
+
+		if st.DownloadSpeed > max {
+			max = st.DownloadSpeed
+		}
+
+		if st.UploadSpeed > max {
+			max = st.UploadSpeed
+		}
+	}
+
+	min -= min * 0.15
+	max += max * 0.15
+
 	yaxis := NewAxisView(
-		50*models.Mbit,
-		120*models.Mbit,
+		float64(min),
+		float64(max),
 		"Bitrate (Mbps)",
 	)
 
