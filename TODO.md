@@ -13,7 +13,6 @@ Looking to contribute to the project but you don't know how to start? The todo's
 - Speedtests is not saved if client breaks Websocket connection (unbuffered channel not being consumed)
 - Make Linux/macOS initialization scripts POSIX compliant (remove bash, use shell) 
 - Cover comment //TODOs
-- Prevent impersonation attacks on Pub connections
 - Present man in the middle attacks on Pub connections
 - Use correct min and max bit rate for speedtest charts
 - Correct server host used for invite link

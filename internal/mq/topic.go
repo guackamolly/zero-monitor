@@ -4,7 +4,8 @@ package mq
 type Topic byte
 
 const (
-	JoinNetwork Topic = iota + 1
+	HelloNetwork Topic = iota + 1
+	JoinNetwork
 	AuthenticateNetwork
 	UpdateNodeStats
 	UpdateNodeStatsPollDuration
@@ -17,7 +18,7 @@ const (
 
 func (t Topic) Sensitive() bool {
 	switch t {
-	case JoinNetwork, AuthenticateNetwork, NodeConnections, NodeProcesses, KillNodeProcess:
+	case HelloNetwork, JoinNetwork, AuthenticateNetwork, NodeConnections, NodeProcesses, KillNodeProcess:
 		return true
 	default:
 		return false

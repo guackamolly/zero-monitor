@@ -12,7 +12,7 @@ type GetCurrentNodeProcesses func() ([]models.Process, error)
 type GetCurrentNodePackages func() ([]models.Package, error)
 type KillNodeProcess func(int32) error
 
-type StartNodeStatsPolling func(d time.Duration) chan (models.Node)
+type StartNodeStatsPolling func(d time.Duration) chan (models.Stats)
 type UpdateNodeStatsPolling func(d time.Duration)
 type GetNodeStatsPollingDuration func() time.Duration
 type GetNodeStatsPollingDurationUpdates func() chan (time.Duration)

@@ -37,9 +37,9 @@ func (s NodeReporterService) Node() models.Node {
 	return s.node
 }
 
-// Starts reporting node information through a channel. The channel is unbuffered.
-func (s *NodeReporterService) Start(pollDuration time.Duration) chan (models.Node) {
-	stream := make(chan (models.Node))
+// Starts reporting node stats through a channel. The channel is unbuffered.
+func (s *NodeReporterService) Start(pollDuration time.Duration) chan (models.Stats) {
+	stream := make(chan (models.Stats))
 	s.statsPollDuration = pollDuration
 
 	go func() {
@@ -50,7 +50,7 @@ func (s *NodeReporterService) Start(pollDuration time.Duration) chan (models.Nod
 				logging.LogError("failed to fetch system statistics, %v", err)
 			} else {
 				s.node = s.node.WithUpdatedStats(stats)
-				stream <- s.node
+				stream <- s.node.Stats
 			}
 
 			logging.LogDebug("sleeping for %s until polling new node stats", pollDuration)

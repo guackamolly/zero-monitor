@@ -5,9 +5,13 @@ import (
 	"log"
 	"time"
 
+	"github.com/guackamolly/zero-monitor/internal/data/models"
 	"github.com/guackamolly/zero-monitor/internal/domain"
 	"github.com/guackamolly/zero-monitor/internal/logging"
 )
+
+// Associated pub clients identity to node models.
+var clientNodes = map[string]models.Node{}
 
 func (s Socket) RegisterSubscriptions() {
 	sc := ExtractSubscribeContainer(s.ctx)
@@ -48,6 +52,9 @@ func handle(
 ) {
 	logging.LogDebug("(sub) handling topic: %d", m.Topic)
 	switch m.Topic {
+	case HelloNetwork:
+		handleHelloNetworkRequest(s, m)
+		return
 	case JoinNetwork:
 		handleJoinNetworkRequest(s, m, sc.JoinNodesNetwork, sc.RequiresNodesNetworkAuthentication, sc.GetNodeStatsPollingDuration)
 		return
@@ -61,6 +68,16 @@ func handle(
 		logging.LogWarning("failed to understand message with topic %d", m.Topic)
 		return
 	}
+}
+
+func handleHelloNetworkRequest(
+	s Socket,
+	m Msg,
+) {
+	logging.LogDebug("handling hello network request")
+	logging.LogInfo("%x wants to participate in the network", m.Identity)
+
+	s.ReplyMsg(m.Identity, Compose(HelloNetwork))
 }
 
 func handleJoinNetworkRequest(
@@ -84,6 +101,8 @@ func handleJoinNetworkRequest(
 	}
 
 	s.Clients[req.Node.ID] = m.Identity
+	clientNodes[string(m.Identity)] = req.Node
+
 	err := join(req.Node)
 	if err != nil {
 		logging.LogError("join node call failed, %v", err)
@@ -124,7 +143,16 @@ func handleUpdateNodeStatsRequest(
 		return
 	}
 
-	err := update(req.Node)
+	node, ok := clientNodes[string(m.Identity)]
+	if !ok {
+		logging.LogWarning("received updated node stats request from client that is not registered in the network. possibly impersonating!")
+		return
+	}
+
+	node = node.WithUpdatedStats(req.Stats)
+	clientNodes[string(m.Identity)] = node
+
+	err := update(node)
 	if err != nil {
 		logging.LogError("updated node call failed, %v", err)
 	}
