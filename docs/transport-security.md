@@ -37,3 +37,7 @@ mq_transport_pub_key=<public-key.pub>
 Both symmetric key and nonce are generated from a secure random source, and are attached on the `Metadata` field of the encrypted message. The following diagram helps visualizing the key exchange protocol.
 
 ![sequence diagram that illustrates how the key that is used to encrypt sensitive messages is exchanged between nodes](static/key-exchange.svg)
+
+### Impersonation Attacks
+
+The network defends itself against impersonation attacks by encrypting node identities (**NodeID**) before they are sent in the pub/sub stream. This way an attacker can't forge a new connection by reusing the node identity to portray itself as a network node.
