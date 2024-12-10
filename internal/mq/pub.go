@@ -98,8 +98,8 @@ func handleJoinNetworkResponse(
 
 	go func() {
 		ns := start(resp.StatsPoll)
-		for n := range ns {
-			err := s.PublishMsg(Compose(UpdateNodeStats, UpdateNodeStatsRequest{Node: n}))
+		for stats := range ns {
+			err := s.PublishMsg(Compose(UpdateNodeStats, UpdateNodeStatsRequest{Stats: stats}))
 			if err != nil {
 				logging.LogError("failed to publish update stats message, %v", err)
 			}

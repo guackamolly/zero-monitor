@@ -24,7 +24,7 @@ type AuthenticateNetworkResponse struct{}
 type RequiresAuthenticationResponse struct{}
 
 type UpdateNodeStatsRequest struct {
-	Node models.Node
+	Stats models.Stats
 }
 
 type UpdateNodeStatsPollDurationRequest struct {
