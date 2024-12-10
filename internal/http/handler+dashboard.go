@@ -23,9 +23,9 @@ func dashboardFormHandler(ectx echo.Context) error {
 		}
 
 		host := ServerAddress(ectx)
-		if IsReverseProxyRequest(ectx) {
-			host = net.JoinHostPort(ExtractReverseProxyIP(ectx), ExtractPort(ectx))
-		} else if IsBindToUnspecified(ectx) {
+		if !IsLocalRequest(ectx) || !IsBindToUnspecified(ectx) {
+			host = ectx.Request().Host
+		} else {
 			ip, err := sc.Networking.PrivateIP()
 			if err != nil {
 				logging.LogError("server is bind on unspecified address, couldn't get a private interface IP to build url")

@@ -156,6 +156,15 @@ func ExtractReverseProxyIP(ectx echo.Context) string {
 	return xff[1]
 }
 
+func ExtractHost(ectx echo.Context) string {
+	addr, _, err := net.SplitHostPort(ectx.Request().Host)
+	if err != nil {
+		return ectx.Request().Host
+	}
+
+	return addr
+}
+
 func ExtractPort(ectx echo.Context) string {
 	_, port, _ := net.SplitHostPort(ectx.Request().Host)
 	return port
