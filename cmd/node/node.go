@@ -20,13 +20,17 @@ import (
 	flags "github.com/guackamolly/zero-monitor/internal/build/flags"
 )
 
-func main() {
+func init() {
+	flags.WithNodeFlags()
+
 	if build.Release() && !flags.Verbose() {
 		logging.DisableDebugLogs()
 	}
 	logging.AddLogger(logging.NewConsoleLogger())
 	banner.Print()
+}
 
+func main() {
 	// 1. Load env
 	env := loadEnv()
 
