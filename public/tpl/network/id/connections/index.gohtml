@@ -67,9 +67,10 @@
                 </p>
                 {{ if and (gt (len .ExposedTCPConnections) 0) (gt (len
                 .ExposedUDPConnections) 0) }}
-                <p>There are currently <b>{{len .ExposedTCPConnections}}</b> and
+                <p>There are currently <b>{{len .ExposedTCPConnections}}</b> TCP
+                    and
                     <b>{{len .ExposedUDPConnections}}</b>
-                    TCP/UDP ports exposed on the local network.
+                    UDP ports exposed on the local network.
                 </p>
                 {{ else if gt (len .ExposedTCPConnections) 0 }}
                 <p>There are currently <b>{{len .ExposedTCPConnections}}</b>
