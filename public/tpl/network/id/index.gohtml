@@ -113,9 +113,11 @@
                     <li>
                         <b>Local IP:</b> {{.LocalIP}}
                     </li>
+                    {{ if .HasAdminRights }}
                     <li>
                         <b>Public IP:</b> {{.PublicIP}}
                     </li>
+                    {{ end }}
                     <li>
                         <b>Total Rx:</b> {{.TotalRx}}
                     </li>

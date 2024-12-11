@@ -15,6 +15,7 @@ type NetworkView struct {
 }
 
 type NetworkNodeInformationView struct {
+	ContextView
 	NodeView
 }
 
@@ -90,10 +91,12 @@ func NewNetworkView(
 }
 
 func NewNetworkNodeInformationView(
+	ctx echo.Context,
 	node models.Node,
 ) NetworkNodeInformationView {
 	return NetworkNodeInformationView{
-		NodeView: NodeView(node),
+		ContextView: NewContextView(ctx),
+		NodeView:    NodeView(node),
 	}
 }
 

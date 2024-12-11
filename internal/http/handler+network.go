@@ -94,7 +94,7 @@ func networkConnectionEndpointHandler(ectx echo.Context) error {
 func networkIdHandler(ectx echo.Context) error {
 	return withServiceContainer(ectx, func(sc *ServiceContainer) error {
 		return withPathNode(ectx, sc, func(n models.Node) error {
-			return ectx.Render(200, "network/:id", NewNetworkNodeInformationView(n))
+			return ectx.Render(200, "network/:id", NewNetworkNodeInformationView(ectx, n))
 		})
 	})
 }
