@@ -58,12 +58,12 @@ func main() {
 }
 
 func loadEnv() env.NodeEnv {
-	if env, err := env.Node(); err == nil {
+	if env, err := env.Node(); err == nil && len(flags.InviteLink()) == 0 {
 		return env
 	}
 
 	logging.LogDebug("couldn't lookup .env, bootstrapping configuration values...")
-	return bootstrap.Node()
+	return bootstrap.Node(flags.InviteLink())
 }
 
 func loadCrypto(keyfilepath string) {
