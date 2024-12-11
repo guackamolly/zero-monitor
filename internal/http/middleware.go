@@ -11,10 +11,12 @@ import (
 )
 
 const ctxKey = "ctx.key"
+const isAdminKey = "is.admin.key"
 
 func RegisterMiddlewares(e *echo.Echo, ctx context.Context) {
 	e.Use(loggingMiddleware())
 	e.Use(contextMiddleware(ctx))
+	e.Use(cookieMiddleware())
 }
 
 func loggingMiddleware() echo.MiddlewareFunc {
@@ -38,7 +40,27 @@ func contextMiddleware(ctx context.Context) echo.MiddlewareFunc {
 	}
 }
 
+// todo: add integration tests to make sure isAdminKey is NEVER SET if token is not from admin user (probabbly need to fuzzy test token)
+func cookieMiddleware() echo.MiddlewareFunc {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(ectx echo.Context) error {
+			var cookie *http.Cookie
+			var err error
+
+			if cookie, err = ectx.Cookie(tokenCookie); err != nil || cookie == nil {
+				return next(ectx)
+			}
+
+			return withServiceContainer(ectx, func(sc *ServiceContainer) error {
+				ectx.Set(isAdminKey, sc.Authorization.HasAdminRights(cookie.Value))
+				return next(ectx)
+			})
+		}
+	}
+}
+
 // Use this middleware to guard routes that can only be accessed by admin users.
+// todo: add integration tests to make sure only admin token cookies can access protected pages.
 var adminRouteMiddleware = func(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(ectx echo.Context) error {
 		return withServiceContainer(ectx, func(sc *ServiceContainer) error {
@@ -107,4 +129,8 @@ func extractQuery(ectx echo.Context, param string) (string, bool) {
 
 func extractUserAgent(ectx echo.Context) UserAgent {
 	return UserAgent(*useragent.New(ectx.Request().UserAgent()))
+}
+
+func hasAdminRights(ectx echo.Context) bool {
+	return ectx.Get(isAdminKey) == true
 }

@@ -5,26 +5,32 @@ import (
 	"github.com/mssola/useragent"
 )
 
-type Breakpoint int
-type UserAgent useragent.UserAgent
-type ContextView struct {
-	echo.Context
-	Breakpoint
-}
-
 const (
 	MobileBreakpoint  Breakpoint = 560
 	TabletBreakpoint  Breakpoint = 860
 	DesktopBreakpoint Breakpoint = 1440
 )
 
+type Breakpoint int
+type UserAgent useragent.UserAgent
+type ContextView struct {
+	echo.Context
+}
+
 func NewContextView(
 	ctx echo.Context,
 ) ContextView {
 	return ContextView{
-		Context:    ctx,
-		Breakpoint: extractUserAgent(ctx).Breakpoint(),
+		Context: ctx,
 	}
+}
+
+func (v ContextView) Breakpoint() Breakpoint {
+	return extractUserAgent(v.Context).Breakpoint()
+}
+
+func (v ContextView) HasAdminRights() bool {
+	return hasAdminRights(v.Context)
 }
 
 func (ua UserAgent) Breakpoint() Breakpoint {
