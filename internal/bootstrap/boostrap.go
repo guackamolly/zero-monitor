@@ -58,11 +58,13 @@ func Master() env.MasterEnv {
 	return must(e, env.Save(e))
 }
 
-func Node() env.NodeEnv {
-	// Wait for user input regarding the network invite link.
-	var inviteLink string
-	println("Waiting for invite link... (press enter to resume)")
-	fmt.Scanln(&inviteLink)
+// Bootstrapps node. If [inviteLink] is empty, it reads invite link from stdin.
+func Node(inviteLink string) env.NodeEnv {
+	if len(inviteLink) == 0 {
+		// Wait for user input regarding the network invite link.
+		println("Waiting for invite link... (press enter to resume)")
+		fmt.Scanln(&inviteLink)
+	}
 
 	configPath := must(config.Dir())
 	inviteCode := must(url.Parse(inviteLink)).Query().Get("join")

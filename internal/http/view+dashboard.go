@@ -4,9 +4,11 @@ import (
 	"time"
 
 	"github.com/guackamolly/zero-monitor/internal/data/models"
+	"github.com/labstack/echo/v4"
 )
 
 type DashboardView struct {
+	ContextView
 	InviteLink DashboardNetworkInviteLinkView
 }
 
@@ -24,6 +26,11 @@ func (v DashboardView) WithInviteLink(
 
 func (v DashboardView) ShowInviteLink() bool {
 	return v.InviteLink.URL != "" && !v.InviteLink.Code.Expired()
+}
+
+func (v DashboardView) WithContext(ctx echo.Context) DashboardView {
+	v.Context = NewContextView(ctx)
+	return v
 }
 
 func (v DashboardNetworkInviteLinkView) Expiry() string {

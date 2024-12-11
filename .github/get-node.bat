@@ -1,5 +1,8 @@
 @ECHO OFF & setlocal enabledelayedexpansion
 
+rem Save program arguments to later pass on init binary.
+set args=%*
+
 rem Common urls.
 set new_issue_url=https://github.com/guackamolly/zero-monitor/issues/new
 set latest_release_url=https://api.github.com/repos/guackamolly/zero-monitor/releases/latest
@@ -84,7 +87,7 @@ REM %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   exit /b 0
 
 :exec_bin
-  call "%bin_path%"
+  call "%bin_path%" "%args%"
   exit /b 0
 
 :download

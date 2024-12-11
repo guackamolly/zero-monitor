@@ -201,7 +201,7 @@ func NewNetworkNodeSpeedtestHistoryView(
 		}
 	}
 
-	chart := NewSpeedtestHistoryChartView(chartSpeedtests, ctxview.Breakpoint)
+	chart := NewSpeedtestHistoryChartView(chartSpeedtests, ctxview.Breakpoint())
 	return NetworkNodeSpeedtestHistoryView{
 		NodeView:    NodeView(node),
 		ContextView: ctxview,

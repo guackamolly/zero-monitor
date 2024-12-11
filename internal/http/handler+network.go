@@ -250,7 +250,7 @@ func networkIdSpeedtestHistoryChartHandler(ectx echo.Context) error {
 		return withPathNode(ectx, sc, func(n models.Node) error {
 			bp, ok := ExtractBreakpoint(ectx)
 			if !ok {
-				bp = NewContextView(ectx).Breakpoint
+				bp = NewContextView(ectx).Breakpoint()
 			}
 
 			sts, ok := sc.NodeSpeedtest.History(n.ID)

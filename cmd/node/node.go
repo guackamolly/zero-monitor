@@ -20,13 +20,17 @@ import (
 	flags "github.com/guackamolly/zero-monitor/internal/build/flags"
 )
 
-func main() {
+func init() {
+	flags.WithNodeFlags()
+
 	if build.Release() && !flags.Verbose() {
 		logging.DisableDebugLogs()
 	}
 	logging.AddLogger(logging.NewConsoleLogger())
 	banner.Print()
+}
 
+func main() {
 	// 1. Load env
 	env := loadEnv()
 
@@ -54,12 +58,12 @@ func main() {
 }
 
 func loadEnv() env.NodeEnv {
-	if env, err := env.Node(); err == nil {
+	if env, err := env.Node(); err == nil && len(flags.InviteLink()) == 0 {
 		return env
 	}
 
 	logging.LogDebug("couldn't lookup .env, bootstrapping configuration values...")
-	return bootstrap.Node()
+	return bootstrap.Node(flags.InviteLink())
 }
 
 func loadCrypto(keyfilepath string) {
