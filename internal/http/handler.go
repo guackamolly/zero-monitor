@@ -50,7 +50,8 @@ func RegisterHandlers(e *echo.Echo) {
 }
 
 func rootHandler(ectx echo.Context) error {
-	return ectx.Render(200, "homepage", dashboardView)
+	v := dashboardView.WithContext(ectx)
+	return ectx.Render(200, "homepage", v)
 }
 
 func httpErrorHandler() func(err error, c echo.Context) {

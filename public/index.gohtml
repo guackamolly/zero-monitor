@@ -71,7 +71,7 @@
                     code-snippet and paste in the server to monitor shell:
                 </p>
                 <div class="divider"></div>
-                {{ if .ShowInviteLink }}
+                {{ if and .ShowInviteLink .HasAdminRights }}
                 <h2>Linux/macOS</h2>
                 <pre><code>bash <(wget -qO- https://raw.githubusercontent.com/guackamolly/zero-monitor/refs/heads/master/.github/get-node) --invite-link="{{.InviteLink}}"</code></pre>
 
