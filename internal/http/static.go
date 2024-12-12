@@ -2,6 +2,8 @@ package http
 
 import (
 	"io/fs"
+	"net/http"
+	"time"
 
 	"github.com/labstack/echo/v4"
 )
@@ -38,18 +40,27 @@ var (
 	}
 
 	fallback = httpErrors[500]
+
+	modtime = time.Now()
 )
 
 func RegisterStaticFiles(e *echo.Echo, fs fs.FS) error {
 	e.Filesystem = fs
 
 	for k, v := range files {
-		e.FileFS(k, v, fs)
+		e.FileFS(k, v, fs, cacheStaticFileMiddleware(modtime))
 	}
 
 	for k, v := range dirs {
 		fs = echo.MustSubFS(fs, v)
-		e.StaticFS(k, fs)
+
+		// same thing as e.StaticFS, execept [staticFileMiddleware] is included.
+		e.Add(
+			http.MethodGet,
+			k+"*",
+			echo.StaticDirectoryHandler(fs, false),
+			cacheStaticFileMiddleware(modtime),
+		)
 	}
 
 	return nil
