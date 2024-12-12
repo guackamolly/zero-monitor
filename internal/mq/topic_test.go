@@ -13,8 +13,8 @@ func TestTopicSensitive(t *testing.T) {
 		output bool
 	}{
 		{
-			desc:   "hello, join, authenticate network, node connections, node processes, kill node process are sensitive",
-			input:  []mq.Topic{mq.HelloNetwork, mq.JoinNetwork, mq.AuthenticateNetwork, mq.NodeConnections, mq.NodeProcesses, mq.KillNodeProcess},
+			desc:   "hello, goodbye, join, authenticate network, node connections, node processes, kill node process are sensitive",
+			input:  []mq.Topic{mq.HelloNetwork, mq.GoodbyeNetwork, mq.JoinNetwork, mq.AuthenticateNetwork, mq.NodeConnections, mq.NodeProcesses, mq.KillNodeProcess},
 			output: true,
 		},
 		{

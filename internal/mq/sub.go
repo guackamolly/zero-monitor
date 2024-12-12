@@ -64,6 +64,8 @@ func handle(
 	case UpdateNodeStats:
 		handleUpdateNodeStatsRequest(m, sc.UpdateNodesNetwork)
 		return
+	case GoodbyeNetwork:
+		handleGoodbyeNetworkRequest(m, sc.UpdateNodesNetwork)
 	default:
 		logging.LogWarning("failed to understand message with topic %d", m.Topic)
 		return
@@ -150,6 +152,26 @@ func handleUpdateNodeStatsRequest(
 	}
 
 	node = node.WithUpdatedStats(req.Stats)
+	clientNodes[string(m.Identity)] = node
+
+	err := update(node)
+	if err != nil {
+		logging.LogError("updated node call failed, %v", err)
+	}
+}
+
+func handleGoodbyeNetworkRequest(
+	m Msg,
+	update domain.UpdateNodesNetwork,
+) {
+	logging.LogDebug("handling goodbye network request")
+	node, ok := clientNodes[string(m.Identity)]
+	if !ok {
+		logging.LogWarning("received request from client that is not registered in the network. possibly impersonating!")
+		return
+	}
+
+	node = node.SetOffline()
 	clientNodes[string(m.Identity)] = node
 
 	err := update(node)
