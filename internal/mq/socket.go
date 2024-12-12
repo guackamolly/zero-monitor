@@ -2,6 +2,7 @@ package mq
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 
@@ -153,6 +154,11 @@ func (s Socket) ReceiveMsg() (Msg, error) {
 	return m, nil
 }
 
+// Indicates whether this socket is a sub socket.
+func (s Socket) Sub() bool {
+	return s.framesLength == 2
+}
+
 // Replies to a pub socket from the sub socket.
 // Receiver must be a sub socket.
 func (s Socket) ReplyMsg(id []byte, m Msg) {
@@ -165,6 +171,15 @@ func (s Socket) ReplyMsg(id []byte, m Msg) {
 	if err != nil {
 		log.Printf("failed to reply message, %v\n", err)
 	}
+}
+
+func (s Socket) Close() error {
+	if s.Sub() {
+		return s.Socket.Close()
+	}
+
+	err := s.PublishMsg(Compose(GoodbyeNetwork))
+	return errors.Join(err, s.Socket.Close())
 }
 
 func (s Socket) onMsgReceived(
