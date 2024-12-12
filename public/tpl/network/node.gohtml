@@ -1,4 +1,17 @@
 {{ define "node" }}
+
+{{ $Uptime := .Uptime }}
+{{ $CPUUsage := .CPUUsage }}
+{{ $RAMUsage := .RAMUsage }}
+{{ $DiskUsage := .DiskUsage }}
+
+{{ if not .Online }}
+{{ $Uptime = "-" }}
+{{ $CPUUsage = "-" }}
+{{ $RAMUsage = "-" }}
+{{ $DiskUsage = "-" }}
+{{ end }}
+
 <fieldset>
     <legend>
         {{.Hostname}} {{ if not .Online }}<span
@@ -39,7 +52,7 @@
         <div class="node-stat-field">
             <span
                 class="node-stat-field-label">Uptime</span>
-            <span>{{.Uptime}}</span>
+            <span>{{$Uptime}}</span>
         </div>
     </div>
     <div class="node-stat-block">
@@ -57,7 +70,7 @@
             class="node-stat-field-label">CPU</span>
         <div class="progress-bar">
             <div class="progress-bar-fill"
-                style="width: {{.CPUUsage}};">{{.CPUUsage}}</div>
+                style="width: {{$CPUUsage}};">{{$CPUUsage}}</div>
         </div>
     </div>
     <div class="node-progress-block">
@@ -65,7 +78,7 @@
             class="node-stat-field-label">RAM</span>
         <div class="progress-bar">
             <div class="progress-bar-fill"
-                style="width: {{.RAMUsage}};">{{.RAMUsage}}</div>
+                style="width: {{$RAMUsage}};">{{$RAMUsage}}</div>
         </div>
     </div>
     <div class="node-progress-block">
@@ -73,7 +86,7 @@
             class="node-stat-field-label">Disk</span>
         <div class="progress-bar">
             <div class="progress-bar-fill"
-                style="width: {{.DiskUsage}};">{{.DiskUsage}}</div>
+                style="width: {{$DiskUsage}};">{{$DiskUsage}}</div>
         </div>
     </div>
 </fieldset>
