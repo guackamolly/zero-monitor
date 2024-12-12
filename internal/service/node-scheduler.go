@@ -52,15 +52,15 @@ func NewNodeSchedulerService(
 	// schedule goroutine that checks for any networ node that have gone missing
 	go func() {
 		for {
-			t := time.Now()
+			t := time.Now().UTC()
 			n := network()
 			lastSeenTimeout := cfg().NodeLastSeenTimeout.Duration()
 			for _, n := range n {
-				if n.LastSeen.Sub(t).Abs() < lastSeenTimeout {
+				if !n.Online {
 					continue
 				}
 
-				if !n.Online {
+				if n.LastSeen.UTC().Sub(t).Abs() < lastSeenTimeout {
 					continue
 				}
 
