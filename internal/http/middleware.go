@@ -3,6 +3,7 @@ package http
 import (
 	"context"
 	"net/http"
+	"time"
 
 	"github.com/guackamolly/zero-monitor/internal/data/models"
 	"github.com/guackamolly/zero-monitor/internal/logging"
@@ -12,6 +13,8 @@ import (
 
 const ctxKey = "ctx.key"
 const isAdminKey = "is.admin.key"
+
+const staticCacheControlHeader = "public, max-age=604800"
 
 func RegisterMiddlewares(e *echo.Echo, ctx context.Context) {
 	e.Use(loggingMiddleware())
@@ -34,6 +37,20 @@ func contextMiddleware(ctx context.Context) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(ectx echo.Context) error {
 			ectx.Set(ctxKey, ctx)
+
+			return next(ectx)
+		}
+	}
+}
+
+// Middleware that adds cache-control and last-modified headers.
+// only apply it for static files. NEVER apply this middleware to template routes.
+func cacheStaticFileMiddleware(modtime time.Time) echo.MiddlewareFunc {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(ectx echo.Context) error {
+			h := ectx.Response().Header()
+			h.Set(echo.HeaderCacheControl, staticCacheControlHeader)
+			h.Set(echo.HeaderLastModified, modtime.Format(time.RFC1123))
 
 			return next(ectx)
 		}
