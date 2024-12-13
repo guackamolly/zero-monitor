@@ -14,3 +14,7 @@ Looking to contribute to the project but you don't know how to start? The todo's
 - Make Linux/macOS initialization scripts POSIX compliant (remove bash, use shell) 
 - Cover comment //TODOs
 - Prevent man in the middle attacks on Pub connections
+- The + alias element is not clickable in iOS Safari/WebKit
+- Redirect user to last visited page if login is required
+- Fix redirection being cached after login (thanks @davidrralphs!)
+- Autostart master/node (thanks @davidrralphs!)
