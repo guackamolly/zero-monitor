@@ -33,7 +33,7 @@ func RedirectWithError(ectx echo.Context, err error) error {
 	q.Set(redirectErrorQueryParam, uuid)
 	u.RawQuery = q.Encode()
 
-	return ectx.Redirect(301, u.RequestURI())
+	return ectx.Redirect(302, u.RequestURI())
 }
 
 // Tries to extract an error that may have originated from a self redirect.
