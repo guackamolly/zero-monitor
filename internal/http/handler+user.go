@@ -8,7 +8,7 @@ import (
 func userHandler(ectx echo.Context) error {
 	return withServiceContainer(ectx, func(sc *ServiceContainer) error {
 		if sc.Authentication.NeedsAdminRegistration() {
-			return ectx.Redirect(301, userNewRoute)
+			return ectx.Redirect(302, userNewRoute)
 		}
 
 		return ectx.Render(200, "user", nil)
@@ -23,11 +23,11 @@ func userFormHandler(ectx echo.Context) error {
 
 		t, err := sc.Authentication.Authenticate(username, password)
 		if err != nil {
-			return ectx.Redirect(301, userRoute)
+			return ectx.Redirect(302, userRoute)
 		}
 
 		ectx.SetCookie(NewCookie(ectx, tokenCookie, t.Value, WithVirtualHost(rootRoute), t.Expiry))
-		return ectx.Redirect(301, dashboardRoute)
+		return ectx.Redirect(302, dashboardRoute)
 	})
 }
 
@@ -35,7 +35,7 @@ func userFormHandler(ectx echo.Context) error {
 func userNewHandler(ectx echo.Context) error {
 	return withServiceContainer(ectx, func(sc *ServiceContainer) error {
 		if !sc.Authentication.NeedsAdminRegistration() {
-			return ectx.Redirect(301, rootRoute)
+			return ectx.Redirect(302, rootRoute)
 		}
 
 		return ectx.Render(200, "user/new", nil)
@@ -46,7 +46,7 @@ func userNewHandler(ectx echo.Context) error {
 func userNewFormHandler(ectx echo.Context) error {
 	return withServiceContainer(ectx, func(sc *ServiceContainer) error {
 		if !sc.Authentication.NeedsAdminRegistration() {
-			return ectx.Redirect(301, rootRoute)
+			return ectx.Redirect(302, rootRoute)
 		}
 
 		username := ectx.FormValue("username")
@@ -54,10 +54,10 @@ func userNewFormHandler(ectx echo.Context) error {
 
 		t, err := sc.Authentication.RegisterAdmin(username, password)
 		if err != nil {
-			return ectx.Redirect(301, userNewRoute)
+			return ectx.Redirect(302, userNewRoute)
 		}
 
 		ectx.SetCookie(NewCookie(ectx, tokenCookie, t.Value, WithVirtualHost(rootRoute), t.Expiry))
-		return ectx.Redirect(301, userNewRoute)
+		return ectx.Redirect(302, dashboardRoute)
 	})
 }

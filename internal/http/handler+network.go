@@ -173,7 +173,7 @@ func networkIdProcessesFormHandler(ectx echo.Context) error {
 	return withServiceContainer(ectx, func(sc *ServiceContainer) error {
 		return withPathNode(ectx, sc, func(n models.Node) error {
 			if !n.Online {
-				return ectx.Redirect(301, ectx.Request().URL.Path)
+				return ectx.Redirect(302, ectx.Request().URL.Path)
 			}
 
 			killPid := ectx.FormValue("kill")
@@ -190,7 +190,7 @@ func networkIdProcessesFormHandler(ectx echo.Context) error {
 				return RedirectWithError(ectx, err)
 			}
 
-			return ectx.Redirect(301, ectx.Request().URL.Path)
+			return ectx.Redirect(302, ectx.Request().URL.Path)
 		})
 	})
 }
@@ -213,7 +213,7 @@ func networkIdSpeedtestFormHandler(ectx echo.Context) error {
 	return withServiceContainer(ectx, func(sc *ServiceContainer) error {
 		return withPathNode(ectx, sc, func(n models.Node) error {
 			if !n.Online {
-				return ectx.Redirect(301, ectx.Request().URL.Path)
+				return ectx.Redirect(302, ectx.Request().URL.Path)
 			}
 
 			logging.LogDebug("starting speedtest")
@@ -223,7 +223,7 @@ func networkIdSpeedtestFormHandler(ectx echo.Context) error {
 				return RedirectWithError(ectx, err)
 			}
 
-			return ectx.Redirect(301, ectx.Request().URL.JoinPath(st.ID).Path)
+			return ectx.Redirect(302, ectx.Request().URL.JoinPath(st.ID).Path)
 		})
 	})
 }
@@ -279,7 +279,7 @@ func networkIdSpeedtestIdHandler(ectx echo.Context) error {
 				}
 
 				if !n.Online {
-					return ectx.Redirect(301, ectx.Request().URL.JoinPath("..").Path)
+					return ectx.Redirect(302, ectx.Request().URL.JoinPath("..").Path)
 				}
 
 				return ectx.Render(200, "network/:id/speedtest/:id", NewNetworkNodeSpeedtestView(n, st, nil))

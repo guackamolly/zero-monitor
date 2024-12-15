@@ -19,7 +19,7 @@ func dashboardHandler(ectx echo.Context) error {
 func dashboardFormHandler(ectx echo.Context) error {
 	return withServiceContainer(ectx, func(sc *ServiceContainer) error {
 		if dashboardView.ShowInviteLink() {
-			return ectx.Redirect(301, ectx.Request().URL.Path)
+			return ectx.Redirect(302, ectx.Request().URL.Path)
 		}
 
 		host := ServerAddress(ectx)
@@ -40,6 +40,6 @@ func dashboardFormHandler(ectx echo.Context) error {
 		url := RawURL(ectx, host, networkRoute, map[string]string{joinQueryParam: code.Code})
 		dashboardView = dashboardView.WithInviteLink(NewDashNetworkInviteLinkView(url.String(), code))
 
-		return ectx.Redirect(301, ectx.Request().URL.Path)
+		return ectx.Redirect(302, ectx.Request().URL.Path)
 	})
 }
