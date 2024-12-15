@@ -185,7 +185,7 @@ func initializeDatabase(dbpath string) dbb.Database {
 	db := dbbolt.NewBoltDatabase(dbpath)
 	err := db.Open()
 	if err != nil {
-		logging.LogFatal("couldn't initialize database, %v", db)
+		logging.LogFatal("couldn't initialize database, %v", err)
 	}
 
 	return db
