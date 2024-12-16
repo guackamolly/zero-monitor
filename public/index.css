@@ -152,6 +152,24 @@ button {
 }
 
 
+.psa {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    width: 100%;
+
+    border: 2pt dashed var(--red);
+    padding: 8px;
+    font-size: large;
+}
+
+.psa>h3 {
+    padding: 0px;
+    margin: 0px;
+    background-color: var(--redish);
+}
+
 .avatar {
     position: absolute;
     border-radius: 50%;
