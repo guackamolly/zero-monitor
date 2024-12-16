@@ -3,7 +3,7 @@ package service
 import (
 	"time"
 
-	"github.com/guackamolly/zero-monitor/internal"
+	"github.com/guackamolly/zero-monitor/internal/config"
 	"github.com/guackamolly/zero-monitor/internal/data/models"
 	"github.com/guackamolly/zero-monitor/internal/data/repositories"
 	"github.com/guackamolly/zero-monitor/internal/logging"
@@ -26,7 +26,7 @@ func NewNodeReporterService(
 		speedtest: speedtest,
 	}
 
-	id := internal.MachineId
+	id := config.MachineID()
 	info := s.systemInfo()
 	s.node = models.NewNodeWithoutStats(id, info)
 
