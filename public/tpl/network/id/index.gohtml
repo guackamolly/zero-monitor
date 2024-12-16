@@ -126,6 +126,19 @@
                     </li>
                 </ul>
             </section>
+            {{ if .HasAdminRights }}
+            <section class="main-content-2">
+                <div class="divider"></div>
+                <h2>Actions</h2>
+                <form class="horizontal" method="get"
+                    action="network/{{.ID}}/actions">
+                    <button name="remove" value="true" type="submit">
+                        Remove
+                    </button>
+                </form>
+                <br>
+            </section>
+            {{ end }}
         </main>
         <footer>
             <nav>

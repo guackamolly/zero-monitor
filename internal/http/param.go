@@ -4,4 +4,5 @@ const (
 	redirectErrorQueryParam = "x-redirect-err"
 	breakpointQueryParam    = "breakpoint"
 	joinQueryParam          = "join"
+	removeQueryParam        = "remove"
 )

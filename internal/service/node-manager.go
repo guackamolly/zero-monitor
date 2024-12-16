@@ -58,6 +58,27 @@ func (s NodeManagerService) Node(id string) (models.Node, bool) {
 	return models.Node{}, false
 }
 
+// Removes a node from the network.
+func (s *NodeManagerService) Remove(node models.Node) error {
+	if !s.IsAuthenticated(node) {
+		return fmt.Errorf("node %s does not exist on the netwrok", node.ID)
+	}
+
+	network := []models.Node{}
+	s.lock.Lock()
+	for _, n := range s.network {
+		if n.ID != node.ID {
+			network = append(network, n)
+		}
+	}
+
+	s.network = network
+	s.lock.Unlock()
+
+	s.updateStream()
+	return nil
+}
+
 func (s NodeManagerService) Network() []models.Node {
 	return s.network
 }

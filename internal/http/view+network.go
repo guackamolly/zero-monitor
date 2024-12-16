@@ -19,6 +19,12 @@ type NetworkNodeInformationView struct {
 	NodeView
 }
 
+type NetworkNodeActionsView struct {
+	NodeView
+	Remove bool
+	Err    error
+}
+
 type NetworkNodeConnectionsView struct {
 	NodeView
 	Connections           []models.Connection
@@ -97,6 +103,18 @@ func NewNetworkNodeInformationView(
 	return NetworkNodeInformationView{
 		ContextView: NewContextView(ctx),
 		NodeView:    NodeView(node),
+	}
+}
+
+func NewNetworkNodeActionsView(
+	node models.Node,
+	remove bool,
+	err error,
+) NetworkNodeActionsView {
+	return NetworkNodeActionsView{
+		NodeView: NodeView(node),
+		Remove:   remove,
+		Err:      err,
 	}
 }
 

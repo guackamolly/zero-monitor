@@ -18,6 +18,10 @@ func RegisterHandlers(e *echo.Echo) {
 	e.GET(networkPublicKeyRoute, networkPublicKeyHandler)
 	e.GET(networkConnectionEndpointRoute, networkConnectionEndpointHandler)
 
+	// /network/:id/actions (admin only)
+	e.GET(networkIdActionsRoute, networkIdActionsHandler, adminRouteMiddleware)
+	e.POST(networkIdActionsRoute, networkIdActionsFormHandler, adminRouteMiddleware)
+
 	// /network/:id/connections | packages (public)
 	e.GET(networkIdRoute, networkIdHandler)
 	e.GET(networkIdConnectionsRoute, networkIdConnectionsHandler)

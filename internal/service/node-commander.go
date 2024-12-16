@@ -62,3 +62,13 @@ func (s NodeCommanderService) KillProcess(id string, pid int32) error {
 
 	return out.Error()
 }
+
+func (s NodeCommanderService) Shutdown(id string) error {
+	ev := event.NewShutdownNodeEvent(id)
+	out, err := event.PublishAndSubscribeFirst[event.ShutdownNodeEventOutput](ev, s.publisher, s.subscriber)
+	if err != nil {
+		return err
+	}
+
+	return out.Error()
+}
