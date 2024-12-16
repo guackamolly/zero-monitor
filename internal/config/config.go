@@ -8,7 +8,10 @@ import (
 	"time"
 
 	"github.com/guackamolly/zero-monitor/internal/data/models"
+	"github.com/guackamolly/zero-monitor/internal/logging"
 )
+
+var machineID string
 
 type configurableValue struct {
 	Value   int
@@ -99,6 +102,37 @@ func Dir() (string, error) {
 	}
 
 	return p, nil
+}
+
+// Returns the machine id used to identify node agents.
+func MachineID() string {
+	if machineID != "" {
+		return machineID
+	}
+
+	d, err := Dir()
+	if err != nil {
+		logging.LogFatal("couldn't stat config directory, which is required for extracting the machine unique id!, %v", err)
+	}
+
+	p := filepath.Join(d, "machine-id")
+	_, err = os.Stat(p)
+	if os.IsNotExist(err) {
+		machineID = models.UUID()
+		err = os.WriteFile(p, []byte(machineID), os.ModePerm)
+	}
+
+	if err != nil {
+		logging.LogFatal("couldn't stat machine id file, which is required to identify node agents!, %v", err)
+	}
+
+	bs, err := os.ReadFile(p)
+	if err != nil {
+		logging.LogFatal("couldn't read machine id file, which is required to identify node agents!, %v", err)
+	}
+
+	machineID = string(bs)
+	return machineID
 }
 
 func configJsonPath() (string, error) {

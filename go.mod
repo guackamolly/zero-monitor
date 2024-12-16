@@ -3,7 +3,6 @@ module github.com/guackamolly/zero-monitor
 go 1.23.1
 
 require (
-	github.com/denisbrodbeck/machineid v1.0.1
 	github.com/go-zeromq/zmq4 v0.17.0
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/websocket v1.5.3
