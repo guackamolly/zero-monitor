@@ -2,7 +2,7 @@ package internal
 
 // Holds the program version value. This value is linked at build-time with the -X flag.
 // See [tools/build].
-var version string
+var version string = "development"
 
 // If the program is running on release mode. This value is linked at build-time with the -X flag.
 // See [tools/build].

@@ -7,6 +7,7 @@ import (
 	"io/fs"
 	"strings"
 
+	build "github.com/guackamolly/zero-monitor/internal/build"
 	"github.com/guackamolly/zero-monitor/internal/logging"
 	"github.com/labstack/echo/v4"
 )
@@ -23,6 +24,9 @@ var funcMap = template.FuncMap{
 	},
 	"html": func(unsafe string) template.HTML {
 		return template.HTML(unsafe)
+	},
+	"version": func() string {
+		return build.Version()
 	},
 }
 
