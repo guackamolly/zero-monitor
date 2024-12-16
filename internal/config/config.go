@@ -30,9 +30,12 @@ type Config struct {
 func (c *Config) UpdateTrustedNetwork(
 	nodes []models.Node,
 ) {
+	network := map[string]models.Node{}
 	for _, n := range nodes {
-		c.TrustedNetwork[n.ID] = n
+		network[n.ID] = n
 	}
+
+	c.TrustedNetwork = network
 }
 
 func (c *Config) UpdateConfigurableValues(

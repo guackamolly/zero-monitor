@@ -14,12 +14,13 @@ const (
 	NodePackages
 	KillNodeProcess
 	StartNodeSpeedtest
+	DisconnectNode
 	GoodbyeNetwork
 )
 
 func (t Topic) Sensitive() bool {
 	switch t {
-	case HelloNetwork, JoinNetwork, AuthenticateNetwork, NodeConnections, NodeProcesses, KillNodeProcess, GoodbyeNetwork:
+	case HelloNetwork, JoinNetwork, AuthenticateNetwork, NodeConnections, NodeProcesses, KillNodeProcess, GoodbyeNetwork, DisconnectNode:
 		return true
 	default:
 		return false
