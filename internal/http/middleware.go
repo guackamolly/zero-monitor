@@ -85,10 +85,12 @@ var adminRouteMiddleware = func(next echo.HandlerFunc) echo.HandlerFunc {
 			var err error
 
 			if cookie, err = ectx.Cookie(tokenCookie); err != nil || cookie == nil {
+				SetLastVisitedPathCookie(ectx)
 				return ectx.Redirect(302, userRoute)
 			}
 
 			if !sc.Authorization.HasAdminRights(cookie.Value) {
+				SetLastVisitedPathCookie(ectx)
 				return ectx.Redirect(302, userRoute)
 			}
 

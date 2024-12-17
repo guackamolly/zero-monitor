@@ -8,7 +8,8 @@ import (
 )
 
 const (
-	tokenCookie = "token"
+	tokenCookie           = "token"
+	lastVisitedPageCookie = "last-visited-page"
 )
 
 func NewCookie(

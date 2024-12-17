@@ -1,11 +1,13 @@
 package http
 
 import (
+	"errors"
 	"fmt"
 	"net"
 	"net/url"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/guackamolly/zero-monitor/internal/data/models"
 	"github.com/guackamolly/zero-monitor/internal/logging"
@@ -168,6 +170,47 @@ func ExtractHost(ectx echo.Context) string {
 func ExtractPort(ectx echo.Context) string {
 	_, port, _ := net.SplitHostPort(ectx.Request().Host)
 	return port
+}
+
+func GetLastVisitedPath(ectx echo.Context) (string, error) {
+	cookie, err := ectx.Cookie(lastVisitedPageCookie)
+	if err != nil {
+		return "", err
+	}
+
+	if cookie == nil {
+		return "", errors.New("cookie does not exist")
+	}
+
+	return cookie.Value, nil
+}
+
+func SetLastVisitedPathCookie(ectx echo.Context) {
+	ectx.SetCookie(
+		NewCookie(
+			ectx,
+			lastVisitedPageCookie,
+			ectx.Request().URL.String(),
+			WithVirtualHost(rootRoute),
+			time.Now().Add(5*time.Minute),
+		),
+	)
+}
+
+func UnsetLastVisitedPathCookie(ectx echo.Context) {
+	cookie, err := ectx.Cookie(lastVisitedPageCookie)
+	if err != nil {
+		logging.LogWarning("trying to unset cookie that does not exist")
+		return
+	}
+
+	if cookie == nil {
+		logging.LogWarning("trying to unset cookie that is nil")
+		return
+	}
+
+	cookie.MaxAge = -1
+	ectx.SetCookie(cookie)
 }
 
 func extractServerAddr(ectx echo.Context) *net.TCPAddr {
