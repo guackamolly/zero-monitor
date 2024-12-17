@@ -27,6 +27,11 @@ func userFormHandler(ectx echo.Context) error {
 		}
 
 		ectx.SetCookie(NewCookie(ectx, tokenCookie, t.Value, WithVirtualHost(rootRoute), t.Expiry))
+		if p, err := GetLastVisitedPath(ectx); err == nil {
+			UnsetLastVisitedPathCookie(ectx)
+			return ectx.Redirect(302, p)
+		}
+
 		return ectx.Redirect(302, dashboardRoute)
 	})
 }
@@ -58,6 +63,11 @@ func userNewFormHandler(ectx echo.Context) error {
 		}
 
 		ectx.SetCookie(NewCookie(ectx, tokenCookie, t.Value, WithVirtualHost(rootRoute), t.Expiry))
+		if p, err := GetLastVisitedPath(ectx); err == nil {
+			UnsetLastVisitedPathCookie(ectx)
+			return ectx.Redirect(302, p)
+		}
+
 		return ectx.Redirect(302, dashboardRoute)
 	})
 }
