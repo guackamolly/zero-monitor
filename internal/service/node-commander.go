@@ -62,3 +62,13 @@ func (s NodeCommanderService) KillProcess(id string, pid int32) error {
 
 	return out.Error()
 }
+
+func (s NodeCommanderService) Disconnect(id string) error {
+	ev := event.NewDisconnectNodeEvent(id)
+	out, err := event.PublishAndSubscribeFirst[event.DisconnectNodeEventOutput](ev, s.publisher, s.subscriber)
+	if err != nil {
+		return err
+	}
+
+	return out.Error()
+}

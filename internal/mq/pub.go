@@ -3,6 +3,7 @@ package mq
 import (
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/guackamolly/zero-monitor/internal/domain"
 	"github.com/guackamolly/zero-monitor/internal/logging"
@@ -54,6 +55,8 @@ func (s Socket) RegisterPublishers(inviteCode string) {
 				err = handleKillNodeProcessRequest(s, m, pc.KillNodeProcess)
 			case StartNodeSpeedtest:
 				err = handleStartNodeSpeedtestRequest(s, m, pc.StartNodeSpeedtest)
+			case DisconnectNode:
+				err = handleDisconnectNodeRequest(s, m)
 			default:
 				err = fmt.Errorf("failed to recognize sub reply message, %v", m)
 			}
@@ -229,6 +232,18 @@ func handleStartNodeSpeedtestRequest(
 		}
 	}()
 
+	return nil
+}
+
+func handleDisconnectNodeRequest(
+	s Socket,
+	m Msg,
+) error {
+	go func() {
+		s.PublishMsg(m)
+	}()
+
+	os.Exit(0)
 	return nil
 }
 

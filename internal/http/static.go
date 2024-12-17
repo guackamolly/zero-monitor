@@ -23,6 +23,7 @@ var (
 		"dashboard":                     "tpl/dashboard/*.gohtml",
 		"network":                       "tpl/network/*.gohtml",
 		"network/:id":                   "tpl/network/id/*.gohtml",
+		"network/:id/actions":           "tpl/network/id/actions/*.gohtml",
 		"network/:id/connections":       "tpl/network/id/connections/*.gohtml",
 		"network/:id/packages":          "tpl/network/id/packages/*.gohtml",
 		"network/:id/processes":         "tpl/network/id/processes/*.gohtml",

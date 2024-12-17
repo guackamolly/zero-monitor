@@ -22,6 +22,15 @@ type NodeSpeedtestEventOutput struct {
 	Speedtest models.Speedtest
 }
 
+type DisconnectNodeEvent struct {
+	Event
+	NodeID string
+}
+
+type DisconnectNodeEventOutput struct {
+	EventOutput
+}
+
 func NewKillNodeProcessEvent(
 	nodeID string,
 	pid int32,
@@ -59,5 +68,23 @@ func NewNodeSpeedtestEventOutput(
 	return NodeSpeedtestEventOutput{
 		EventOutput: NewBaseEventOutput(origin, err),
 		Speedtest:   speedtest,
+	}
+}
+
+func NewDisconnectNodeEvent(
+	nodeID string,
+) DisconnectNodeEvent {
+	return DisconnectNodeEvent{
+		Event:  NewBaseEvent("Disconnect-node-event"),
+		NodeID: nodeID,
+	}
+}
+
+func NewDisconnectNodeEventOutput(
+	origin Event,
+	err error,
+) DisconnectNodeEventOutput {
+	return DisconnectNodeEventOutput{
+		EventOutput: NewBaseEventOutput(origin, err),
 	}
 }

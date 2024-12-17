@@ -99,6 +99,55 @@ func networkIdHandler(ectx echo.Context) error {
 	})
 }
 
+// GET /network/:id/actions
+func networkIdActionsHandler(ectx echo.Context) error {
+	return withServiceContainer(ectx, func(sc *ServiceContainer) error {
+		return withPathNode(ectx, sc, func(n models.Node) error {
+			rqp := ectx.QueryParam(removeQueryParam)
+			if rqp == "" {
+				return echo.ErrNotFound
+			}
+
+			remove := rqp == "true"
+			return ectx.Render(200, "network/:id/actions", NewNetworkNodeActionsView(n, remove, nil))
+		})
+	})
+}
+
+// POST /network/:id/actions
+func networkIdActionsFormHandler(ectx echo.Context) error {
+	return withServiceContainer(ectx, func(sc *ServiceContainer) error {
+		return withPathNode(ectx, sc, func(n models.Node) error {
+			rqp := ectx.QueryParam(removeQueryParam)
+			if rqp == "" {
+				return echo.ErrNotFound
+			}
+
+			confirm := ectx.FormValue("confirm") == "true"
+			if !confirm {
+				return ectx.Redirect(302, networkRoute)
+			}
+
+			err := sc.NodeManager.Remove(n)
+			if err != nil {
+				return ectx.Render(400, "network/:id/actions", NewNetworkNodeActionsView(n, true, nil))
+			}
+
+			// if online, signal disconnect
+			if n.Online {
+				go func() {
+					err = sc.NodeCommander.Disconnect(n.ID)
+					if err != nil {
+						logging.LogError("expected node to disconnect but node responded, %v", err)
+					}
+				}()
+			}
+
+			return ectx.Redirect(302, networkRoute)
+		})
+	})
+}
+
 // GET /network/:id/connections
 func networkIdConnectionsHandler(ectx echo.Context) error {
 	return withServiceContainer(ectx, func(sc *ServiceContainer) error {

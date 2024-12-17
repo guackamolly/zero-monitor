@@ -99,6 +99,13 @@ form {
     width: 100%;
 }
 
+form.horizontal {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    gap: 16px;
+}
+
 fieldset {
     display: flex;
     flex-direction: column;

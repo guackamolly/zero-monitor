@@ -103,6 +103,13 @@ func (p ZeroMQEventPubSub) eventToMsg(e Event) (mq.Msg, error) {
 		}
 
 		return mq.Compose(mq.StartNodeSpeedtest).WithIdentity(sid).WithMetadata(e), nil
+	case DisconnectNodeEvent:
+		sid, ok := p.Clients[te.NodeID]
+		if !ok {
+			return mq.Msg{}, fmt.Errorf("no pub client associated with id, %v", te.NodeID)
+		}
+
+		return mq.Compose(mq.DisconnectNode).WithIdentity(sid).WithMetadata(e), nil
 	default:
 		return mq.Msg{}, fmt.Errorf("couldn't match event with a topic, %v", e)
 	}
@@ -144,6 +151,12 @@ func (p ZeroMQEventPubSub) msgToEventOutput(m mq.Msg) (EventOutput, error) {
 			d.Speedtest,
 			err,
 		), nil
+	case mq.DisconnectNode:
+		err := errorMsgData(m)
+		return NewDisconnectNodeEventOutput(
+			m.Metadata.(Event),
+			err,
+		), nil
 	default:
 		return nil, fmt.Errorf("couldn't match message with a topic, %v", m)
 	}
@@ -181,4 +194,5 @@ func init() {
 	gob.Register(QueryNodeProcessesEvent{})
 	gob.Register(KillNodeProcessEvent{})
 	gob.Register(StartNodeSpeedtestEvent{})
+	gob.Register(DisconnectNodeEvent{})
 }
