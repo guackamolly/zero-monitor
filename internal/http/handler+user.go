@@ -67,6 +67,7 @@ func userNewFormHandler(ectx echo.Context) error {
 			UnsetLastVisitedPathCookie(ectx)
 			return ectx.Redirect(302, p)
 		}
+
 		return ectx.Redirect(302, dashboardRoute)
 	})
 }

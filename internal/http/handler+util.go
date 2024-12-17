@@ -172,8 +172,9 @@ func ExtractPort(ectx echo.Context) string {
 	return port
 }
 
+// Tries to get the last visited path that is present inside a cookie.
 func GetLastVisitedPath(ectx echo.Context) (string, error) {
-	cookie, err := ectx.Cookie(lastVisitedPageCookie)
+	cookie, err := ectx.Cookie(lastVisitedPathCookie)
 	if err != nil {
 		return "", err
 	}
@@ -185,11 +186,12 @@ func GetLastVisitedPath(ectx echo.Context) (string, error) {
 	return cookie.Value, nil
 }
 
+// Sets a cookie with the current request url path.
 func SetLastVisitedPathCookie(ectx echo.Context) {
 	ectx.SetCookie(
 		NewCookie(
 			ectx,
-			lastVisitedPageCookie,
+			lastVisitedPathCookie,
 			ectx.Request().URL.String(),
 			WithVirtualHost(rootRoute),
 			time.Now().Add(5*time.Minute),
@@ -197,8 +199,9 @@ func SetLastVisitedPathCookie(ectx echo.Context) {
 	)
 }
 
+// Unsets the last visited path cookie
 func UnsetLastVisitedPathCookie(ectx echo.Context) {
-	cookie, err := ectx.Cookie(lastVisitedPageCookie)
+	cookie, err := ectx.Cookie(lastVisitedPathCookie)
 	if err != nil {
 		logging.LogWarning("trying to unset cookie that does not exist")
 		return
