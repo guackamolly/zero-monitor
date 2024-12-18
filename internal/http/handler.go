@@ -22,10 +22,12 @@ func RegisterHandlers(e *echo.Echo) {
 	e.GET(networkIdActionsRoute, networkIdActionsHandler, adminRouteMiddleware)
 	e.POST(networkIdActionsRoute, networkIdActionsFormHandler, adminRouteMiddleware)
 
-	// /network/:id/connections | packages (public)
+	// /network/:id/connections
 	e.GET(networkIdRoute, networkIdHandler)
 	e.GET(networkIdConnectionsRoute, networkIdConnectionsHandler)
-	e.GET(networkIdPackagesRoute, networkIdPackagesHandler)
+
+	// network/:id/packages (admin only)
+	e.GET(networkIdPackagesRoute, networkIdPackagesHandler, adminRouteMiddleware)
 
 	// /network/:id/processes (admin only)
 	e.GET(networkIdProcessesRoute, networkIdProcessesHandler, adminRouteMiddleware)
