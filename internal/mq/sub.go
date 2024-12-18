@@ -172,7 +172,7 @@ func handleGoodbyeNetworkRequest(
 	}
 
 	node = node.SetOffline()
-	clientNodes[string(m.Identity)] = node
+	delete(clientNodes, string(m.Identity))
 
 	err := update(node)
 	if err != nil {
