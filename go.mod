@@ -8,6 +8,7 @@ require (
 	github.com/gorilla/websocket v1.5.3
 	github.com/jaypipes/ghw v0.13.0
 	github.com/joho/godotenv v1.5.1
+	github.com/kardianos/service v1.2.2
 	github.com/labstack/echo/v4 v4.13.2
 	github.com/labstack/gommon v0.4.2
 	github.com/mssola/useragent v1.0.0

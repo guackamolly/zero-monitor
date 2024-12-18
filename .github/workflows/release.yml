@@ -16,6 +16,7 @@ jobs:
         run: |
           ./tools/build master
           ./tools/build node
+          ./tools/build launcher
 
       - name: Prepare Version Tag
         id: version_tag

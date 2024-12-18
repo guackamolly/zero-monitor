@@ -3,6 +3,9 @@
 # Save program arguments to later pass on binary.
 args="$@"
 
+# Save current user to later pass on launcher.
+user="$USER"
+
 # Common urls.
 new_issue_url="https://github.com/guackamolly/zero-monitor/issues/new"
 latest_release_url="https://api.github.com/repos/guackamolly/zero-monitor/releases/latest"
@@ -12,6 +15,7 @@ jq_release_url="https://github.com/jqlang/jq/releases/download/jq-1.7.1"
 install_dir="$HOME/.config/zero-monitor"
 bin_path="$install_dir/node"
 jq_bin_path="$install_dir/jq"
+launcher_bin_path="$install_dir/launcher"
 
 if [ ! -d "$install_dir" ]; then
     mkdir -p "$install_dir"
@@ -24,6 +28,19 @@ fatal() {
 
 jq() {
     "$jq_bin_path" "$@"
+}
+
+launcher() {
+    local use_sudo=""
+    if [[ "$1" == "root" ]]; then
+        use_sudo="sudo"
+    fi
+
+    $use_sudo "$launcher_bin_path" \
+        --name="zero-monitor-node" \
+        --description="Service for lauching zero-monitor monitoring agent at startup" \
+        --user="$user" \
+        --exec="$bin_path" 2 &>/dev/null
 }
 
 exec_bin() {
@@ -40,6 +57,18 @@ download() {
     printf "Downloading $bin_name ...\n"
     wget -O "$install_dir/$bin_name" "$url"
     chmod +x "$install_dir/$bin_name"
+}
+
+schedule_launcher() {
+    launcher
+    ec=$?
+
+    if [ $ec = 60 ]; then
+        printf "Couldn't schedule a system-service for launching node agent at startup because no supported service manager exists."
+    elif [ $ec = 61 ]; then
+        printf "Scheduling system-service for launching node agent at startup requires elevated privileges.\nPress ctrl+c to abort...\n"
+        launcher "root"
+    fi
 }
 
 # Query host OS and CPU architecture to precisely select binary to download.
@@ -79,5 +108,13 @@ if [ ! -f "$bin_path" ] || [ "$latest_release_version" != "$($bin_path -version)
     download "$(echo $response | jq -r '.assets[] | select(.name == "node_'${os}'_'${arch}'") | .browser_download_url')"
 fi
 
-# Run the binary.
+# Same thing for launcher.
+if [ ! -f "$launcher_bin_path" ]; then
+    download "$(echo $response | jq -r '.assets[] | select(.name == "launcher_'${os}'_'${arch}'") | .browser_download_url')"
+fi
+
+# Try creating system service that launches binary at startup.
+schedule_launcher
+
+# Run the binary
 exec_bin
