@@ -1,3 +1,7 @@
+# 0.0.0-79735a0f2d2817f9c0dbf974b5acd100c2c5c92d
+
+- (chore): disable packages route for guest viewers
+
 # 0.0.0-34a44199aa82296d3c3347fe4b1431bcb7657ee8
 
 - (feat): autostart agents after server restarts
