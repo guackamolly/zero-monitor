@@ -1,4 +1,4 @@
-# 0.0.0-05293cd88213376f625e3cddb2c9e58bc893a528
+# 0.0.0-34a44199aa82296d3c3347fe4b1431bcb7657ee8
 
 - (feat): autostart agents after server restarts
 - (fix): redirect to last visited page after sign-in
