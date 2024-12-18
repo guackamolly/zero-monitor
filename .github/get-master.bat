@@ -3,6 +3,9 @@
 rem Save program arguments to later pass on init binary.
 set args=%*
 
+rem Save username to later pass on launcher binary.
+set user=%USERNAME%
+
 rem Common urls.
 set new_issue_url=https://github.com/guackamolly/zero-monitor/issues/new
 set latest_release_url=https://api.github.com/repos/guackamolly/zero-monitor/releases/latest
@@ -12,6 +15,7 @@ rem Installation directory and program paths.
 set install_dir=%APPDATA%\zero-monitor
 set temp_input_dir=%TEMP%\.zero-monitor
 set bin_path=%install_dir%\master.exe
+set launcher_bin_path=%install_dir%\launcher.exe
 set jq_bin_path=%install_dir%\jq.exe
 
 
@@ -71,6 +75,16 @@ if %latest_release_version% NEQ "%bin_version%" (
   call :download !download_url! master.exe
 )
 
+rem If launcher binary does not exist, download it.
+if not exist "%launcher_bin_path%" (
+  call:jq -r ".assets[] | select(.name == \"launcher_%os%_%arch%\") | .browser_download_url" %temp_input_dir%\latest-release>%temp_input_dir%\download_url
+  set /P download_url=<%temp_input_dir%\download_url
+  call :download !download_url! launcher.exe
+)
+
+rem Try creating system service that launches binary at startup.
+call:schedule_launcher
+
 rem Run the binary.
 call:exec_bin
 
@@ -85,6 +99,24 @@ REM %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 :jq
   "%jq_bin_path%" %*
   exit /b 0
+
+:launcher
+  "%launcher_bin_path%" ^
+    --name="zero-monitor-master" ^
+    --description="Service for lauching zero-monitor master agent at startup" ^
+    --user="%user%" ^
+    --exec="%bin_path%" > nul 2>&1
+
+  exit /b %errorlevel%
+
+:schedule_launcher
+  call:launcher
+  
+  if %errorlevel% EQU 60 (
+      echo Couldn't schedule a system-service for launching master agent at startup because no supported service manager exists.
+  )
+
+  exit /b %errorlevel%
 
 :exec_bin
   call "%bin_path%" "%args%"
