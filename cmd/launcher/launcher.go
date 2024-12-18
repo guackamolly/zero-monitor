@@ -11,7 +11,6 @@ import (
 const (
 	ExitCodeNoServiceSystemAvailable   = 60
 	ExitCodeRequiresElevatedPrivileges = 61
-	ExitCodeNotStarted                 = 62
 )
 
 var (
@@ -45,12 +44,6 @@ func main() {
 	if err != nil {
 		println("requires elevated privileges")
 		os.Exit(ExitCodeRequiresElevatedPrivileges)
-	}
-
-	err = s.Start()
-	if err != nil {
-		println("service not started: " + err.Error())
-		os.Exit(ExitCodeNotStarted)
 	}
 
 	println("service installed and managed by: " + s.Platform())
