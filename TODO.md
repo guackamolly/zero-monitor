@@ -15,6 +15,5 @@ Looking to contribute to the project but you don't know how to start? The todo's
 - Cover comment //TODOs
 - Prevent man in the middle attacks on Pub connections
 - The + alias element is not clickable in iOS Safari/WebKit
-- Redirect user to last visited page if login is required
-- Fix redirection being cached after login (thanks @davidrralphs!)
-- Autostart master/node (thanks @davidrralphs!)
+- Reverse connections remote IPs
+- Mark vulnerable packages
