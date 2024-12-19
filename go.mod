@@ -9,7 +9,7 @@ require (
 	github.com/jaypipes/ghw v0.13.0
 	github.com/joho/godotenv v1.5.1
 	github.com/kardianos/service v1.2.2
-	github.com/labstack/echo/v4 v4.13.2
+	github.com/labstack/echo/v4 v4.13.3
 	github.com/labstack/gommon v0.4.2
 	github.com/mssola/useragent v1.0.0
 	github.com/shirou/gopsutil v3.21.11+incompatible
@@ -36,7 +36,7 @@ require (
 	github.com/yusufpapurcu/wmi v1.2.4 // indirect
 	golang.org/x/crypto v0.31.0 // indirect
 	golang.org/x/image v0.18.0 // indirect
-	golang.org/x/net v0.32.0 // indirect
+	golang.org/x/net v0.33.0 // indirect
 	golang.org/x/sync v0.10.0 // indirect
 	golang.org/x/sys v0.28.0 // indirect
 	golang.org/x/text v0.21.0 // indirect
