@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+
+pwd="$(dirname "$BASH_SOURCE")"
+docker_tag="$(cat $pwd/build-docker | grep "docker_tag=" | cut -d "=" -f 2)"
+
+# Pass -d flag to run container in background as a daemon.
+daemon_flag=""
+if [ "$1" = '-d' ]; then
+    daemon_flag='-d'
+fi
+
+# Ensure volume for app directory exists.
+docker volume create zero-monitor
+
+# If .env is not present, expose bootstrapped ports.
+if [ ! -f .env ]; then
+    docker run $daemon_flag \
+        --mount type=bind,src=/etc/machine-id,dst=/etc/machine-id \
+        -v zero-monitor:/.config/zero-monitor \
+        -p 8080:8080 \
+        -p 36113:36113 \
+        -t $docker_tag
+
+    exit $?
+fi
+
+# (WARNING): Expert docker user only.
+# If .env is present, use values defined there instead of bootstrapped configuration.
+# Paths defined in .env file must be absolute!
+export $(grep -v '^#' .env | xargs)
+docker run $daemon_flag \
+    --mount type=bind,src=/etc/machine-id,dst=/etc/machine-id \
+    --mount type=bind,src=$bolt_db_path,dst=$bolt_db_path \
+    --mount type=bind,src=$mq_transport_pem_key,dst=$mq_transport_pem_key \
+    --mount type=bind,src=$server_tls_crt_fp,dst=$server_tls_crt_fp \
+    --mount type=bind,src=$server_tls_key_fp,dst=$server_tls_key_fp \
+    -v zero-monitor:/.config/zero-monitor \
+    -p $server_port:$server_port \
+    -p $mq_sub_port:$mq_sub_port \
+    --env-file .env \
+    -t $docker_tag
