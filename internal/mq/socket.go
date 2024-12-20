@@ -29,6 +29,9 @@ type Socket struct {
 	Clients map[string][]byte
 	// ZeroMQ identity that is bundled on message frames
 	Identity []byte
+
+	// Connection string the socket is open on.
+	Endpoint string
 }
 
 // Creates a new sub [zmq4-Socket] wrapper with a custom context.
@@ -50,11 +53,18 @@ func NewSubSocket(ctx context.Context) Socket {
 func NewPubSocket(ctx context.Context) Socket {
 	id := []byte(models.UUID())
 	return Socket{
-		Socket:       zmq4.NewDealer(ctx, zmq4.WithAutomaticReconnect(true), zmq4.WithID(id)),
+		// Automatic reconnect must be false, otherwise when reconnecting, messages that were not
+		// delivered will be delivered, which causes a race condition when signaling network presence
+		Socket:       zmq4.NewDealer(ctx, zmq4.WithAutomaticReconnect(false), zmq4.WithID(id)),
 		ctx:          ctx,
 		framesLength: 1,
 		Identity:     id,
 	}
+}
+
+// Tries to reconnect with the sub server by dialing the endpoint again.
+func (s Socket) Reconnect() error {
+	return s.Dial(s.Endpoint)
 }
 
 func (s Socket) Context() context.Context {

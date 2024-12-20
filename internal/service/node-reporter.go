@@ -49,8 +49,13 @@ func (s *NodeReporterService) Start(pollDuration time.Duration) chan (models.Sta
 			if err != nil {
 				logging.LogError("failed to fetch system statistics, %v", err)
 			} else {
-				s.node = s.node.WithUpdatedStats(stats)
-				stream <- s.node.Stats
+				select {
+				case <-stream:
+					return
+				default:
+					s.node = s.node.WithUpdatedStats(stats)
+					stream <- s.node.Stats
+				}
 			}
 
 			logging.LogDebug("sleeping for %s until polling new node stats", pollDuration)
@@ -84,7 +89,24 @@ func (s NodeReporterService) KillProcess(pid int32) error {
 }
 
 func (s NodeReporterService) Speedtest() (chan (models.Speedtest), error) {
-	return s.speedtest.Start()
+	ch, err := s.speedtest.Start()
+	if err != nil {
+		return nil, err
+	}
+
+	sch := make(chan (models.Speedtest))
+	go func() {
+		for st := range ch {
+			select {
+			case <-sch:
+				return
+			default:
+				sch <- st
+			}
+		}
+	}()
+
+	return sch, nil
 }
 
 // tries to fetch system info, and if it fails, sleeps for 2 seconds until trying again.

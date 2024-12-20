@@ -44,11 +44,11 @@ func main() {
 	s := mq.NewPubSocket(ctx)
 	defer s.Close()
 
-	err := mq.ConnectPublish(s, env.MessageQueueHost, env.MessageQueuePort)
+	err := mq.ConnectPublish(&s, env.MessageQueueHost, env.MessageQueuePort)
 	if err != nil {
 		log.Fatalf("coudln't open zeromq pub socket, %v\n", err)
 	}
-	log.Printf("started zeromq pub socket on addr: %s\n", s.Addr())
+	log.Printf("started zeromq pub socket on addr: %s\n", s.Endpoint)
 	s.RegisterPublishers(env.MessageQueueInviteCode)
 
 	// 4. Await termination...

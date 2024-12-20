@@ -2,11 +2,20 @@ package mq
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"os"
+	"time"
 
+	"github.com/go-zeromq/zmq4"
+	"github.com/guackamolly/zero-monitor/internal/data/models"
 	"github.com/guackamolly/zero-monitor/internal/domain"
 	"github.com/guackamolly/zero-monitor/internal/logging"
+)
+
+var (
+	statsStream     chan (models.Stats)
+	speedtestStream chan (models.Speedtest)
 )
 
 // Invite code is required if it's the first connection with master server.
@@ -17,18 +26,21 @@ func (s Socket) RegisterPublishers(inviteCode string) {
 	}
 
 	// Signal network presence.
-	go func() {
-		err := s.PublishMsg(Compose(HelloNetwork))
-		if err != nil {
-			// TODO: handle hello network error gracefully.
-			logging.LogFatal("couldn't reach master, %v", err)
-		}
-	}()
+	go initiateNetworkActivity(s)
 
 	// Handle sub reply messages.
 	go func() {
 		for {
 			m, err := s.ReceiveMsg()
+
+			// if connection with sub closed, try reconnect
+			if err != nil && (err == zmq4.ErrClosedConn || err == io.EOF) {
+				closeStreams()
+				retryReconnect(s)
+				initiateNetworkActivity(s)
+				continue
+			}
+
 			if err != nil {
 				logging.LogError("failed to receive message from sub socket, %v", err)
 				continue
@@ -100,8 +112,8 @@ func handleJoinNetworkResponse(
 	}
 
 	go func() {
-		ns := start(resp.StatsPoll)
-		for stats := range ns {
+		statsStream = start(resp.StatsPoll)
+		for stats := range statsStream {
 			err := s.PublishMsg(Compose(UpdateNodeStats, UpdateNodeStatsRequest{Stats: stats}))
 			if err != nil {
 				logging.LogError("failed to publish update stats message, %v", err)
@@ -223,8 +235,9 @@ func handleStartNodeSpeedtestRequest(
 		return s.PublishMsg(m.WithError(err))
 	}
 
+	speedtestStream = ch
 	go func() {
-		for st := range ch {
+		for st := range speedtestStream {
 			err = s.PublishMsg(m.WithData(NodeSpeedtestResponse{Speedtest: st}))
 			if err != nil {
 				logging.LogError("failed to publish node speed test response, %v", err)
@@ -256,4 +269,44 @@ func handleUnknownMessage(
 	}
 
 	return fmt.Errorf("couldn't understand message, %v", m)
+}
+
+// Initiates network activity by sending an hello network message.
+func initiateNetworkActivity(s Socket) {
+	err := s.PublishMsg(Compose(HelloNetwork))
+	if err != nil {
+		// TODO: handle hello network error gracefully.
+		logging.LogFatal("couldn't reach master, %v", err)
+	}
+}
+
+// Tries to reconnect with sub socket, debouncing retries from 3 to 60 seconds.
+func retryReconnect(s Socket) {
+	timeouts := []int{3, 5, 10, 15, 30, 45, 60}
+	index := 0
+	for {
+		logging.LogInfo("trying to reconnect with sub socket...")
+		err := s.Reconnect()
+		if err == nil {
+			break
+		}
+
+		logging.LogError("reconnect error, %v", err)
+		time.Sleep(time.Duration(timeouts[index]) * time.Second)
+
+		index++
+		if index == len(timeouts) {
+			index--
+		}
+	}
+}
+
+func closeStreams() {
+	if statsStream != nil {
+		close(statsStream)
+	}
+
+	if speedtestStream != nil {
+		close(speedtestStream)
+	}
 }
