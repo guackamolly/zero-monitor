@@ -9,13 +9,15 @@ import (
 )
 
 // Connects a socket for publishing messages to master node.
-func ConnectPublish(s Socket, host string, port string) error {
-	return s.Dial(fmt.Sprintf("tcp://[%s]:%s", host, port))
+func ConnectPublish(s *Socket, host string, port string) error {
+	s.Endpoint = fmt.Sprintf("tcp://[%s]:%s", host, port)
+	return s.Dial(s.Endpoint)
 }
 
 // Connects a socket for subscribing messages from reporting nodes.
-func ConnectSubscribe(s Socket, host string, port string) error {
-	return s.Listen(fmt.Sprintf("tcp://[%s]:%s", lookupHost(host), port))
+func ConnectSubscribe(s *Socket, host string, port string) error {
+	s.Endpoint = fmt.Sprintf("tcp://[%s]:%s", lookupHost(host), port)
+	return s.Listen(s.Endpoint)
 }
 
 func Close(s Socket) error {

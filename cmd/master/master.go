@@ -115,7 +115,7 @@ func loadCrypto(keyfilepath string) {
 func initializeSubServer(ctx context.Context, host, port string) mq.Socket {
 	s := mq.NewSubSocket(ctx)
 	s.RegisterSubscriptions()
-	err := mq.ConnectSubscribe(s, host, port)
+	err := mq.ConnectSubscribe(&s, host, port)
 	if err != nil {
 		s.Close()
 		log.Fatalf("coudln't open zeromq sub socket, %v\n", err)
