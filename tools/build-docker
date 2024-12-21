@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+docker_tag=zero-monitor:latest
+docker build \
+    -f ./deployments/Dockerfile \
+    . -t $docker_tag
