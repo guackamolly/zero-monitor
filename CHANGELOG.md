@@ -1,3 +1,8 @@
+# 0.0.0-3ceb9b7d95e9b7974a376d170e06433897b40a51
+
+- (feat): automatically reconnect nodes if master restarts
+- (fix): not being able to view detailed information of nodes on webkit browsers
+
 # 0.0.0-79735a0f2d2817f9c0dbf974b5acd100c2c5c92d
 
 - (chore): disable packages route for guest viewers
