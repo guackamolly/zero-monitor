@@ -74,9 +74,11 @@
                         {{ range $name, $fields := .Form.Groups }}
                         <fieldset>
                             <legend>{{$name}}</legend>
-                            {{ range $fields }}
-                            {{ template "form-field" . }}
-                            {{ end }}
+                            <article>
+                                {{ range $fields }}
+                                {{ template "form-field" . }}
+                                {{ end }}
+                            </article>
                         </fieldset>
                         {{ end }}
                     </section>

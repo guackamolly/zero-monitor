@@ -106,7 +106,13 @@ form.horizontal {
     gap: 16px;
 }
 
-fieldset {
+fieldset article {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+fieldset.speedtest {
     display: flex;
     flex-direction: column;
     gap: 8px;

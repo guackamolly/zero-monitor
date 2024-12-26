@@ -68,38 +68,42 @@
                 <form class="fit" method="post">
                     <fieldset>
                         <legend>Credentials</legend>
-                        <label>
-                            <span class="tooltip">
-                                Username
-                                <span class="tooltip-text">
-                                    The username must respect this rule: 3 to 25
-                                    characters, no spaces
-                                    ([a-zA-Z0-9-_.@]{3,25})
+                        <article>
+                            <label>
+                                <span class="tooltip">
+                                    Username
+                                    <span class="tooltip-text">
+                                        The username must respect this rule: 3
+                                        to 25
+                                        characters, no spaces
+                                        ([a-zA-Z0-9-_.@]{3,25})
+                                    </span>
                                 </span>
-                            </span>
-                            <input id="username" name="username"
-                                type="text"
-                                min="3"
-                                max="15"
-                                pattern="[a-zA-Z0-9-_.@]{3,25}"
-                                required />
-                        </label>
-                        <label>
-                            <span class="tooltip">
-                                Password
-                                <span class="tooltip-text">
-                                    The password must respect this rule: 5 to 20
-                                    characters, no spaces ([^\s]{5,20})
+                                <input id="username" name="username"
+                                    type="text"
+                                    min="3"
+                                    max="15"
+                                    pattern="[a-zA-Z0-9-_.@]{3,25}"
+                                    required />
+                            </label>
+                            <label>
+                                <span class="tooltip">
+                                    Password
+                                    <span class="tooltip-text">
+                                        The password must respect this rule: 5
+                                        to 20
+                                        characters, no spaces ([^\s]{5,20})
+                                    </span>
                                 </span>
-                            </span>
-                            <input id="password" name="password"
-                                type="password"
-                                min="5"
-                                max="20"
-                                pattern="[^\s]{5,20}"
-                                required />
-                        </label>
-                        <button>Create</button>
+                                <input id="password" name="password"
+                                    type="password"
+                                    min="5"
+                                    max="20"
+                                    pattern="[^\s]{5,20}"
+                                    required />
+                            </label>
+                            <button>Create</button>
+                        </article>
                     </fieldset>
                 </form>
             </section>
