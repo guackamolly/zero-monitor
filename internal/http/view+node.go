@@ -64,12 +64,24 @@ func (v NodeView) CPUUsage() string {
 	return v.Stats.CPU.String()
 }
 
+func (v NodeView) CPUUsageLevel() string {
+	return fillLevel(v.Stats.CPU)
+}
+
 func (v NodeView) RAMUsage() string {
 	return v.Stats.RAM.String()
 }
 
+func (v NodeView) RAMUsageLevel() string {
+	return fillLevel(v.Stats.RAM)
+}
+
 func (v NodeView) DiskUsage() string {
 	return v.Stats.Disk.String()
+}
+
+func (v NodeView) DiskUsageLevel() string {
+	return fillLevel(v.Stats.Disk)
 }
 
 func (v NodeView) LocalIP() string {
@@ -158,4 +170,20 @@ func (v NodeView) TotalRx() string {
 
 func (v NodeView) TotalTx() string {
 	return v.Stats.TotalTx.String()
+}
+
+func fillLevel(p models.Percent) string {
+	if p < 0 {
+		return "-"
+	}
+
+	if p < 60 {
+		return "1"
+	}
+
+	if p < 85 {
+		return "2"
+	}
+
+	return "3"
 }

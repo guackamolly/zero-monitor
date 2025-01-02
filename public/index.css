@@ -8,6 +8,9 @@
     --background: #f2d5cf53;
     --foreground: #f2d5cfD9;
     --progress-bar: #eba0ac;
+    --progress-bar-level-1: #a6e3a18a;
+    --progress-bar-level-2: #f9e2af;
+    --progress-bar-level-3: #eba0ac;
 
     background-color: var(--background);
     font-family: 'Jetbrains Mono', system-ui, -apple-system, BlinkMacSystemFont, segoe ui, Roboto, Oxygen, Ubuntu, Cantarell, open sans, helvetica neue, sans-serif;
@@ -457,6 +460,18 @@ button {
     white-space: nowrap;
     border-radius: 5px;
     text-indent: 8px;
+}
+
+.progress-bar-fill[data-level="1"] {
+    background-color: var(--progress-bar-level-1);
+}
+
+.progress-bar-fill[data-level="2"] {
+    background-color: var(--progress-bar-level-2);
+}
+
+.progress-bar-fill[data-level="3"] {
+    background-color: var(--progress-bar-level-3);
 }
 
 @media screen and (max-width: 1440px) {

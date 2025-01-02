@@ -2,14 +2,20 @@
 
 {{ $Uptime := .Uptime }}
 {{ $CPUUsage := .CPUUsage }}
+{{ $CPUUsageLevel := .CPUUsageLevel }}
 {{ $RAMUsage := .RAMUsage }}
+{{ $RAMUsageLevel := .RAMUsageLevel }}
 {{ $DiskUsage := .DiskUsage }}
+{{ $DiskUsageLevel := .DiskUsageLevel }}
 
 {{ if not .Online }}
 {{ $Uptime = "-" }}
 {{ $CPUUsage = "-" }}
+{{ $CPUUsageLevel = "-" }}
 {{ $RAMUsage = "-" }}
+{{ $RAMUsageLevel = "-" }}
 {{ $DiskUsage = "-" }}
+{{ $DiskUsageLevel = "-" }}
 {{ end }}
 
 <fieldset>
@@ -71,6 +77,7 @@
                 class="node-stat-field-label">CPU</span>
             <div class="progress-bar">
                 <div class="progress-bar-fill"
+                    data-level="{{$CPUUsageLevel}}"
                     style="width: {{$CPUUsage}};">{{$CPUUsage}}</div>
             </div>
         </div>
@@ -79,6 +86,7 @@
                 class="node-stat-field-label">RAM</span>
             <div class="progress-bar">
                 <div class="progress-bar-fill"
+                    data-level="{{$RAMUsageLevel}}"
                     style="width: {{$RAMUsage}};">{{$RAMUsage}}</div>
             </div>
         </div>
@@ -87,6 +95,7 @@
                 class="node-stat-field-label">Disk</span>
             <div class="progress-bar">
                 <div class="progress-bar-fill"
+                    data-level="{{$DiskUsageLevel}}"
                     style="width: {{$DiskUsage}};">{{$DiskUsage}}</div>
             </div>
         </div>
