@@ -79,6 +79,18 @@ Alternatively, you can download any of the master/node pre-compiled binaries fro
 
 Please refer to [env.md](docs/env.md) to get guidance on how to properly configure master/node usage.
 
+### Docker
+
+The tool was designed to be deployed using the binaries released on GitHub. However, if you want to partially containerize the zero-monitor master agent, you can do it via docker:
+
+```bash
+# First, build the image
+./tools/build-docker
+
+# Finally, start a container
+./tool/run-docker
+```
+
 ## Tech Stack
 
 - Go (echo v4, html/template)
