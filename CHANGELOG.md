@@ -1,3 +1,7 @@
+# 0.0.0-83d831bb646528962855a8f72e2ac001f14f0e03
+
+- (style): add fill colors for progressbar based on low (1), medium (2) and high (3) levels
+
 # 0.0.0-3ceb9b7d95e9b7974a376d170e06433897b40a51
 
 - (feat): automatically reconnect nodes if master restarts
